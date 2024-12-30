@@ -1,0 +1,8 @@
+{
+  "name": "saucecharts",
+  "version": "0.0.0",
+  "description": "Simple, modern, web chart library",
+  "main": "src/index.mjs",
+  "author": "Sauce, LLC",
+  "license": "MIT"
+}
