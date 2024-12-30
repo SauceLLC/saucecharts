@@ -29,7 +29,7 @@
         }
 
         svg.sc-plot-region {
-            overflow: visible; // positional only..
+            overflow: visible; /* positional only.. */
         }
 
         .sc-visual-data-line {
@@ -71,7 +71,6 @@
     }
 }
 
-// Low specificity...
 .sc-plot-region {
     &:nth-of-type(1) {
         --color: red;
@@ -80,10 +79,10 @@
         --color: gold;
     }
     &:nth-of-type(3) {
-        --color: #2c2; // green
+        --color: #2c2; /* green */
     }
     &:nth-of-type(4) {
-        --color: #22b; // blue
+        --color: #22b; /* blue */
     }
     &:nth-of-type(5) {
         --color: cyan;

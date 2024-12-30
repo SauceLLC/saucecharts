@@ -1,0 +1,5 @@
+*.swp
+*.pem
+*.crx
+*.DS_Store
+node_modules
