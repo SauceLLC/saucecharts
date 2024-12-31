@@ -50,6 +50,7 @@ export class BarChart extends common.Chart {
     }
 
     onPointeroverForTooltips(ev) {
+        debugger;
         const circle = ev.target.closest('rect.sc-data-point');
         if (!circle) {
             return;
@@ -122,10 +123,11 @@ export class BarChart extends common.Chart {
 
     _renderDoLayout({coords, normalized}) {
         //this._pathAreaEl.setAttribute('d', this._makePath(coords, {closed: true}));
+        this._barsEl.innerHTML = '';
         for (let i = 0; i < coords.length; i++) {
             const [x, y] = coords[i];
             this._barsEl.innerHTML +=
-                `<rect class="sc-bar sc-visual-data-bar" data-index="${i} x="${x}"
+                `<rect class="sc-bar sc-visual-data-bar" data-index="${i}" x="${x}"
                        width="40" height="${y}"/>`;
         }
     }
