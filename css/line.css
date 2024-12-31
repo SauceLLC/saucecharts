@@ -24,8 +24,8 @@
             --transition-duration: 0 !important;
         }
 
-        .sc-data-def {
-            transition: d var(--transition-duration) var(--transition-timing),
+        .sc-data {
+            transition: d var(--transition-duration) var(--transition-timing);
         }
 
         svg.sc-plot-region {

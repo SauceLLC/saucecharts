@@ -1,34 +1,16 @@
 
-let globalIdCounter = 0;
-
-function createSVGElement(tag) {
-    return document.createElementNS('http://www.w3.org/2000/svg', tag);
-}
+import * as common from './common.mjs';
 
 
-export class LineChart {
+export class LineChart extends common.Chart {
 
-    constructor(options={}) {
-        this.id = globalIdCounter++;
+    init(options={}) {
         this._yMin = options.yMin;
         this._yMax = options.yMax;
         this._xMin = options.xMin;
         this._xMax = options.xMax;
-        this.title = options.title;
-        this.color = options.color;
         this.hidePoints = options.hidePoints;
-        this.padding = options.padding || [0, 0, 0, 0];
-        this.onTooltip = options.onTooltip;
-        this.onPointeroverForTooltips = this._onPointeroverForTooltips.bind(this);
         this._pointsMap = new Map();
-        this._resizeObserver = new ResizeObserver(
-            requestAnimationFrame.bind(null, this._adjustSize.bind(this)));
-        if (options.data) {
-            this.setData(options.data);
-        }
-        if (options.el) {
-            this.setElement(options.el, {merge: options.merge});
-        }
     }
 
     get yMin() {
@@ -47,121 +29,29 @@ export class LineChart {
         return this._xMax != null ? this._xMax : this._xMaxCalculated;
     }
 
-    _adjustSize() {
-        const {width, height} = this._rootSvgEl.getBoundingClientRect();
-        if (!width || !height) {
-            this._boxWidth = null;
-            this._boxHeight = null;
-            this._plotWidth = null;
-            this._plotHeight = null;
-            return;
-        }
-        const pixelScale = 1; //devicePixelRatio || 1;
-        const ar = width / height;
-        if (ar > 1) {
-            this._boxWidth = Math.round(width * pixelScale);
-            this._boxHeight = Math.round(this._boxWidth / ar);
-        } else {
-            this._boxHeight = Math.round(height * pixelScale);
-            this._boxWidth = Math.round(this._boxHeight * ar);
-        }
-        const hPad = (this.padding[1] + this.padding[3]) * pixelScale;
-        const vPad = (this.padding[0] + this.padding[2]) * pixelScale;
-        this._plotWidth = Math.max(0, this._boxWidth - hPad);
-        this._plotHeight = Math.max(0, this._boxHeight - vPad);
-        const xOfft = this.padding[3] * pixelScale;
-        const yOfft = this.padding[0] * pixelScale;
-        this._rootSvgEl.classList.add('disable-animation');
-        try {
-            this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
-            this._plotRegionEl.setAttribute('x', xOfft);
-            this._plotRegionEl.setAttribute('y', yOfft);
-            this._plotRegionEl.setAttribute('width', this._plotWidth);
-            this._plotRegionEl.setAttribute('height', this._plotHeight);
-            this.render();
-            this._rootSvgEl.clientWidth;
-        } finally {
-            this._rootSvgEl.classList.remove('disable-animation');
-        }
-    }
-
-    setElement(el, {merge}={}) {
-        const old = this.el;
-        this.el = el;
-        if (old) {
-            this._resizeObserver.disconnect();
-            old.removeEventListener('pointerover', this.onPointeroverForTooltips);
-        }
-        if (!merge) {
-            el.innerHTML =
-                `<div class="saucechart sc-wrap resize-observer" style="position:relative;">
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-                         class="sc-root" style="position:absolute; top:0; left:0; width:100%; height:100%;">
-                        <defs></defs>
-                    </svg>
-                </div>`;
-        }
+    setElement(el, options) {
+        super.setElement(el, options);
         const defs = el.querySelector('svg.sc-root > defs');
-        if (!defs) {
-            throw new Error('Existing merge target element is not compatible');
-        }
         const pathId = `path-def-${this.id}`;
         defs.insertAdjacentHTML('beforeend', `
             <clipPath data-sc-id="${this.id}" id="${pathId}-clip">
-                <path class="sc-data-def sc-area"/>
-            </clipPath>`);
-        el.querySelector('svg.sc-root').insertAdjacentHTML('beforeend', `
-            <svg data-sc-id="${this.id}" class="sc-plot-region">
-                <foreignObject class="sc-css-background" clip-path="url(#${pathId}-clip)"
-                               width="100%" height="100%">
-                    <div class="sc-visual-data-area"></div>
-                </foreignObject>
-                <path class="sc-data-def sc-line sc-visual-data-line"/>
-                <g class="sc-points"></g>
-            </svg>`);
-        if (this.title) {
-            el.querySelector(':scope > .sc-wrap').insertAdjacentHTML(
-                'beforeend',
-                `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
-        }
-        const qs = `[data-sc-id="${this.id}"]`;
-        this._rootSvgEl = el.querySelector(`svg.sc-root`);
-        this._plotRegionEl = el.querySelector(`${qs}.sc-plot-region`);
-        this._pointsEl = el.querySelector(`${qs} g.sc-points`);
-        this._pathLineDefEl = el.querySelector(`${qs} path.sc-data-def.sc-line`);
-        this._pathAreaDefEl = el.querySelector(`${qs} path.sc-data-def.sc-area`);
-        if (this.color) {
-            this._plotRegionEl.style.setProperty('--color', this.color);
-        }
-        this._adjustSize();
-        el.addEventListener('pointerover', this.onPointeroverForTooltips);
-        this._resizeObserver.observe(el.querySelector('.resize-observer'));
+                <path class="sc-data sc-area"/>
+            </clipPath>
+        `);
+        this._plotRegionEl.innerHTML = `
+            <foreignObject class="sc-css-background" clip-path="url(#${pathId}-clip)"
+                           width="100%" height="100%">
+                <div class="sc-visual-data-area"></div>
+            </foreignObject>
+            <path class="sc-data sc-line sc-visual-data-line"/>
+            <g class="sc-points"></g>
+        `;
+        this._pointsEl = this._plotRegionEl.querySelector(`g.sc-points`);
+        this._pathLineEl = this._plotRegionEl.querySelector(`path.sc-data.sc-line`);
+        this._pathAreaEl = defs.querySelector(`[data-sc-id="${this.id}"] path.sc-data.sc-area`);
     }
 
-    setData(data) {
-        this.data = data;
-        this.render();
-    }
-
-    normalizeData(data) {
-        let norm;
-        if (!data.length) {
-            norm = [];
-        } else if (Array.isArray(data[0])) {
-            // [[x, y], [x1, y1], ...]
-            norm = data.map(([x, y]) => ({x: x || 0, y: y || 0}));
-        } else if (typeof data[0] === 'object') {
-            // [{x, y, ...}, {x, y, ...}, ...]
-            norm = data.map(o => ({...o, x: o.x || 0, y: o.y || 0}));
-        } else {
-            // [y, y1, ...]
-            norm = data.map((y, x) => ({x, y: y || 0}));
-        }
-        norm.sort((a, b) => a.x - b.x);
-        return norm;
-    }
-
-    _onPointeroverForTooltips(ev) {
+    onPointeroverForTooltips(ev) {
         const circle = ev.target.closest('circle.sc-data-point');
         if (!circle) {
             return;
@@ -169,22 +59,20 @@ export class LineChart {
         const point = circle.pointWRef.deref();
         let title = circle.querySelector('title');
         if (!title) {
-            title = createSVGElement('title');
+            title = common.createSVGElement('title');
             circle.append(title);
         }
         title.textContent = point.tooltipFormat();
     }
 
     reset() {
-        if (this.data) {
-            this.data.length = 0;
-        }
+        super.reset();
         this._reset();
     }
 
     _reset() {
-        this._pathLineDefEl.removeAttribute('d');
-        this._pathAreaDefEl.removeAttribute('d');
+        this._pathLineEl.removeAttribute('d');
+        this._pathAreaEl.removeAttribute('d');
         this._pointsEl.innerHTML = '';
         this._pointsMap.clear();
         this._prevCoords = null;
@@ -259,7 +147,7 @@ export class LineChart {
                         this.onTooltip.bind(this, nd, point) :
                         () => nd.y.toLocaleString();
                 if (!this.hidePoints) {
-                    const circle = createSVGElement('circle');
+                    const circle = common.createSVGElement('circle');
                     circle.classList.add('sc-data-point');
                     point.circle = circle;
                     circle.pointWRef = new WeakRef(point);
@@ -334,8 +222,8 @@ export class LineChart {
                         prev.unshift(prev[0]);
                     }
                 }
-                this._pathLineDefEl.setAttribute('d', this._makePath(prev));
-                this._pathAreaDefEl.setAttribute('d', this._makePath(prev, {closed: true}));
+                this._pathLineEl.setAttribute('d', this.makePath(prev));
+                this._pathAreaEl.setAttribute('d', this.makePath(prev, {closed: true}));
                 needForceLayout = true;
             }
         }
@@ -350,8 +238,8 @@ export class LineChart {
     }
 
     _renderDoLayout({coords, pointUpdates, needForceLayout}) {
-        this._pathLineDefEl.setAttribute('d', this._makePath(coords));
-        this._pathAreaDefEl.setAttribute('d', this._makePath(coords, {closed: true}));
+        this._pathLineEl.setAttribute('d', this.makePath(coords));
+        this._pathAreaEl.setAttribute('d', this.makePath(coords, {closed: true}));
         for (let i = 0; i < pointUpdates.length; i++) {
             const [point, coord] = pointUpdates[i];
             if (point.circle) {
@@ -359,14 +247,5 @@ export class LineChart {
                 point.circle.setAttribute('cy', coord[1]);
             }
         }
-    }
-
-    _makePath(coords, {closed}={}) {
-        if (!coords.length) {
-            return '';
-        }
-        const start = closed ? `\nM 0 ${this._plotHeight}\nL` : '\nM ';
-        const end = closed ? `\nL ${this._plotWidth} ${this._plotHeight}\nZ` : '';
-        return start + coords.map(c => `${c[0]} ${c[1]}`).join('\nL ') + end;
     }
 }

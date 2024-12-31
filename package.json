@@ -4,5 +4,8 @@
   "description": "Simple, modern, web chart library",
   "main": "src/index.mjs",
   "author": "Sauce, LLC",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "8.57.1"
+  }
 }
