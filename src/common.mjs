@@ -137,6 +137,20 @@ export class Chart {
         return norm;
     }
 
+    toCoordinate({x, y}) {
+        return [
+            (x - (this._xMinCalculated)) * this._xScale,
+            this._plotHeight - ((y - (this._yMinCalculated)) * this._yScale)
+        ];
+    }
+
+    fromCoordinate([x, y]) {
+        return {
+            x: x / this._xScale + this._xMinCalculated,
+            y: (this._plotHeight - y) / this._yScale + this._yMinCalculated
+        };
+    }
+
     reset() {
         if (this.data) {
             this.data.length = 0;

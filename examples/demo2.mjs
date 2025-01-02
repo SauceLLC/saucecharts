@@ -6,7 +6,7 @@ function ts() {
 }
 
 let paused = false;
-let tests = [1, 2, 3, 4, 5, 6, 7];
+let tests = [1/*, 2, 3, 4, 5, 6, 7*/];
 const speed = 1000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
@@ -34,7 +34,7 @@ let steps = 0;
 
 if (tests.includes(1)) {
     const data = [];
-    const sl = new sc.LineChart({
+    const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
         onTooltip: o => `${o.x},${o.y.toFixed(6)}`,
@@ -53,7 +53,7 @@ if (tests.includes(1)) {
 
 if (tests.includes(2)) {
     const data = [];
-    const sl = new sc.LineChart({
+    const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i2"),
         title: 'ltr, 3 points per interval',
@@ -75,7 +75,7 @@ if (tests.includes(2)) {
 
 if (tests.includes(3)) {
     const data = [];
-    const sl = new sc.LineChart({
+    const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i3"),
         title: 'rtl',
@@ -93,7 +93,7 @@ if (tests.includes(3)) {
 
 if (tests.includes(4)) {
     const data = [];
-    const sl = new sc.LineChart({
+    const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i4"),
         title: 'rtl, 2 points per interval',
@@ -113,7 +113,7 @@ if (tests.includes(4)) {
 
 if (tests.includes(5)) {
     const data = new Array(maxSize);
-    const sl = new sc.LineChart({
+    const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i5"),
         title: 'random, same size',
@@ -130,7 +130,7 @@ if (tests.includes(5)) {
 
 if (tests.includes(6)) {
     const data = new Array(maxSize);
-    const sl = new sc.LineChart({
+    const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i6"),
         title: 'random, random size',
@@ -151,25 +151,25 @@ if (tests.includes(7)) {
     const data3 = [];
     const data4 = [];
 
-    const sl1 = new sc.LineChart({
+    const sl1 = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i7"),
         padding: [10, 0, 0, 0],
         title: 'Multiple graphs',
     });
-    const sl2 = new sc.LineChart({
+    const sl2 = new sc.BarChart({
         ...commonOptions,
         el: sl1.el,
         merge: true,
         padding: [sl1.padding[0] + 30, 0, 0, 0],
     });
-    const sl3 = new sc.LineChart({
+    const sl3 = new sc.BarChart({
         ...commonOptions,
         el: sl1.el,
         merge: true,
         padding: [sl2.padding[0] + 30, 0, 0, 0],
     });
-    const sl4 = new sc.LineChart({
+    const sl4 = new sc.BarChart({
         ...commonOptions,
         el: sl1.el,
         merge: true,

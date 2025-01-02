@@ -32,18 +32,28 @@ export class LineChart extends common.Chart {
     setElement(el, options) {
         super.setElement(el, options);
         const defs = el.querySelector('svg.sc-root > defs');
-        const pathId = `path-def-${this.id}`;
+        const pathClipId = `path-clip-${this.id}`;
+        const pathMarkerId = `path-marker-${this.id}`;
+        const maxMarkerSize = 20; // Abstract units based on 'markerUnits' i.e. stroke width
         defs.insertAdjacentHTML('beforeend', `
-            <clipPath data-sc-id="${this.id}" id="${pathId}-clip">
+            <clipPath data-sc-id="${this.id}" id="${pathClipId}">
                 <path class="sc-data sc-area"/>
             </clipPath>
+            <marker class="sc-line-marker" id="${pathMarkerId}" markerUnits="userSpaceOnUse"
+                    refX="${maxMarkerSize / 2}" refY="${maxMarkerSize / 2}"
+                    markerHeight="${maxMarkerSize}" markerWidth="${maxMarkerSize}">
+                <circle class="sc-dot" cx="${maxMarkerSize / 2}" cy="${maxMarkerSize / 2}"/> 
+            </marker>
         `);
         this._plotRegionEl.innerHTML = `
-            <foreignObject class="sc-css-background" clip-path="url(#${pathId}-clip)"
+            <foreignObject class="sc-css-background" clip-path="url(#${pathClipId})"
                            width="100%" height="100%">
                 <div class="sc-visual-data-area"></div>
             </foreignObject>
-            <path class="sc-data sc-line sc-visual-data-line"/>
+            <path class="sc-data sc-line sc-visual-data-line"
+                  marker-start="url(#${pathMarkerId})"
+                  marker-mid="url(#${pathMarkerId})"
+                  marker-end="url(#${pathMarkerId})"/>
             <g class="sc-points"></g>
         `;
         this._pointsEl = this._plotRegionEl.querySelector(`g.sc-points`);
@@ -52,6 +62,7 @@ export class LineChart extends common.Chart {
     }
 
     onPointeroverForTooltips(ev) {
+        debugger;
         const circle = ev.target.closest('circle.sc-data-point');
         if (!circle) {
             return;
@@ -120,10 +131,7 @@ export class LineChart extends common.Chart {
             this._xMaxCalculated += 0.5;
         }
         this._xScale = this._plotWidth / this._xRange;
-        const coords = normalized.map(o => [
-            (o.x - (this._xMinCalculated)) * this._xScale,
-            this._plotHeight - ((o.y - (this._yMinCalculated)) * this._yScale)
-        ]);
+        const coords = normalized.map(this.toCoordinate.bind(this));
         return {coords, normalized};
     }
 
@@ -147,11 +155,11 @@ export class LineChart extends common.Chart {
                         this.onTooltip.bind(this, nd, point) :
                         () => nd.y.toLocaleString();
                 if (!this.hidePoints) {
-                    const circle = common.createSVGElement('circle');
-                    circle.classList.add('sc-data-point');
-                    point.circle = circle;
-                    circle.pointWRef = new WeakRef(point);
-                    newPointEls.push(circle);
+                    //const circle = common.createSVGElement('circle');
+                    //circle.classList.add('sc-data-point');
+                    //point.circle = circle;
+                    //circle.pointWRef = new WeakRef(point);
+                    //newPointEls.push(circle);
                 }
                 this._pointsMap.set(ref, point);
                 // Look for some animation opportunities...

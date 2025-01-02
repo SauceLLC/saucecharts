@@ -8,8 +8,8 @@ export class BarChart extends common.Chart {
         this._yMax = options.yMax;
         this._xMin = options.xMin;
         this._xMax = options.xMax;
-        this.hidePoints = options.hidePoints;
-        this._pointsMap = new Map();
+        this._barsMap = new Map();
+        this.barSpacing = options.barSpacing != null ? options.barSpacing : 4;
     }
 
     get yMin() {
@@ -30,27 +30,11 @@ export class BarChart extends common.Chart {
 
     setElement(el, options) {
         super.setElement(el, options);
-        const defs = el.querySelector('svg.sc-root > defs');
-        const pathId = `path-def-${this.id}`;
-        // XXX try to use css background-iamge linage grad with rect and kill sc-data.sc-area if works
-        defs.insertAdjacentHTML('beforeend', `
-            <clipPath data-sc-id="${this.id}" id="${pathId}-clip">
-                <path class="sc-data sc-area"/>
-            </clipPath>
-        `);
-        this._plotRegionEl.innerHTML = `
-            <foreignObject class="sc-css-background" clip-path="url(#${pathId}-clip)"
-                           width="100%" height="100%">
-                <div class="sc-visual-data-area"></div>
-            </foreignObject>
-            <g class="sc-bars"></g>
-        `;
+        this._plotRegionEl.innerHTML = `<g class="sc-bars"></g>`;
         this._barsEl = this._plotRegionEl.querySelector(`g.sc-bars`);
-        this._pathAreaEl = defs.querySelector(`[data-sc-id="${this.id}"] path.sc-data.sc-area`);
     }
 
     onPointeroverForTooltips(ev) {
-        debugger;
         const circle = ev.target.closest('rect.sc-data-point');
         if (!circle) {
             return;
@@ -70,11 +54,8 @@ export class BarChart extends common.Chart {
     }
 
     _reset() {
-        this._pathAreaEl.removeAttribute('d');
         this._barsEl.innerHTML = '';
-        this._pointsMap.clear();
-        this._prevCoords = null;
-        this._prevNormalized = null;
+        this._barsMap.clear();
     }
 
     render() {
@@ -86,9 +67,8 @@ export class BarChart extends common.Chart {
             return;
         }
         const {coords, normalized} = this._renderData();
-        this._renderDoLayout({coords, normalized});
-        this._prevCoords = coords;
-        this._prevNormalized = normalized;
+        const manifest = this._renderBeforeLayout({coords, normalized});
+        this._renderDoLayout({coords, manifest});
     }
 
     _renderData() {
@@ -101,8 +81,7 @@ export class BarChart extends common.Chart {
         this._yRange = this._yMaxCalculated - this._yMinCalculated;
         if (!this._yRange) {
             this._yRange = 1;
-            this._yMinCalculated -= 0.5;
-            this._yMaxCalculated += 0.5;
+            this._yMinCalculated -= 1;
         }
         this._yScale = this._plotHeight / this._yRange;
         this._xMinCalculated = this._xMin != null ? this._xMin : normalized[0].x;
@@ -110,25 +89,76 @@ export class BarChart extends common.Chart {
         this._xRange = this._xMaxCalculated - this._xMinCalculated;
         if (!this._xRange) {
             this._xRange = 1;
-            this._xMinCalculated -= 0.5;
-            this._xMaxCalculated += 0.5;
+            this._xMaxCalculated += 1;
         }
         this._xScale = this._plotWidth / this._xRange;
-        const coords = normalized.map(o => [
-            (o.x - (this._xMinCalculated)) * this._xScale,
-            this._plotHeight - ((o.y - (this._yMinCalculated)) * this._yScale)
-        ]);
+        const coords = normalized.map(this.toCoordinate.bind(this));
         return {coords, normalized};
     }
 
-    _renderDoLayout({coords, normalized}) {
-        //this._pathAreaEl.setAttribute('d', this._makePath(coords, {closed: true}));
-        this._barsEl.innerHTML = '';
-        for (let i = 0; i < coords.length; i++) {
-            const [x, y] = coords[i];
-            this._barsEl.innerHTML +=
-                `<rect class="sc-bar sc-visual-data-bar" data-index="${i}" x="${x}"
-                       width="40" height="${y}"/>`;
+    _renderBeforeLayout({coords, normalized}) {
+        const remBars = new Set(this._barsMap.values());
+        const manifest = {
+            add: [],
+            remove: [],
+            update: [],
+        };
+        const xyMin = this.toCoordinate({x: this.xMin, y: this.yMin});
+        const xyMax = this.toCoordinate({x: this.xMax, y: this.yMax});
+        for (let index = 0; index < coords.length; index++) {
+            const coord = coords[index];
+            const ref = this.data[index];
+            let bar = this._barsMap.get(ref);
+            if (bar) {
+                remBars.delete(bar);
+            } else {
+                const nd = normalized[index];
+                bar = {ref};
+                bar.tooltipFormat = nd.tooltip ?
+                    nd.tooltip.bind(this, nd, bar) :
+                    this.onTooltip ?
+                        this.onTooltip.bind(this, nd, bar) :
+                        () => nd.y.toLocaleString();
+                bar.element = common.createSVGElement('foreignObject');
+                bar.element.classList.add('sc-bar', 'sc-visual-data-bar');
+                manifest.add.push(bar);
+                this._barsMap.set(ref, bar);
+            }
+            bar.element.dataset.index = index;
+            const attrs = {
+                width: coords.length === 1 ?
+                    xyMax[0] - xyMin[0] :
+                    index < coords.length - 1 ?
+                        coords[index + 1][0] - coord[0] :
+                        xyMax[0] - coord[0],
+                height: (xyMin[1] - xyMax[1]) - coord[1],
+                x: coord[0],
+                y: coord[1],
+            };
+            const sig = JSON.stringify(attrs);
+            if (bar.sig !== sig) {
+                manifest.update.push([bar, attrs]);
+                bar.sig = sig;
+            }
+        }
+        for (const x of remBars) {
+            manifest.remove.push(x);
+        }
+        return manifest;
+    }
+
+    _renderDoLayout({coords, manifest}) {
+        for (const x of manifest.remove) {
+            x.element.remove();
+        }
+        for (const x of manifest.add) {
+            this._barsEl.append(x.element);
+        }
+        for (const [{element}, attrs] of manifest.update) {
+            element.setAttribute('width', Math.max(0, attrs.width - this.barSpacing));
+            element.setAttribute('height', attrs.height);
+            element.setAttribute('x', attrs.x + this.barSpacing / 2);
+            element.setAttribute('y', attrs.y);
         }
     }
 }

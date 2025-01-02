@@ -1,3 +1,5 @@
+@import 'common.css';
+
 .saucechart {
     --transition-duration: 400ms;
     --transition-timing: linear;
@@ -50,6 +52,15 @@
             background-image: linear-gradient(to top,
                 color-mix(in srgb, var(--color), color-mix(in srgb, #777, transparent 50%) 80%),
                 color-mix(in srgb, var(--color), color-mix(in srgb, #111, transparent 20%) 20%));
+        }
+
+        .sc-line-marker {
+            circle.sc-dot {
+                r: 0.12em;
+                stroke: currentColor;
+                opacity: 0.8;
+                fill: color-mix(in srgb, currentColor, transparent 50%);
+            }
         }
 
         g.sc-points {
