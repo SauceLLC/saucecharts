@@ -7,6 +7,7 @@ function ts() {
 
 let paused = false;
 let tests = [1, 2, 3, 4, 5, 6, 7];
+tests = [1];
 const speed = 1000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
@@ -34,9 +35,16 @@ let steps = 0;
 
 if (tests.includes(1)) {
     const data = [];
-    const sl = new sc.BarChart({
+    const c1 = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
+        onTooltip: o => `${o.x},${o.y.toFixed(6)}`,
+        title: 'ltr',
+    });
+    const c2 = new sc.LineChart({
+        ...commonOptions,
+        el: document.querySelector(".graph.i1"),
+        merge: true,
         onTooltip: o => `${o.x},${o.y.toFixed(6)}`,
         title: 'ltr',
     });
@@ -46,7 +54,8 @@ if (tests.includes(1)) {
         while (data.length > maxSize) {
             data.shift();
         }
-        sl.setData(data);
+        c1.setData(data);
+        c2.setData(data);
     }, speed);
 }
 

@@ -103,8 +103,8 @@ export class BarChart extends common.Chart {
             remove: [],
             update: [],
         };
-        const xyMin = this.toCoordinate({x: this.xMin, y: this.yMin});
-        const xyMax = this.toCoordinate({x: this.xMax, y: this.yMax});
+        const [xMin, yMin] = this.toCoordinate({x: this.xMin, y: this.yMin});
+        const [xMax, yMax] = this.toCoordinate({x: this.xMax, y: this.yMax});
         for (let index = 0; index < coords.length; index++) {
             const coord = coords[index];
             const ref = this.data[index];
@@ -127,11 +127,11 @@ export class BarChart extends common.Chart {
             bar.element.dataset.index = index;
             const attrs = {
                 width: coords.length === 1 ?
-                    xyMax[0] - xyMin[0] :
+                    xMax - xMin :
                     index < coords.length - 1 ?
                         coords[index + 1][0] - coord[0] :
-                        xyMax[0] - coord[0],
-                height: (xyMin[1] - xyMax[1]) - coord[1],
+                        xMax - coord[0],
+                height: yMin - coord[1],
                 x: coord[0],
                 y: coord[1],
             };
