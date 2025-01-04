@@ -7,14 +7,15 @@ function ts() {
 
 let paused = false;
 let tests = [1, 2, 3, 4, 5, 6, 7];
+tests = [1, 7];
 const speed = 1000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
-    padding: [5, 10, 15, 20],
-    tooltipPadding: [5, 0, 15, 0],
+    padding: [5, 10, 15, 100],
+    NOtooltipPadding: [5, 0, 15, 0],
 };
 
 document.querySelector('#freq').addEventListener('input', ev => {

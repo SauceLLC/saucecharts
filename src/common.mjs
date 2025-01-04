@@ -111,11 +111,12 @@ export class Chart {
         }
         this._rootSvgEl = el.querySelector(`svg.sc-root`);
         this._tooltipGroup = this._rootSvgEl.querySelector(`.sc-tooltip`);
-        this._plotRegionEl = createSVGElement('svg');
+        this._plotRegionEl = createSVGElement('g');
         this._plotRegionEl.dataset.id = this.id;
         this._plotRegionEl.classList.add('sc-plot-region');
         if (this.color) {
             this._plotRegionEl.style.setProperty('--color', this.color);
+            this._computedColor = null;
         }
         this._rootSvgEl.querySelector('.sc-plot-regions').append(this._plotRegionEl);
         if (this.title) {
@@ -130,6 +131,13 @@ export class Chart {
         }
     }
 
+    getColor() {
+        if (!this._computedColor) {
+            this._computedColor = getComputedStyle(this._plotRegionEl).getPropertyValue('--color');
+        }
+        return this._computedColor;
+    }
+
     isParentChart() {
         return this.el?.parentSauceChart === this;
     }
@@ -139,10 +147,19 @@ export class Chart {
             throw new TypeError("Improper use of addChart");
         }
         this.childCharts.push(chart);
+        for (const x of this.childCharts) {
+            x._computedColor = null;
+        }
+        this._computedColor = null;
     }
 
-    onTooltip(entry, index) {
-        return `<div><b>${index}</b>: ${entry.y.toFixed(2)}</div>`;
+    onTooltip(entry, index, chart) {
+        return `
+            <div class="sc-tooltip-entry" data-chart-id="${this.id}"
+                 style="--color:${chart.getColor()};">
+                <key>${entry.x.toFixed(2)}:</key><value>${entry.y.toFixed(2)}</value>
+            </div>
+        `;
     }
 
     onPointerEnter(ev) {
@@ -152,7 +169,7 @@ export class Chart {
         this._tooltipGroup.classList.add('active');
         const charts = [this, ...this.childCharts];
         const refs = charts.map(x => {
-            const plotRect = x._plotRegionEl.getBoundingClientRect();
+            const plotRect = x.el.getBoundingClientRect();
             return plotRect.x + scrollX;
         });
         let lastMoveEvent;
@@ -171,9 +188,9 @@ export class Chart {
                 const entry = chart._renderData[index];
                 let html;
                 if (entry.tooltip) {
-                    html = entry.tooltip(entry, index);
+                    html = entry.tooltip(entry, index, chart);
                 } else if (chart.onTooltip) {
-                    html = chart.onTooltip(entry, index);
+                    html = chart.onTooltip(entry, index, chart);
                 }
                 tooltips.push({chart, index, entry, html});
             }
@@ -196,19 +213,17 @@ export class Chart {
     }
 
     _drawTooltip(tooltips) {
-        const line = this._tooltipGroup.querySelector('line');
-        const circle = this._tooltipGroup.querySelector('circle');
         const fObject = this._tooltipGroup.querySelector('.sc-tooltip-fobject');
         const box = fObject.querySelector('.sc-tooltip-box');
         const centerX = tooltips.reduce((agg, o) => agg + o.chart.toX(o.entry.x), 0) / tooltips.length;
         for (const x of this._tooltipGroup.querySelectorAll('line,circle')) {
-            x.remove();
+            x.remove(); // XXX optimize this more
         }
-        //const [nearestX, nearestY] = this.toCoordinates(entry);
         const top = this.tooltipPadding[0] * this.devicePixelRatio;
         const bottom = this.tooltipPadding[2] * this.devicePixelRatio;
         const left = this.tooltipPadding[3] * this.devicePixelRatio;
         const vertLine = createSVGElement('line');
+        vertLine.classList.add('vertical');
         vertLine.setAttribute('x1', centerX + left);
         vertLine.setAttribute('x2', centerX + left);
         vertLine.setAttribute('y1', this._boxHeight - bottom);
@@ -220,8 +235,9 @@ export class Chart {
             dot.setAttribute('cx', xy[0]);
             dot.setAttribute('cy', xy[1]);
             this._tooltipGroup.prepend(dot);
-            if (tooltips.length > 1) {
+            if (Math.abs(xy[0] - (centerX + left)) > 1) {
                 const horizLine = createSVGElement('line');
+                horizLine.classList.add('horizontal');
                 horizLine.setAttribute('x1', centerX + left);
                 horizLine.setAttribute('x2', xy[0]);
                 horizLine.setAttribute('y1', xy[1]);

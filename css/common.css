@@ -31,42 +31,79 @@
 
         .sc-tooltip {
             &:not(.active) {
-                /*display: none;*/
+                display: none;
             }
 
             line {
-                opacity: 0.5;
+                opacity: 0.7;
                 stroke: currentColor;
-                stroke-width: 0.15em;
+                stroke-width: 0.10em;
                 stroke-dasharray: 0.25em;
                 stroke-linecap: round;
+                filter: drop-shadow(0 0 2px #8888);
+
+                &.horizontal {
+                    stroke-width: 0.08em;
+                    stroke-dasharray: 0.12em;
+                }
             }
 
             circle {
-                r: 0.32em;
+                r: 0.3em;
                 stroke: currentColor;
+                stroke-width: 0.05em;
                 opacity: 0.8;
-                fill: color-mix(in srgb, currentColor, transparent 50%);
+                fill: color-mix(in srgb, currentColor, transparent 70%);
             }
 
             .sc-tooltip-fobject {
                 overflow: visible !important;
 
                 div.sc-tooltip-box {
-                    margin: 0.2em 0.5em;
+                    font-size: 0.9em;
+                    margin: 0.2em 0.7em;
                     position: absolute !important;
                     border-radius: 0.3em;
-                    background: #eeee;
-                    padding: 0.3em 0.4em;
+                    background: #faf6efee;
+                    padding: 0.2em 0.3em;
                     display: flex;
                     flex-direction: column;
                     border: 1px solid #3333;
-                    box-shadow: 1.5px 1.5px 5px 0 #0007;
-                    width: max-content; 
-                    max-width: 20ch;
+                    box-shadow: 1.5px 1.5px 6px 0 #0005;
+                    width: max-content;
+                    max-width: 22ch;
+                    overflow: hidden;
 
                     &.right {
                         right: 0;
+                    }
+
+                    .sc-tooltip-entry {
+                        --color-dot-size: 0.6em;
+                        padding: 0.15em 0.2em;
+                        display: flex;
+                        align-items: center;
+                        flex-wrap: wrap;
+
+                        &::before {
+                            content: '';
+                            border-radius: var(--color-dot-size);
+                            width: var(--color-dot-size);
+                            height: var(--color-dot-size);
+                            display: block;
+                            margin-right: 0.3em;
+                            background-color: var(--color);
+                            border: 0.1em solid currentColor;
+                            flex: 0 0 auto;
+                        }
+
+                        key {
+                            font-weight: 500;
+                            flex: 1 0 auto;
+                        }
+
+                        value {
+                        }
                     }
                 }
             }
