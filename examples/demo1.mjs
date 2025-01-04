@@ -13,7 +13,8 @@ let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
-    padding: [5, 5, 5, 5],
+    padding: [5, 10, 15, 20],
+    tooltipPadding: [5, 0, 15, 0],
 };
 
 document.querySelector('#freq').addEventListener('input', ev => {
@@ -155,6 +156,7 @@ if (tests.includes(7)) {
         ...commonOptions,
         el: document.querySelector(".graph.i7"),
         padding: [10, 0, 0, 0],
+        tooltipPadding: [0, 0, 0, 0],
         title: 'Multiple graphs',
     });
     const sl2 = new sc.LineChart({

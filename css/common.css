@@ -19,6 +19,7 @@
 
     > svg.sc-root {
         stroke-width: 0.1em;
+        font-size: calc(1em * var(--dpr, 1));
 
         &.disable-animation {
             --transition-duration: 0 !important;
@@ -26,6 +27,49 @@
 
         svg.sc-plot-region {
             overflow: visible; /* positional only.. */
+        }
+
+        .sc-tooltip {
+            &:not(.active) {
+                /*display: none;*/
+            }
+
+            line {
+                opacity: 0.5;
+                stroke: currentColor;
+                stroke-width: 0.15em;
+                stroke-dasharray: 0.25em;
+                stroke-linecap: round;
+            }
+
+            circle {
+                r: 0.32em;
+                stroke: currentColor;
+                opacity: 0.8;
+                fill: color-mix(in srgb, currentColor, transparent 50%);
+            }
+
+            .sc-tooltip-fobject {
+                overflow: visible !important;
+
+                div.sc-tooltip-box {
+                    margin: 0.2em 0.5em;
+                    position: absolute !important;
+                    border-radius: 0.3em;
+                    background: #eeee;
+                    padding: 0.3em 0.4em;
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid #3333;
+                    box-shadow: 1.5px 1.5px 5px 0 #0007;
+                    width: max-content; 
+                    max-width: 20ch;
+
+                    &.right {
+                        right: 0;
+                    }
+                }
+            }
         }
     }
 }

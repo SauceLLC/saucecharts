@@ -4,48 +4,14 @@ import * as common from './common.mjs';
 export class BarChart extends common.Chart {
 
     init(options={}) {
-        this._yMin = options.yMin;
-        this._yMax = options.yMax;
-        this._xMin = options.xMin;
-        this._xMax = options.xMax;
         this._barsMap = new Map();
         this.barSpacing = options.barSpacing != null ? options.barSpacing : 4;
-    }
-
-    get yMin() {
-        return this._yMin != null ? this._yMin : this._yMinCalculated;
-    }
-
-    get yMax() {
-        return this._yMax != null ? this._yMax : this._yMaxCalculated;
-    }
-
-    get xMin() {
-        return this._xMin != null ? this._xMin : this._xMinCalculated;
-    }
-
-    get xMax() {
-        return this._xMax != null ? this._xMax : this._xMaxCalculated;
     }
 
     setElement(el, options) {
         super.setElement(el, options);
         this._plotRegionEl.innerHTML = `<g class="sc-bars"></g>`;
         this._barsEl = this._plotRegionEl.querySelector(`g.sc-bars`);
-    }
-
-    onPointeroverForTooltips(ev) {
-        const circle = ev.target.closest('rect.sc-data-point');
-        if (!circle) {
-            return;
-        }
-        const point = circle.pointWRef.deref();
-        let title = circle.querySelector('title');
-        if (!title) {
-            title = common.createSVGElement('title');
-            circle.append(title);
-        }
-        title.textContent = point.tooltipFormat();
     }
 
     reset() {
@@ -66,45 +32,33 @@ export class BarChart extends common.Chart {
             this._reset();
             return;
         }
-        const {coords, normalized} = this._renderData();
-        const manifest = this._renderBeforeLayout({coords, normalized});
-        this._renderDoLayout({coords, manifest});
+        const {data} = this.beforeRender();
+        const manifest = this._renderBeforeLayout({data});
+        this._renderDoLayout({manifest});
     }
 
-    _renderData() {
-        const normalized = this.normalizeData(this.data);
-        let yND;
-        this._yMinCalculated = this._yMin != null ? this._yMin :
-            Math.min(...(yND = normalized.map(o => o.y)));
-        this._yMaxCalculated = this._yMax != null ? this._yMax :
-            Math.max(...(yND || normalized.map(o => o.y)));
-        this._yRange = this._yMaxCalculated - this._yMinCalculated;
-        if (!this._yRange) {
-            this._yRange = 1;
-            this._yMinCalculated -= 1;
+    beforeRender() {
+        const r = super.beforeRender();
+        if (this.yMax === this.yMin) {
+            this.yMin -= 1;
         }
-        this._yScale = this._plotHeight / this._yRange;
-        this._xMinCalculated = this._xMin != null ? this._xMin : normalized[0].x;
-        this._xMaxCalculated = this._xMax != null ? this._xMax : normalized[normalized.length - 1].x;
-        this._xRange = this._xMaxCalculated - this._xMinCalculated;
-        if (!this._xRange) {
-            this._xRange = 1;
-            this._xMaxCalculated += 1;
+        if (this.xMax === this.xMin) {
+            this.xMax += 1;
         }
-        this._xScale = this._plotWidth / this._xRange;
-        const coords = normalized.map(this.toCoordinate.bind(this));
-        return {coords, normalized};
+        return r;
     }
 
-    _renderBeforeLayout({coords, normalized}) {
+    _renderBeforeLayout({data}) {
+        const coords = data.map(this.toCoordinates.bind(this));
         const remBars = new Set(this._barsMap.values());
         const manifest = {
             add: [],
             remove: [],
             update: [],
         };
-        const [xMin, yMin] = this.toCoordinate({x: this.xMin, y: this.yMin});
-        const [xMax, yMax] = this.toCoordinate({x: this.xMax, y: this.yMax});
+        const xMinCoord = this.toX(this.xMin);
+        const yMinCoord = this.toY(this.yMin);
+        const xMaxCoord = this.toX(this.xMax);
         for (let index = 0; index < coords.length; index++) {
             const coord = coords[index];
             const ref = this.data[index];
@@ -112,7 +66,7 @@ export class BarChart extends common.Chart {
             if (bar) {
                 remBars.delete(bar);
             } else {
-                const nd = normalized[index];
+                const nd = data[index];
                 bar = {ref};
                 bar.tooltipFormat = nd.tooltip ?
                     nd.tooltip.bind(this, nd, bar) :
@@ -127,11 +81,11 @@ export class BarChart extends common.Chart {
             bar.element.dataset.index = index;
             const attrs = {
                 width: coords.length === 1 ?
-                    xMax - xMin :
+                    xMaxCoord - xMinCoord :
                     index < coords.length - 1 ?
                         coords[index + 1][0] - coord[0] :
-                        xMax - coord[0],
-                height: yMin - coord[1],
+                        xMaxCoord - coord[0],
+                height: yMinCoord - coord[1],
                 x: coord[0],
                 y: coord[1],
             };
@@ -147,7 +101,7 @@ export class BarChart extends common.Chart {
         return manifest;
     }
 
-    _renderDoLayout({coords, manifest}) {
+    _renderDoLayout({manifest}) {
         for (const x of manifest.remove) {
             x.element.remove();
         }

@@ -11,11 +11,19 @@ export class Chart {
     constructor(options={}) {
         this.init(options);
         this.id = globalIdCounter++;
+        this.yMin = this._yMin = options.yMin;
+        this.yMax = this._yMax = options.yMax;
+        this.xMin = this._xMin = options.xMin;
+        this.xMax = this._xMax = options.xMax;
+        this.childCharts = [];
         this.title = options.title;
         this.color = options.color;
         this.padding = options.padding || [0, 0, 0, 0];
-        this.onTooltip = options.onTooltip;
-        this._onPointeroverForTooltipsBound = this.onPointeroverForTooltips.bind(this);
+        this.tooltipPadding = options.tooltipPadding || [0, 0, 0, 0];
+        if (options.onTooltip) {
+            this.onTooltip = options.onTooltip.bind(this);
+        }
+        this._onPointerEnterBound = this.onPointerEnter.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
         if (options.el) {
             this.setElement(options.el, {merge: options.merge});
@@ -26,9 +34,6 @@ export class Chart {
     }
 
     init(options) {
-    }
-
-    onPointeroverForTooltips() {
     }
 
     onResize() {
@@ -45,6 +50,7 @@ export class Chart {
     }
 
     _adjustSize() {
+        this.devicePixelRatio = devicePixelRatio || 1;
         const {width, height} = this._rootSvgEl.getBoundingClientRect();
         if (!width || !height) {
             this._boxWidth = null;
@@ -53,26 +59,28 @@ export class Chart {
             this._plotHeight = null;
             return;
         }
-        const pixelScale = 1; //devicePixelRatio || 1;
         const ar = width / height;
         if (ar > 1) {
-            this._boxWidth = Math.round(width * pixelScale);
+            this._boxWidth = Math.round(width * this.devicePixelRatio);
             this._boxHeight = Math.round(this._boxWidth / ar);
         } else {
-            this._boxHeight = Math.round(height * pixelScale);
+            this._boxHeight = Math.round(height * this.devicePixelRatio);
             this._boxWidth = Math.round(this._boxHeight * ar);
         }
-        const hPad = (this.padding[1] + this.padding[3]) * pixelScale;
-        const vPad = (this.padding[0] + this.padding[2]) * pixelScale;
+        this._plotInset = this.padding.map(x => x * this.devicePixelRatio);
+        const hPad = this._plotInset[1] + this._plotInset[3];
+        const vPad = this._plotInset[0] + this._plotInset[2];
         this._plotWidth = Math.max(0, this._boxWidth - hPad);
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
-        const xOfft = this.padding[3] * pixelScale;
-        const yOfft = this.padding[0] * pixelScale;
-        this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
-        this._plotRegionEl.setAttribute('x', xOfft);
-        this._plotRegionEl.setAttribute('y', yOfft);
-        this._plotRegionEl.setAttribute('width', this._plotWidth);
-        this._plotRegionEl.setAttribute('height', this._plotHeight);
+        //const yOfft = this._plotInset[0];
+        if (this.isParentChart()) {
+            this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
+            this._rootSvgEl.style.setProperty('--dpr', this.devicePixelRatio);
+        }
+        //this._plotRegionEl.setAttribute('x', xOfft);
+        //this._plotRegionEl.setAttribute('y', yOfft);
+        //this._plotRegionEl.setAttribute('width', this._plotWidth);
+        //this._plotRegionEl.setAttribute('height', this._plotHeight);
     }
 
     setElement(el, {merge}={}) {
@@ -80,7 +88,7 @@ export class Chart {
         this.el = el;
         if (old) {
             this._resizeObserver.disconnect();
-            old.removeEventListener('pointerover', this._onPointeroverForTooltipsBound);
+            old.removeEventListener('pointerenter', this._onPointerEnterBound);
         }
         if (!merge) {
             el.innerHTML =
@@ -88,30 +96,167 @@ export class Chart {
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
                          class="sc-root" style="position:absolute; top:0; left:0; width:100%; height:100%;">
                         <defs></defs>
+                        <g class="sc-plot-regions"></g>
+                        <g class="sc-tooltip">
+                            <foreignObject class="sc-tooltip-fobject">
+                                <div class="sc-tooltip-box"></div>
+                            </foreignObject>
+                        </g>
                     </svg>
                 </div>`;
+            el.parentSauceChart = this;
+            this.childCharts.length = 0;
+        } else {
+            el.parentSauceChart.addChart(this);
         }
-        const defs = el.querySelector('svg.sc-root > defs');
-        if (!defs) {
-            throw new Error('Existing merge target element is not compatible');
+        this._rootSvgEl = el.querySelector(`svg.sc-root`);
+        this._tooltipGroup = this._rootSvgEl.querySelector(`.sc-tooltip`);
+        this._plotRegionEl = createSVGElement('svg');
+        this._plotRegionEl.dataset.id = this.id;
+        this._plotRegionEl.classList.add('sc-plot-region');
+        if (this.color) {
+            this._plotRegionEl.style.setProperty('--color', this.color);
         }
-        el.querySelector('svg.sc-root').insertAdjacentHTML(
-            'beforeend',
-            `<svg data-sc-id="${this.id}" class="sc-plot-region"></svg>`);
+        this._rootSvgEl.querySelector('.sc-plot-regions').append(this._plotRegionEl);
         if (this.title) {
             el.querySelector(':scope > .sc-wrap').insertAdjacentHTML(
                 'beforeend',
                 `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
         }
-        const qs = `[data-sc-id="${this.id}"]`;
-        this._rootSvgEl = el.querySelector(`svg.sc-root`);
-        this._plotRegionEl = el.querySelector(`${qs}.sc-plot-region`);
-        if (this.color) {
-            this._plotRegionEl.style.setProperty('--color', this.color);
-        }
         this._adjustSize();
-        el.addEventListener('pointerover', this._onPointeroverForTooltipsBound);
         this._resizeObserver.observe(el.querySelector('.resize-observer'));
+        if (this.isParentChart()) {
+            el.addEventListener('pointerover', this._onPointerEnterBound);
+        }
+    }
+
+    isParentChart() {
+        return this.el?.parentSauceChart === this;
+    }
+
+    addChart(chart) {
+        if (!this.isParentChart()) {
+            throw new TypeError("Improper use of addChart");
+        }
+        this.childCharts.push(chart);
+    }
+
+    onTooltip(entry, index) {
+        return `<div><b>${index}</b>: ${entry.y.toFixed(2)}</div>`;
+    }
+
+    onPointerEnter(ev) {
+        if (this._activePointerMove) {
+            return;
+        }
+        this._tooltipGroup.classList.add('active');
+        const charts = [this, ...this.childCharts];
+        const refs = charts.map(x => {
+            const plotRect = x._plotRegionEl.getBoundingClientRect();
+            return plotRect.x + scrollX;
+        });
+        let lastMoveEvent;
+        this._activePointerMove = ev => {
+            ev = ev || lastMoveEvent;
+            if (!ev) {
+                return;
+            }
+            const tooltips = [];
+            for (const [i, chart] of charts.entries()) {
+                const xSearch = (scrollX + ev.x - refs[i]) * this.devicePixelRatio;
+                const index = chart.findNearestIndexFromXCoord(xSearch);
+                if (index === undefined) {
+                    continue;
+                }
+                const entry = chart._renderData[index];
+                let html;
+                if (entry.tooltip) {
+                    html = entry.tooltip(entry, index);
+                } else if (chart.onTooltip) {
+                    html = chart.onTooltip(entry, index);
+                }
+                tooltips.push({chart, index, entry, html});
+            }
+            if (tooltips.length) {
+                this._drawTooltip(tooltips);
+            }
+            lastMoveEvent = ev;
+        };
+        const el = this.el;
+        const onDone = () => {
+            el.removeEventListener('pointercancel', onDone);
+            el.removeEventListener('pointerleave', onDone);
+            el.removeEventListener('pointermove', this._activePointerMove);
+            this._activePointerMove = null;
+            this._tooltipGroup.classList.remove('active');
+        };
+        el.addEventListener('pointermove', this._activePointerMove);
+        el.addEventListener('pointercancel', onDone);
+        el.addEventListener('pointerleave', onDone);
+    }
+
+    _drawTooltip(tooltips) {
+        const line = this._tooltipGroup.querySelector('line');
+        const circle = this._tooltipGroup.querySelector('circle');
+        const fObject = this._tooltipGroup.querySelector('.sc-tooltip-fobject');
+        const box = fObject.querySelector('.sc-tooltip-box');
+        const centerX = tooltips.reduce((agg, o) => agg + o.chart.toX(o.entry.x), 0) / tooltips.length;
+        for (const x of this._tooltipGroup.querySelectorAll('line,circle')) {
+            x.remove();
+        }
+        //const [nearestX, nearestY] = this.toCoordinates(entry);
+        const top = this.tooltipPadding[0] * this.devicePixelRatio;
+        const bottom = this.tooltipPadding[2] * this.devicePixelRatio;
+        const left = this.tooltipPadding[3] * this.devicePixelRatio;
+        const vertLine = createSVGElement('line');
+        vertLine.setAttribute('x1', centerX + left);
+        vertLine.setAttribute('x2', centerX + left);
+        vertLine.setAttribute('y1', this._boxHeight - bottom);
+        vertLine.setAttribute('y2', top);
+        this._tooltipGroup.append(vertLine);
+        for (const {chart, entry} of tooltips) {
+            const xy = chart.toCoordinates(entry);
+            const dot = createSVGElement('circle');
+            dot.setAttribute('cx', xy[0]);
+            dot.setAttribute('cy', xy[1]);
+            this._tooltipGroup.prepend(dot);
+            if (tooltips.length > 1) {
+                const horizLine = createSVGElement('line');
+                horizLine.setAttribute('x1', centerX + left);
+                horizLine.setAttribute('x2', xy[0]);
+                horizLine.setAttribute('y1', xy[1]);
+                horizLine.setAttribute('y2', xy[1]);
+                this._tooltipGroup.prepend(horizLine);
+            }
+        }
+        fObject.setAttribute('x', centerX);
+        fObject.setAttribute('y', top);
+        box.classList.toggle('right', centerX >= this._boxWidth / 2);
+        box.innerHTML = tooltips.map(x => x.html).join('');
+    }
+
+    findNearestIndexFromXCoord(searchX) {
+        if (!this._renderData || !this._renderData.length) {
+            return;
+        }
+        const len = this._renderData.length;
+        let left = 0;
+        let right = len - 1;
+        for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
+            const x = this.toX(this._renderData[i].x);
+            if (x > searchX) {
+                right = i;
+            } else if (x < searchX) {
+                left = i;
+            } else {
+                return i;
+            }
+            if (right - left <= 1) {
+                const lDist = searchX - this.toX(this._renderData[left].x);
+                const rDist = this.toX(this._renderData[right].x) - searchX;
+                return lDist < rDist ? left : right;
+            }
+        }
     }
 
     setData(data) {
@@ -137,32 +282,111 @@ export class Chart {
         return norm;
     }
 
-    toCoordinate({x, y}) {
-        return [
-            (x - (this._xMinCalculated)) * this._xScale,
-            this._plotHeight - ((y - (this._yMinCalculated)) * this._yScale)
-        ];
+    render() {
+        if (!this.el || !this._boxWidth || !this._boxHeight) {
+            return;
+        }
+        if (!this.data || !this.data.length) {
+            this.doReset();
+            return;
+        }
+        this.doRender(this.beforeRender());
+        this.afterRender();
     }
 
-    fromCoordinate([x, y]) {
+    beforeRender() {
+        const data = this.normalizeData(this.data);
+        if (this._yMin == null || this._yMax == null) {
+            let min = Infinity;
+            let max = -Infinity;
+            for (let i = 0; i < data.length; i++) {
+                const v = data[i].y;
+                if (v < min) {
+                    min = v;
+                }
+                if (v > max) {
+                    max = v;
+                }
+            }
+            if (this._yMin == null) {
+                this.yMin = min;
+            }
+            if (this._yMax == null) {
+                this.yMax = max;
+            }
+        }
+        if (this._xMin == null) {
+            this.xMin = data[0].x;
+        }
+        if (this._xMax == null) {
+            this.xMax = data[data.length - 1].x;
+        }
+        this._renderData = data;
+        return {data};
+    }
+
+    doRender(options) {
+        // subclass
+    }
+
+    afterRender() {
+        if (this._activePointerMove) {
+            this._activePointerMove();
+        }
+    }
+
+    toCoordinates(o) {
+        return [this.toX(o.x), this.toY(o.y)];
+    }
+
+    toX(value) {
+        return (value - (this.xMin)) * (this._plotWidth / (this.xMax - this.xMin)) + this._plotInset[3];
+    }
+
+    toY(value) {
+        return this._plotHeight + this._plotInset[0] -
+            ((value - (this.yMin)) * (this._plotHeight / (this.yMax - this.yMin)));
+    }
+
+    fromCoordinates(xy) {
         return {
-            x: x / this._xScale + this._xMinCalculated,
-            y: (this._plotHeight - y) / this._yScale + this._yMinCalculated
+            x: this.fromX(xy[0]),
+            y: this.fromY(xy[1]),
         };
+    }
+
+    fromX(value) {
+        return (value - this._plotIndex[3]) / (this._plotWidth / (this.xMax - this.xMin)) + this.xMin;
+    }
+
+    NOfromY(value) {
+        return (this._plotHeight - value) / (this._plotHeight / (this.yMax - this.yMin)) + this.yMin;
+    }
+
+    fromY(value) {
+        debugger;
+        return this._plotHeight - ((value - this.yMin) * (this._plotHeight / (this.yMix - this.yMin)));
     }
 
     reset() {
         if (this.data) {
             this.data.length = 0;
         }
+        this.doReset();
+    }
+
+    doReset() {
+        // subclass
     }
 
     makePath(coords, {closed}={}) {
         if (!coords.length) {
             return '';
         }
-        const start = closed ? `\nM 0 ${this._plotHeight}\nL` : '\nM ';
-        const end = closed ? `\nL ${this._plotWidth} ${this._plotHeight}\nZ` : '';
+        const start = closed ? `\nM 0 ${this._plotHeight + this._plotInset[0]}\nL` : '\nM ';
+        const end = closed ?
+            `\nL ${this._plotWidth + this._plotInset[3]} ${this._plotHeight + this._plotInset[0]}\nZ` :
+            '';
         return start + coords.map(c => `${c[0]} ${c[1]}`).join('\nL ') + end;
     }
 }

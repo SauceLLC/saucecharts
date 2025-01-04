@@ -1,24 +1,6 @@
 @import 'common.css';
 
 .saucechart {
-    --transition-duration: 400ms;
-    --transition-timing: linear;
-    width: 100%;
-    height: 100%;
-    touch-action: none;
-
-    .sc-title {
-        font-size: 0.8em;
-        font-weight: 600;
-        opacity: 0.7;
-        font-variant: all-small-caps;
-        font-family: sans-serif;
-        pointer-events: none;
-        padding: 0.2em;
-        line-height: 1;
-        display: inline-flex;
-    }
-
     > svg.sc-root {
         stroke-width: 0.1em;
 
@@ -60,23 +42,6 @@
                 stroke: currentColor;
                 opacity: 0.8;
                 fill: color-mix(in srgb, currentColor, transparent 50%);
-            }
-        }
-
-        g.sc-points {
-            circle {
-                r: 0.12em;
-                stroke: currentColor;
-                opacity: 0.8;
-                fill: color-mix(in srgb, currentColor, transparent 50%);
-                transition:
-                    cx var(--transition-duration) var(--transition-timing),
-                    cy var(--transition-duration) var(--transition-timing),
-                    r 140ms ease;
-
-                &:hover {
-                    r: 0.3em;
-                }
             }
         }
     }
