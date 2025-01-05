@@ -13,7 +13,7 @@ let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
-    padding: [5, 5, 5, 5],
+    padding: [5, 10, 15, 20],
 };
 
 document.querySelector('#freq').addEventListener('input', ev => {
@@ -37,7 +37,6 @@ if (tests.includes(1)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
-        onTooltip: o => `${o.x},${o.y.toFixed(6)}`,
         title: 'ltr',
     });
     setInterval(() => {

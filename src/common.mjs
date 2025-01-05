@@ -1,4 +1,6 @@
 
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 let globalIdCounter = 0;
 
 
@@ -97,12 +99,13 @@ export class Chart {
                          class="sc-root" style="position:absolute; top:0; left:0; width:100%; height:100%;">
                         <defs></defs>
                         <g class="sc-plot-regions"></g>
-                        <g class="sc-tooltip">
-                            <foreignObject class="sc-tooltip-fobject">
-                                <div class="sc-tooltip-box"></div>
-                            </foreignObject>
-                        </g>
+                        <g class="sc-tooltip"></g>
                     </svg>
+                    <div class="sc-tooltip-positioner">
+                        <div class="sc-tooltip-box-wrap">
+                            <div class="sc-tooltip-box"></div>
+                        </div>
+                    </div>
                 </div>`;
             el.parentSauceChart = this;
             this.childCharts.length = 0;
@@ -167,20 +170,22 @@ export class Chart {
             return;
         }
         this._tooltipGroup.classList.add('active');
+        const positionerEl = this.el.querySelector('.sc-tooltip-positioner');
+        positionerEl.classList.add('active');
         const charts = [this, ...this.childCharts];
         const refs = charts.map(x => {
             const plotRect = x.el.getBoundingClientRect();
-            return plotRect.x + scrollX;
+            return [plotRect.x + scrollX, plotRect.y + scrollY];
         });
         let lastMoveEvent;
         this._activePointerMove = ev => {
-            ev = ev || lastMoveEvent;
+            ev = ev && ev.type === 'pointermove' ? ev : lastMoveEvent;
             if (!ev) {
                 return;
             }
             const tooltips = [];
             for (const [i, chart] of charts.entries()) {
-                const xSearch = (scrollX + ev.x - refs[i]) * this.devicePixelRatio;
+                const xSearch = (ev.x - refs[i][0] + scrollX) * this.devicePixelRatio;
                 const index = chart.findNearestIndexFromXCoord(xSearch);
                 if (index === undefined) {
                     continue;
@@ -195,7 +200,7 @@ export class Chart {
                 tooltips.push({chart, index, entry, html});
             }
             if (tooltips.length) {
-                this._drawTooltip(tooltips);
+                this._drawTooltip(tooltips, positionerEl, refs[0]);
             }
             lastMoveEvent = ev;
         };
@@ -204,17 +209,19 @@ export class Chart {
             el.removeEventListener('pointercancel', onDone);
             el.removeEventListener('pointerleave', onDone);
             el.removeEventListener('pointermove', this._activePointerMove);
+            removeEventListener('scroll', this._activePointerMove, {passive: true});
             this._activePointerMove = null;
             this._tooltipGroup.classList.remove('active');
+            positionerEl.classList.remove('active');
         };
+        addEventListener('scroll', this._activePointerMove, {passive: true});
         el.addEventListener('pointermove', this._activePointerMove);
         el.addEventListener('pointercancel', onDone);
         el.addEventListener('pointerleave', onDone);
     }
 
-    _drawTooltip(tooltips) {
-        const fObject = this._tooltipGroup.querySelector('.sc-tooltip-fobject');
-        const box = fObject.querySelector('.sc-tooltip-box');
+    _drawTooltip(tooltips, positionerEl, offset) {
+        const box = positionerEl.querySelector('.sc-tooltip-box');
         const centerX = tooltips.reduce((agg, o) => agg + o.chart.toX(o.entry.x), 0) / tooltips.length;
         for (const x of this._tooltipGroup.querySelectorAll('line,circle')) {
             x.remove(); // XXX optimize this more
@@ -245,8 +252,8 @@ export class Chart {
                 this._tooltipGroup.prepend(horizLine);
             }
         }
-        fObject.setAttribute('x', centerX);
-        fObject.setAttribute('y', top);
+        positionerEl.style.setProperty('left', `${centerX / this.devicePixelRatio + offset[0] - scrollX}px`);
+        positionerEl.style.setProperty('top', `${top / this.devicePixelRatio + offset[1] - scrollY}px`);
         box.classList.toggle('right', centerX >= this._boxWidth / 2);
         box.innerHTML = tooltips.map(x => x.html).join('');
     }
@@ -356,12 +363,14 @@ export class Chart {
     }
 
     toX(value) {
-        return (value - (this.xMin)) * (this._plotWidth / (this.xMax - this.xMin)) + this._plotInset[3];
+        return (value - this.xMin) *
+            (this._plotWidth / (this.xMax - this.xMin)) +
+            this._plotInset[3];
     }
 
     toY(value) {
         return this._plotHeight + this._plotInset[0] -
-            ((value - (this.yMin)) * (this._plotHeight / (this.yMax - this.yMin)));
+            ((value - this.yMin) * (this._plotHeight / (this.yMax - this.yMin)));
     }
 
     fromCoordinates(xy) {
@@ -372,16 +381,15 @@ export class Chart {
     }
 
     fromX(value) {
-        return (value - this._plotIndex[3]) / (this._plotWidth / (this.xMax - this.xMin)) + this.xMin;
-    }
-
-    NOfromY(value) {
-        return (this._plotHeight - value) / (this._plotHeight / (this.yMax - this.yMin)) + this.yMin;
+        return (value - this._plotInset[3]) /
+            (this._plotWidth / (this.xMax - this.xMin)) +
+            this.xMin;
     }
 
     fromY(value) {
-        debugger;
-        return this._plotHeight - ((value - this.yMin) * (this._plotHeight / (this.yMix - this.yMin)));
+        return (this._plotHeight - value + this._plotInset[0]) /
+            (this._plotHeight / (this.yMax - this.yMin)) +
+            this.yMin;
     }
 
     reset() {

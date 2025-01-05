@@ -53,19 +53,6 @@ export class LineChart extends common.Chart {
         bgObj.setAttribute('y', this._plotInset[0]);
         bgObj.setAttribute('height', this._boxHeight - this._plotInset[0] - this._plotInset[2]);
         bgObj.setAttribute('width', this._boxWidth - this._plotInset[1] - this._plotInset[3]);
-        /*this._plotInset = this.padding.map(x => x * this.devicePixelRatio);
-        const hPad = this._plotInset[1] + this._plotInset[3];
-        const vPad = this._plotInset[0] + this._plotInset[2];
-        this._plotWidth = Math.max(0, this._boxWidth - hPad);
-        this._plotHeight = Math.max(0, this._boxHeight - vPad);
-        //const yOfft = this._plotInset[0];
-        this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
-        //this._plotRegionEl.setAttribute('x', xOfft);
-        //this._plotRegionEl.setAttribute('y', yOfft);
-        //this._plotRegionEl.setAttribute('width', this._plotWidth);
-        //this._plotRegionEl.setAttribute('height', this._plotHeight);
-        /*/
-
     }
 
     doReset() {

@@ -4,6 +4,9 @@
     width: 100%;
     height: 100%;
     touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 
     .sc-title {
         font-size: 0.8em;
@@ -15,6 +18,15 @@
         padding: 0.2em;
         line-height: 1;
         display: inline-flex;
+    }
+
+    .sc-tooltip-positioner {
+        position: fixed;
+        z-index: 10;
+
+        &:not(.active) {
+            display: none;
+        }
     }
 
     > svg.sc-root {
@@ -55,57 +67,61 @@
                 opacity: 0.8;
                 fill: color-mix(in srgb, currentColor, transparent 70%);
             }
+        }
+    }
 
-            .sc-tooltip-fobject {
-                overflow: visible !important;
+    .sc-tooltip-box-wrap {
+        position: relative !important;
 
-                div.sc-tooltip-box {
-                    font-size: 0.9em;
-                    margin: 0.2em 0.7em;
-                    position: absolute !important;
-                    border-radius: 0.3em;
-                    background: #faf6efee;
-                    padding: 0.2em 0.3em;
-                    display: flex;
-                    flex-direction: column;
-                    border: 1px solid #3333;
-                    box-shadow: 1.5px 1.5px 6px 0 #0005;
-                    width: max-content;
-                    max-width: 22ch;
-                    overflow: hidden;
+        div.sc-tooltip-box {
+            position: absolute !important;
+        }
+    }
 
-                    &.right {
-                        right: 0;
-                    }
+    div.sc-tooltip-box {
+        font-size: 0.9em;
+        margin: 0.2em 0.7em;
+        border-radius: 0.3em;
+        background: #faf6efee;
+        padding: 0.2em 0.3em;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #3333;
+        box-shadow: 1.5px 1.5px 6px 0 #0005;
+        width: max-content;
+        max-width: 22ch;
+        overflow: hidden;
 
-                    .sc-tooltip-entry {
-                        --color-dot-size: 0.6em;
-                        padding: 0.15em 0.2em;
-                        display: flex;
-                        align-items: center;
-                        flex-wrap: wrap;
+        &.right {
+            right: 0;
+        }
 
-                        &::before {
-                            content: '';
-                            border-radius: var(--color-dot-size);
-                            width: var(--color-dot-size);
-                            height: var(--color-dot-size);
-                            display: block;
-                            margin-right: 0.3em;
-                            background-color: var(--color);
-                            border: 0.1em solid currentColor;
-                            flex: 0 0 auto;
-                        }
+        .sc-tooltip-entry {
+            --color-dot-size: 0.6em;
+            padding: 0.15em 0.2em;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
 
-                        key {
-                            font-weight: 500;
-                            flex: 1 0 auto;
-                        }
+            &::before {
+                content: '';
+                border-radius: var(--color-dot-size);
+                width: var(--color-dot-size);
+                height: var(--color-dot-size);
+                display: block;
+                margin-right: 0.3em;
+                background-color: var(--color);
+                border: 0.1em solid currentColor;
+                flex: 0 0 auto;
+            }
 
-                        value {
-                        }
-                    }
-                }
+            key {
+                font-weight: 500;
+                flex: 1 0 auto;
+            }
+
+            value {
+                font-variant-numeric: tabular-nums;
             }
         }
     }

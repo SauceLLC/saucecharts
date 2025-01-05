@@ -7,7 +7,6 @@ function ts() {
 
 let paused = false;
 let tests = [1, 2, 3, 4, 5, 6, 7];
-tests = [1, 7];
 const speed = 1000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
@@ -114,10 +113,12 @@ if (tests.includes(4)) {
 
 
 if (tests.includes(5)) {
-    const data = new Array(maxSize);
+    //const data = new Array(maxSize);
+    const data = new Array(100);
     const sl = new sc.LineChart({
         ...commonOptions,
         el: document.querySelector(".graph.i5"),
+        hidePoints: true,
         title: 'random, same size',
     });
     setInterval(() => {

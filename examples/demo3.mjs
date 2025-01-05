@@ -38,14 +38,12 @@ if (tests.includes(1)) {
     const c1 = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
-        onTooltip: o => `${o.x},${o.y.toFixed(6)}`,
         title: 'ltr',
     });
     const c2 = new sc.LineChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
         merge: true,
-        onTooltip: o => `${o.x},${o.y.toFixed(6)}`,
         title: 'ltr',
     });
     setInterval(() => {

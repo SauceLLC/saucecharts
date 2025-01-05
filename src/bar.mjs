@@ -14,25 +14,12 @@ export class BarChart extends common.Chart {
         this._barsEl = this._plotRegionEl.querySelector(`g.sc-bars`);
     }
 
-    reset() {
-        super.reset();
-        this._reset();
-    }
-
-    _reset() {
+    doReset() {
         this._barsEl.innerHTML = '';
         this._barsMap.clear();
     }
 
-    render() {
-        if (!this.el || !this._boxWidth || !this._boxHeight) {
-            return;
-        }
-        if (!this.data || !this.data.length) {
-            this._reset();
-            return;
-        }
-        const {data} = this.beforeRender();
+    doRender({data}) {
         const manifest = this._renderBeforeLayout({data});
         this._renderDoLayout({manifest});
     }
@@ -66,15 +53,11 @@ export class BarChart extends common.Chart {
             if (bar) {
                 remBars.delete(bar);
             } else {
-                const nd = data[index];
                 bar = {ref};
-                bar.tooltipFormat = nd.tooltip ?
-                    nd.tooltip.bind(this, nd, bar) :
-                    this.onTooltip ?
-                        this.onTooltip.bind(this, nd, bar) :
-                        () => nd.y.toLocaleString();
                 bar.element = common.createSVGElement('foreignObject');
                 bar.element.classList.add('sc-bar', 'sc-visual-data-bar');
+                // Firefox needs a child element for background styles...
+                bar.element.innerHTML = '<bar-styles></bar-styles>';
                 manifest.add.push(bar);
                 this._barsMap.set(ref, bar);
             }
