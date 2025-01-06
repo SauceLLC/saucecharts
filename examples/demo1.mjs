@@ -6,7 +6,7 @@ function ts() {
 }
 
 let paused = false;
-let tests = [1, 2, 3, 4, 5, 6, 7];
+let tests = [1, 2, 3, 4, 5, 6, 7, 8];
 const speed = 1000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
@@ -205,6 +205,28 @@ if (tests.includes(7)) {
             data4.pop();
         }
         sl4.setData(data4);
+    }, speed);
+}
+
+
+if (tests.includes(8)) {
+    const size = 10000;
+    let i = size;
+    const data = Array.from(new Array(size)).map((x, i) => Math.sin(i / 50));
+    const sl = new sc.LineChart({
+        ...commonOptions,
+        hidePoints: true,
+        el: document.querySelector(".graph.i8"),
+        title: 'large-data',
+    });
+    setInterval(() => {
+        if (paused) return;
+        i++;
+        data.push(Math.sin(i / 50));
+        while (data.length > size) {
+            data.shift();
+        }
+        sl.setData(data);
     }, speed);
 }
 

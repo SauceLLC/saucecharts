@@ -1,6 +1,4 @@
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
 let globalIdCounter = 0;
 
 
@@ -74,15 +72,10 @@ export class Chart {
         const vPad = this._plotInset[0] + this._plotInset[2];
         this._plotWidth = Math.max(0, this._boxWidth - hPad);
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
-        //const yOfft = this._plotInset[0];
         if (this.isParentChart()) {
             this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
             this._rootSvgEl.style.setProperty('--dpr', this.devicePixelRatio);
         }
-        //this._plotRegionEl.setAttribute('x', xOfft);
-        //this._plotRegionEl.setAttribute('y', yOfft);
-        //this._plotRegionEl.setAttribute('width', this._plotWidth);
-        //this._plotRegionEl.setAttribute('height', this._plotHeight);
     }
 
     setElement(el, {merge}={}) {
@@ -178,12 +171,15 @@ export class Chart {
             return [plotRect.x + scrollX, plotRect.y + scrollY];
         });
         let lastMoveEvent;
+        let lastDrawSig;
         this._activePointerMove = ev => {
             ev = ev && ev.type === 'pointermove' ? ev : lastMoveEvent;
             if (!ev) {
                 return;
             }
+            lastMoveEvent = ev;
             const tooltips = [];
+            let drawSig = '';
             for (const [i, chart] of charts.entries()) {
                 const xSearch = (ev.x - refs[i][0] + scrollX) * this.devicePixelRatio;
                 const index = chart.findNearestIndexFromXCoord(xSearch);
@@ -197,38 +193,45 @@ export class Chart {
                 } else if (chart.onTooltip) {
                     html = chart.onTooltip(entry, index, chart);
                 }
-                tooltips.push({chart, index, entry, html});
+                const coordinates = chart.toCoordinates(entry);
+                tooltips.push({chart, index, entry, coordinates, html});
+                drawSig += ` ${i} ${index} ${coordinates[0]} ${coordinates[1]}`;
             }
-            if (tooltips.length) {
+            if (drawSig !== lastDrawSig) {
+                lastDrawSig = drawSig;
                 this._drawTooltip(tooltips, positionerEl, refs[0]);
             }
-            lastMoveEvent = ev;
         };
         const el = this.el;
         const onDone = () => {
-            el.removeEventListener('pointercancel', onDone);
             el.removeEventListener('pointerleave', onDone);
             el.removeEventListener('pointermove', this._activePointerMove);
+            removeEventListener('pointercancel', onDone);
             removeEventListener('scroll', this._activePointerMove, {passive: true});
             this._activePointerMove = null;
             this._tooltipGroup.classList.remove('active');
             positionerEl.classList.remove('active');
         };
         addEventListener('scroll', this._activePointerMove, {passive: true});
+        addEventListener('pointercancel', onDone);
         el.addEventListener('pointermove', this._activePointerMove);
-        el.addEventListener('pointercancel', onDone);
         el.addEventListener('pointerleave', onDone);
     }
 
     _drawTooltip(tooltips, positionerEl, offset) {
+        // XXX optimize this more...
         const box = positionerEl.querySelector('.sc-tooltip-box');
-        const centerX = tooltips.reduce((agg, o) => agg + o.chart.toX(o.entry.x), 0) / tooltips.length;
         for (const x of this._tooltipGroup.querySelectorAll('line,circle')) {
-            x.remove(); // XXX optimize this more
+            x.remove();
+        }
+        if (!tooltips.length) {
+            box.innerHTML = '';
+            return;
         }
         const top = this.tooltipPadding[0] * this.devicePixelRatio;
         const bottom = this.tooltipPadding[2] * this.devicePixelRatio;
         const left = this.tooltipPadding[3] * this.devicePixelRatio;
+        const centerX = tooltips.reduce((agg, o) => agg + o.chart.toX(o.entry.x), 0) / tooltips.length;
         const vertLine = createSVGElement('line');
         vertLine.classList.add('vertical');
         vertLine.setAttribute('x1', centerX + left);
@@ -236,24 +239,24 @@ export class Chart {
         vertLine.setAttribute('y1', this._boxHeight - bottom);
         vertLine.setAttribute('y2', top);
         this._tooltipGroup.append(vertLine);
-        for (const {chart, entry} of tooltips) {
-            const xy = chart.toCoordinates(entry);
+        for (const {coordinates} of tooltips) {
             const dot = createSVGElement('circle');
-            dot.setAttribute('cx', xy[0]);
-            dot.setAttribute('cy', xy[1]);
+            dot.setAttribute('cx', coordinates[0]);
+            dot.setAttribute('cy', coordinates[1]);
             this._tooltipGroup.prepend(dot);
-            if (Math.abs(xy[0] - (centerX + left)) > 1) {
+            if (Math.abs(coordinates[0] - (centerX + left)) > 1) {
                 const horizLine = createSVGElement('line');
                 horizLine.classList.add('horizontal');
                 horizLine.setAttribute('x1', centerX + left);
-                horizLine.setAttribute('x2', xy[0]);
-                horizLine.setAttribute('y1', xy[1]);
-                horizLine.setAttribute('y2', xy[1]);
+                horizLine.setAttribute('x2', coordinates[0]);
+                horizLine.setAttribute('y1', coordinates[1]);
+                horizLine.setAttribute('y2', coordinates[1]);
                 this._tooltipGroup.prepend(horizLine);
             }
         }
-        positionerEl.style.setProperty('left', `${centerX / this.devicePixelRatio + offset[0] - scrollX}px`);
-        positionerEl.style.setProperty('top', `${top / this.devicePixelRatio + offset[1] - scrollY}px`);
+        const x = centerX / this.devicePixelRatio + offset[0] - scrollX;
+        const y = top / this.devicePixelRatio + offset[1] - scrollY;
+        positionerEl.style.setProperty('transform', `translate(${x}px, ${y}px`);
         box.classList.toggle('right', centerX >= this._boxWidth / 2);
         box.innerHTML = tooltips.map(x => x.html).join('');
     }

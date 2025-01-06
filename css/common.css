@@ -23,6 +23,8 @@
     .sc-tooltip-positioner {
         position: fixed;
         z-index: 10;
+        left: 0;
+        top: 0;
 
         &:not(.active) {
             display: none;
@@ -81,9 +83,9 @@
     div.sc-tooltip-box {
         font-size: 0.9em;
         margin: 0.2em 0.7em;
-        border-radius: 0.3em;
-        background: #faf6efee;
-        padding: 0.2em 0.3em;
+        border-radius: 0.28em;
+        background-color: #faf6eff0;
+        padding: 0.1em 0.3em;
         display: flex;
         flex-direction: column;
         border: 1px solid #3333;
@@ -97,7 +99,7 @@
         }
 
         .sc-tooltip-entry {
-            --color-dot-size: 0.6em;
+            --color-dot-size: 0.5em;
             padding: 0.15em 0.2em;
             display: flex;
             align-items: center;
@@ -116,8 +118,9 @@
             }
 
             key {
-                font-weight: 500;
+                font-weight: 600;
                 flex: 1 0 auto;
+                margin-right: 0.2em;
             }
 
             value {

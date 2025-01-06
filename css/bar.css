@@ -15,7 +15,7 @@
             background-image: linear-gradient(to top,
                 color-mix(in srgb, var(--color), color-mix(in srgb, #777, transparent 50%) 80%),
                 color-mix(in srgb, var(--color), color-mix(in srgb, #111, transparent 20%) 20%));
-            border-radius: 0.28em 0.28em 0 0;
+            border-radius: 0.10em 0.10em 0 0;
         }
     }
 }
