@@ -8,7 +8,7 @@ function ts() {
 let paused = false;
 let tests = [1, 2];
 const speed = 1000;
-const maxSize = 4000;
+const maxSize = 400;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
@@ -28,17 +28,14 @@ if (tests.includes(1)) {
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
         title: 'ltr',
-        disableAnimation: true,
-        barSpacing: 0,
     });
-    /*const c2 = new sc.LineChart({
+    const c2 = new sc.LineChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
         merge: true,
         title: 'ltr',
         hidePoints: true,
-        disableAnimation: true,
-    });*/
+    });
     setInterval(() => {
         if (paused) return;
         const x = ts();
@@ -47,11 +44,11 @@ if (tests.includes(1)) {
             data.shift();
         }
         c1.setData(data);
-        //c2.setData(data);
+        c2.setData(data);
         if (data.length % 100 === 0) {
             console.log('c1', performance.now() / data.length, data.length);
         }
-    }, 0/*speed*/);
+    }, speed);
 }
 
 
@@ -62,7 +59,7 @@ if (tests.includes(2)) {
         ...commonOptions,
         el: document.querySelector(".graph.i2"),
         title: 'segments',
-        disableAnimation: true,
+        //disableAnimation: true,
         hidePoints: true,
     });
     setInterval(async () => {
@@ -84,7 +81,7 @@ if (tests.includes(2)) {
         if (data.length % 100 === 0) {
             console.log('c2', performance.now() / data.length, data.length);
         }
-    }, 0 /*speed*/);
+    }, speed);
 }
 
 
