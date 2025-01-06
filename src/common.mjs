@@ -20,6 +20,7 @@ export class Chart {
         this.color = options.color;
         this.padding = options.padding || [0, 0, 0, 0];
         this.tooltipPadding = options.tooltipPadding || [0, 0, 0, 0];
+        this.disableAnimation = options.disableAnimation;
         if (options.onTooltip) {
             this.onTooltip = options.onTooltip.bind(this);
         }
@@ -37,7 +38,9 @@ export class Chart {
     }
 
     onResize() {
-        this._rootSvgEl.classList.add('disable-animation');
+        if (!this.disableAnimation) {
+            this._rootSvgEl.classList.add('disable-animation');
+        }
         try {
             this._adjustSize();
             if (this.data) {
@@ -45,7 +48,9 @@ export class Chart {
                 this._rootSvgEl.clientWidth;
             }
         } finally {
-            this._rootSvgEl.classList.remove('disable-animation');
+            if (!this.disableAnimation) {
+                this._rootSvgEl.classList.remove('disable-animation');
+            }
         }
     }
 
@@ -119,6 +124,9 @@ export class Chart {
             el.querySelector(':scope > .sc-wrap').insertAdjacentHTML(
                 'beforeend',
                 `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
+        }
+        if (this.disableAnimation) {
+            this._rootSvgEl.classList.add('disable-animation');
         }
         this._adjustSize();
         this._resizeObserver.observe(el.querySelector('.resize-observer'));
@@ -256,7 +264,7 @@ export class Chart {
         }
         const x = centerX / this.devicePixelRatio + offset[0] - scrollX;
         const y = top / this.devicePixelRatio + offset[1] - scrollY;
-        positionerEl.style.setProperty('transform', `translate(${x}px, ${y}px`);
+        positionerEl.style.setProperty('translate', `${x}px ${y}px`);
         box.classList.toggle('right', centerX >= this._boxWidth / 2);
         box.innerHTML = tooltips.map(x => x.html).join('');
     }
@@ -371,9 +379,17 @@ export class Chart {
             this._plotInset[3];
     }
 
+    toScaleX(value) {
+        return value * (this._plotWidth / (this.xMax - this.xMin));
+    }
+
     toY(value) {
         return this._plotHeight + this._plotInset[0] -
             ((value - this.yMin) * (this._plotHeight / (this.yMax - this.yMin)));
+    }
+
+    toScaleY(value) {
+        return value * (this._plotHeight / (this.yMax - this.yMin));
     }
 
     fromCoordinates(xy) {
