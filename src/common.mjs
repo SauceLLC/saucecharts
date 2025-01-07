@@ -1,4 +1,6 @@
 
+import * as color from './color.mjs';
+
 let globalIdCounter = 0;
 
 
@@ -21,6 +23,7 @@ export class Chart {
         this.padding = options.padding || [0, 0, 0, 0];
         this.tooltipPadding = options.tooltipPadding || [0, 0, 0, 0];
         this.disableAnimation = options.disableAnimation;
+        this.darkMode = options.darkMode;
         if (options.onTooltip) {
             this.onTooltip = options.onTooltip.bind(this);
         }
@@ -39,17 +42,17 @@ export class Chart {
 
     onResize() {
         if (!this.disableAnimation) {
-            this._rootSvgEl.classList.add('disable-animation');
+            this.el.classList.add('disable-animation');
         }
         try {
             this._adjustSize();
             if (this.data) {
                 this.render();
-                this._rootSvgEl.clientWidth;
+                this.el.clientWidth;
             }
         } finally {
             if (!this.disableAnimation) {
-                this._rootSvgEl.classList.remove('disable-animation');
+                this.el.classList.remove('disable-animation');
             }
         }
     }
@@ -91,18 +94,17 @@ export class Chart {
             old.removeEventListener('pointerenter', this._onPointerEnterBound);
         }
         if (!merge) {
-            el.innerHTML =
-                `<div class="saucechart sc-wrap resize-observer" style="position:relative;">
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-                         class="sc-root" style="position:absolute; top:0; left:0; width:100%; height:100%;">
-                        <defs></defs>
-                        <g class="sc-plot-regions"></g>
-                        <g class="sc-tooltip"></g>
-                    </svg>
-                    <div class="sc-tooltip-positioner">
-                        <div class="sc-tooltip-box-wrap">
-                            <div class="sc-tooltip-box"></div>
-                        </div>
+            el.classList.add('saucechart', 'sc-wrap');
+            el.innerHTML = `
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
+                     class="sc-root" style="position:absolute; top:0; left:0; width:100%; height:100%;">
+                    <defs></defs>
+                    <g class="sc-plot-regions"></g>
+                    <g class="sc-tooltip"></g>
+                </svg>
+                <div class="sc-tooltip-positioner">
+                    <div class="sc-tooltip-box-wrap">
+                        <div class="sc-tooltip-box"></div>
                     </div>
                 </div>`;
             el.parentSauceChart = this;
@@ -121,15 +123,21 @@ export class Chart {
         }
         this._rootSvgEl.querySelector('.sc-plot-regions').append(this._plotRegionEl);
         if (this.title) {
-            el.querySelector(':scope > .sc-wrap').insertAdjacentHTML(
-                'beforeend',
-                `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
+            el.insertAdjacentHTML('beforeend',
+                                  `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
         }
         if (this.disableAnimation) {
-            this._rootSvgEl.classList.add('disable-animation');
+            this.el.classList.add('disable-animation');
         }
+        let darkMode = this.darkMode;
+        if (darkMode === undefined) {
+            const currentColor = getComputedStyle(el).getPropertyValue('color');
+            const c = color.parse(currentColor);
+            darkMode = c.l >= 0.5;
+        }
+        this.el.classList.toggle('darkmode', darkMode);
         this._adjustSize();
-        this._resizeObserver.observe(el.querySelector('.resize-observer'));
+        this._resizeObserver.observe(el);
         if (this.isParentChart()) {
             el.addEventListener('pointerover', this._onPointerEnterBound);
         }
@@ -426,7 +434,9 @@ export class Chart {
         if (!coords.length) {
             return '';
         }
-        const start = closed ? `\nM 0 ${this._plotHeight + this._plotInset[0]}\nL` : '\nM ';
+        const start = closed ?
+            `\nM ${this._plotInset[3]} ${this._plotHeight + this._plotInset[0]}\nL` :
+            '\nM ';
         const end = closed ?
             `\nL ${this._plotWidth + this._plotInset[3]} ${this._plotHeight + this._plotInset[0]}\nZ` :
             '';

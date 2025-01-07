@@ -7,9 +7,10 @@ function ts() {
 
 let paused = false;
 let tests = [1, 2];
-const speed = 1000;
-const maxSize = 400;
+let speed = 1000;
+const maxSize = 4000;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
+//speed = 0;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
@@ -67,10 +68,13 @@ if (tests.includes(2)) {
         const x = ts();
         const y = Math.sin(x / sinFactor);
         data.push([x, y]);
+        if (data.length === 2) {
+            segments[0].width = data[1][0] - data[0][0];
+        }
         segments.push({
             x: x,
             width: data.length > 1 ? x - data[data.length - 2][0] : 0,
-            color: ['blue', 'red', 'green', 'ping', 'orange', 'yellow'][data.length % 5],
+            color: ['white', 'blue', 'red', 'green', 'ping', 'orange', 'yellow'][data.length % 5],
         });
         while (data.length > maxSize) {
             data.shift();

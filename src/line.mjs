@@ -1,6 +1,8 @@
 
 import * as common from './common.mjs';
 
+const isIE6 = true; ///^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 
 export class LineChart extends common.Chart {
 
@@ -32,16 +34,15 @@ export class LineChart extends common.Chart {
             </marker>
         `);
         this._plotRegionEl.innerHTML = `
-            <foreignObject class="sc-css-background" clip-path="url(#${pathClipId})"
-                           width="100%" height="100%">
-                <div class="sc-visual-data-area"></div>
-            </foreignObject>
+            <${isIE6 ? 'g' : 'foreignObject'} clip-path="url(#${pathClipId})" class="sc-css-background">
+                <${isIE6 ? 'rect' : 'div'} class="sc-visual-data-area"></${isIE6 ? 'rect' : 'div'}>
+            </${isIE6 ? 'g' : 'foreignObject'}>
             <path class="sc-data sc-line sc-visual-data-line"
                   marker-start="url(#${pathMarkerId})"
                   marker-mid="url(#${pathMarkerId})"
                   marker-end="url(#${pathMarkerId})"/>
         `;
-        this._cssBackgroundEl = this._plotRegionEl.querySelector('.sc-css-background');
+        this._backgroundEl = this._plotRegionEl.querySelector('.sc-css-background');
         this._pathLineEl = this._plotRegionEl.querySelector(`path.sc-data.sc-line`);
         this._pathAreaEl = defs.querySelector(`[data-sc-id="${this.id}"] path.sc-data.sc-area`);
         this._setBackgroundPos();
@@ -53,7 +54,7 @@ export class LineChart extends common.Chart {
     }
 
     _setBackgroundPos() {
-        const el = this._cssBackgroundEl;
+        const el = this._backgroundEl;
         if (!el) {
             return;
         }
@@ -140,9 +141,14 @@ export class LineChart extends common.Chart {
                 const s = this.segments[i];
                 let el = this._segmentEls.get(s);
                 if (!el) {
-                    el = document.createElement('div');
+                    if (isIE6) {
+                        el = common.createSVGElement('rect');
+                    } else {
+                        el = document.createElement('div');
+                    }
                     el.classList.add('sc-visual-data-segment');
-                    this._cssBackgroundEl.append(el);
+                    this._backgroundEl.querySelector('.sc-visual-data-area')
+                        .insertAdjacentElement('afterend', el);
                     this._segmentEls.set(s, el);
                 } else {
                     unclaimed.delete(s);
@@ -151,7 +157,6 @@ export class LineChart extends common.Chart {
                 const y = s.y != null ? this.toY(s.y) - this._plotInset[0] : 0;
                 const width = s.width != null ? this.toScaleX(s.width) : this._plotWidth - x;
                 const height = s.height != null ? this.toScaleY(s.height) : this._plotHeight - y;
-                el.style.setProperty('order', i);
                 el.style.setProperty('translate', `${x}px ${y}px`);
                 el.style.setProperty('width', `${width}px`);
                 el.style.setProperty('height', `${height}px`);

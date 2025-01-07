@@ -1,61 +1,70 @@
 @import 'common.css';
 
-.saucechart {
-    > svg.sc-root {
-        stroke-width: 0.1em;
+.saucechart > svg.sc-root {
+    stroke-width: 0.1em;
 
-        &.disable-animation {
-            --transition-duration: 0 !important;
-        }
+    .sc-data {
+        transition: d var(--transition-duration) var(--transition-timing);
+    }
 
-        .sc-data {
-            transition: d var(--transition-duration) var(--transition-timing);
-        }
+    svg.sc-plot-region {
+        overflow: visible; /* positional only.. */
+    }
 
-        svg.sc-plot-region {
-            overflow: visible; /* positional only.. */
-        }
+    .sc-css-background {
+    }
 
-        .sc-css-background {
-        }
+    .sc-visual-data-line {
+        stroke: color-mix(in srgb, currentColor, grey 10%);
+        opacity: 0.8;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
 
-        .sc-visual-data-line {
-            stroke: color-mix(in srgb, currentColor, grey 10%);
-            opacity: 0.8;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
+    .sc-visual-data-area {
+        width: 100%;
+        height: 100%;
 
-        .sc-visual-data-area {
-            width: 100%;
-            height: 100%;
+        div& {
             background-image: linear-gradient(to top,
                 color-mix(in srgb, var(--color), color-mix(in srgb, #777, transparent 50%) 80%),
                 color-mix(in srgb, var(--color), color-mix(in srgb, #111, transparent 20%) 20%));
         }
 
-        .sc-visual-data-segment {
-            position: absolute;
-            inset: 0 0 0 0;
-            transition:
-                translate var(--transition-duration) var(--transition-timing),
-                width var(--transition-duration) var(--transition-timing);
-                height var(--transition-duration) var(--transition-timing);
-            background-image: linear-gradient(to top,
-                color-mix(in srgb, var(--color), color-mix(in srgb, #777, transparent 50%) 80%),
-                color-mix(in srgb, var(--color), color-mix(in srgb, #111, transparent 20%) 20%));
-        }
-
-        .sc-line-marker {
-            circle.sc-dot {
-                r: 0.12em;
-                stroke: currentColor;
-                opacity: 0.8;
-                fill: color-mix(in srgb, currentColor, transparent 50%);
-            }
+        rect& {
+            fill: var(--color); /* Safari compat */
         }
     }
+
+    .sc-visual-data-segment {
+        transition:
+            translate var(--transition-duration) var(--transition-timing),
+            width var(--transition-duration) var(--transition-timing);
+            height var(--transition-duration) var(--transition-timing);
+
+        div& {
+            position: absolute;
+            inset: 0 0 0 0;
+            background-image: linear-gradient(to top,
+                color-mix(in srgb, var(--color), color-mix(in srgb, #777, transparent 50%) 80%),
+                color-mix(in srgb, var(--color), color-mix(in srgb, #111, transparent 20%) 20%));
+        }
+
+        rect& {
+            fill: var(--color); /* Safari compat */
+        }
+    }
+
+    .sc-line-marker {
+        circle.sc-dot {
+            r: 0.12em;
+            stroke: currentColor;
+            opacity: 0.8;
+            fill: color-mix(in srgb, currentColor, transparent 50%);
+        }
+    }
+}
 }
 
 .sc-plot-region {

@@ -1,12 +1,24 @@
 .saucechart {
     --transition-duration: 400ms;
     --transition-timing: linear;
+    --background-color: #fff;
+    --shade-dir: 1;
     width: 100%;
     height: 100%;
     touch-action: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    position: relative;
+
+    &.disable-animation {
+        --transition-duration: 0 !important;
+    }
+
+    &.darkmode {
+        --background-color: #000;
+        --shade-dir: -1;
+    }
 
     .sc-title {
         font-size: 0.8em;
@@ -35,10 +47,6 @@
         stroke-width: 0.1em;
         font-size: calc(1em * var(--dpr, 1));
 
-        &.disable-animation {
-            --transition-duration: 0 !important;
-        }
-
         svg.sc-plot-region {
             overflow: visible; /* positional only.. */
         }
@@ -54,7 +62,7 @@
                 stroke-width: 0.10em;
                 stroke-dasharray: 0.25em;
                 stroke-linecap: round;
-                filter: drop-shadow(0 0 2px #8888);
+                filter: drop-shadow(0 0 0.1em #8888);
 
                 &.horizontal {
                     stroke-width: 0.08em;
@@ -80,16 +88,16 @@
         }
     }
 
-    div.sc-tooltip-box {
+    .sc-tooltip-box {
         font-size: 0.9em;
         margin: 0.2em 0.7em;
         border-radius: 0.28em;
-        background-color: #faf6eff0;
+        background-color: color-mix(in srgb, var(--background-color), #d76b1380 10%);
         padding: 0.1em 0.3em;
         display: flex;
         flex-direction: column;
-        border: 1px solid #3333;
-        box-shadow: 1.5px 1.5px 6px 0 #0005;
+        border: 0.08em solid color-mix(in srgb, currentColor, #7772 50%);
+        box-shadow: 0.08em 0.08em 0.3em 0 #0005;
         width: max-content;
         max-width: 22ch;
         overflow: hidden;
