@@ -27,7 +27,7 @@ export class Chart {
         if (options.onTooltip) {
             this.onTooltip = options.onTooltip.bind(this);
         }
-        this._onPointerEnterBound = this.onPointerEnter.bind(this);
+        this._onPointerOverBound = this.onPointerOver.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
         if (options.el) {
             this.setElement(options.el, {merge: options.merge});
@@ -91,7 +91,7 @@ export class Chart {
         this.el = el;
         if (old) {
             this._resizeObserver.disconnect();
-            old.removeEventListener('pointerenter', this._onPointerEnterBound);
+            old.removeEventListener('pointerover', this._onPointerOverBound);
         }
         if (!merge) {
             el.classList.add('saucechart', 'sc-wrap');
@@ -139,7 +139,7 @@ export class Chart {
         this._adjustSize();
         this._resizeObserver.observe(el);
         if (this.isParentChart()) {
-            el.addEventListener('pointerover', this._onPointerEnterBound);
+            el.addEventListener('pointerover', this._onPointerOverBound);
         }
     }
 
@@ -174,18 +174,15 @@ export class Chart {
         `;
     }
 
-    onPointerEnter(ev) {
+    onPointerOver(ev) {
         if (this._activePointerMove) {
             return;
         }
-        this._tooltipGroup.classList.add('active');
+        const el = this.el;
+        const doneCtrl = new AbortController();
         const positionerEl = this.el.querySelector('.sc-tooltip-positioner');
-        positionerEl.classList.add('active');
         const charts = [this, ...this.childCharts];
-        const refs = charts.map(x => {
-            const plotRect = x.el.getBoundingClientRect();
-            return [plotRect.x + scrollX, plotRect.y + scrollY];
-        });
+        let chartPlotOffsets;
         let lastMoveEvent;
         let lastDrawSig;
         this._activePointerMove = ev => {
@@ -196,8 +193,9 @@ export class Chart {
             lastMoveEvent = ev;
             const tooltips = [];
             let drawSig = '';
-            for (const [i, chart] of charts.entries()) {
-                const xSearch = (ev.x - refs[i][0] + scrollX) * this.devicePixelRatio;
+            for (let i = 0; i < charts.length; i++) {
+                const chart = charts[i];
+                const xSearch = (ev.x - chartPlotOffsets[i][0] + scrollX) * this.devicePixelRatio;
                 const index = chart.findNearestIndexFromXCoord(xSearch);
                 if (index === undefined) {
                     continue;
@@ -215,23 +213,32 @@ export class Chart {
             }
             if (drawSig !== lastDrawSig) {
                 lastDrawSig = drawSig;
-                this._drawTooltip(tooltips, positionerEl, refs[0]);
+                this._drawTooltip(tooltips, positionerEl, chartPlotOffsets[0]);
             }
         };
-        const el = this.el;
         const onDone = () => {
-            el.removeEventListener('pointerleave', onDone);
-            el.removeEventListener('pointermove', this._activePointerMove);
-            removeEventListener('pointercancel', onDone);
-            removeEventListener('scroll', this._activePointerMove, {passive: true});
+            doneCtrl.abort();
             this._activePointerMove = null;
-            this._tooltipGroup.classList.remove('active');
-            positionerEl.classList.remove('active');
+            setTimeout(() => {
+                if (!this._activePointerMove) {
+                    this._tooltipGroup.classList.remove('active');
+                    positionerEl.classList.remove('active');
+                }
+            }, 2000);
         };
-        addEventListener('scroll', this._activePointerMove, {passive: true});
-        addEventListener('pointercancel', onDone);
-        el.addEventListener('pointermove', this._activePointerMove);
-        el.addEventListener('pointerleave', onDone);
+        const signal = doneCtrl.signal;
+        // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
+        addEventListener('pointercancel', onDone, {signal});
+        addEventListener('pointerout', ev => !el.contains(ev.target) && onDone(), {signal});
+        el.addEventListener('pointerleave', onDone, {signal});
+        el.addEventListener('pointermove', this._activePointerMove, {signal});
+        addEventListener('scroll', this._activePointerMove, {signal, passive: true});
+        chartPlotOffsets = charts.map(x => {
+            const plotRect = x.el.getBoundingClientRect();
+            return [plotRect.x + scrollX, plotRect.y + scrollY];
+        });
+        positionerEl.classList.add('active');
+        this._tooltipGroup.classList.add('active');
     }
 
     _drawTooltip(tooltips, positionerEl, offset) {

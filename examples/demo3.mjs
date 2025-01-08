@@ -6,11 +6,11 @@ function ts() {
 }
 
 let paused = false;
-let tests = [1, 2];
+let tests = [2];
 let speed = 1000;
 const maxSize = 4000;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
-//speed = 0;
+speed = 1000;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let disableAnimation = false;
 const commonOptions = {

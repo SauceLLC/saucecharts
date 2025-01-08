@@ -22,7 +22,8 @@
 
     .sc-title {
         position: absolute;
-        inset: 0 0 0 0;
+        top: 0;
+        left: 0;
         font-size: 0.8em;
         font-weight: 600;
         opacity: 0.7;
@@ -34,13 +35,17 @@
     }
 
     .sc-tooltip-positioner {
+        pointer-events: none;
         position: fixed;
         z-index: 10;
-        left: 0;
         top: 0;
+        left: 0;
 
         &:not(.active) {
-            display: none;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none !important;
+            transition: opacity 1s, visibility 1s;
         }
     }
 
@@ -90,8 +95,10 @@
     }
 
     .sc-tooltip-box {
+        --side-margin: 0.7em;
+        top: 0.2em;
+        pointer-events: any;
         font-size: 0.9em;
-        margin: 0.2em 0.7em;
         border-radius: 0.28em;
         background-color: color-mix(in srgb, var(--background-color), #d76b1380 10%);
         padding: 0.1em 0.3em;
@@ -104,7 +111,10 @@
         overflow: hidden;
 
         &.right {
-            right: 0;
+            right: var(--side-margin);
+        }
+        &:not(.right) {
+            left: var(--side-margin);
         }
 
         .sc-tooltip-entry {
