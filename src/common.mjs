@@ -430,16 +430,20 @@ export class Chart {
         // subclass
     }
 
-    makePath(coords, {closed}={}) {
+    makePath(coords, {css, closed}={}) {
         if (!coords.length) {
             return '';
         }
+        const sep = css ? ' ' : '\n';
         const start = closed ?
-            `\nM ${this._plotInset[3]} ${this._plotHeight + this._plotInset[0]}\nL` :
-            '\nM ';
+            `${sep}M ${this._plotInset[3]} ${this._plotHeight + this._plotInset[0]}${sep}L ` :
+            `${sep}M `;
         const end = closed ?
-            `\nL ${this._plotWidth + this._plotInset[3]} ${this._plotHeight + this._plotInset[0]}\nZ` :
+            `${sep}L ${this._plotWidth + this._plotInset[3]} ` +
+                `${this._plotHeight + this._plotInset[0]}${sep}Z` :
             '';
-        return start + coords.map(c => `${c[0]} ${c[1]}`).join('\nL ') + end;
+        const join = `${sep}L `;
+        const path = start + coords.map(c => `${c[0]} ${c[1]}`).join(join) + end;
+        return css ? `path('${path}')` : path;
     }
 }

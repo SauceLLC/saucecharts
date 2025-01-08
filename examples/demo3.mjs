@@ -12,6 +12,7 @@ const maxSize = 4000;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 //speed = 0;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+let disableAnimation = false;
 const commonOptions = {
     hidePoints: false,
     padding: [5, 5, 5, 5],
@@ -29,6 +30,7 @@ if (tests.includes(1)) {
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
         title: 'ltr',
+        disableAnimation,
     });
     const c2 = new sc.LineChart({
         ...commonOptions,
@@ -36,6 +38,7 @@ if (tests.includes(1)) {
         merge: true,
         title: 'ltr',
         hidePoints: true,
+        disableAnimation,
     });
     setInterval(() => {
         if (paused) return;
@@ -60,7 +63,7 @@ if (tests.includes(2)) {
         ...commonOptions,
         el: document.querySelector(".graph.i2"),
         title: 'segments',
-        //disableAnimation: true,
+        disableAnimation,
         hidePoints: true,
     });
     setInterval(async () => {

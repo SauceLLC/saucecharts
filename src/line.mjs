@@ -1,7 +1,8 @@
 
 import * as common from './common.mjs';
 
-const isIE6 = true; ///^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const isIE6 = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
+    location.search.includes('safari');
 
 
 export class LineChart extends common.Chart {
@@ -58,10 +59,12 @@ export class LineChart extends common.Chart {
         if (!el) {
             return;
         }
-        el.setAttribute('x', this._plotInset[3]);
-        el.setAttribute('y', this._plotInset[0]);
-        el.setAttribute('height', this._boxHeight - this._plotInset[0] - this._plotInset[2]);
-        el.setAttribute('width', this._boxWidth - this._plotInset[1] - this._plotInset[3]);
+        el.style.setProperty('--group-x', `${this._plotInset[3]}px`);
+        el.style.setProperty('--group-y', `${this._plotInset[0]}px`);
+        el.style.setProperty('--group-width',
+                             `${this._boxWidth - this._plotInset[1] - this._plotInset[3]}px`);
+        el.style.setProperty('--group-height',
+                             `${this._boxHeight - this._plotInset[0] - this._plotInset[2]}px`);
     }
 
     doReset() {
@@ -147,8 +150,7 @@ export class LineChart extends common.Chart {
                         el = document.createElement('div');
                     }
                     el.classList.add('sc-visual-data-segment');
-                    this._backgroundEl.querySelector('.sc-visual-data-area')
-                        .insertAdjacentElement('afterend', el);
+                    this._backgroundEl.append(el);
                     this._segmentEls.set(s, el);
                 } else {
                     unclaimed.delete(s);
@@ -157,9 +159,10 @@ export class LineChart extends common.Chart {
                 const y = s.y != null ? this.toY(s.y) - this._plotInset[0] : 0;
                 const width = s.width != null ? this.toScaleX(s.width) : this._plotWidth - x;
                 const height = s.height != null ? this.toScaleY(s.height) : this._plotHeight - y;
-                el.style.setProperty('translate', `${x}px ${y}px`);
-                el.style.setProperty('width', `${width}px`);
-                el.style.setProperty('height', `${height}px`);
+                el.style.setProperty('--x', `${x}px`);
+                el.style.setProperty('--y', `${y}px`);
+                el.style.setProperty('--width', `${width}px`);
+                el.style.setProperty('--height', `${height}px`);
                 if (s.color) {
                     el.style.setProperty('--color', s.color);
                 }
