@@ -11,15 +11,6 @@
         overflow: visible; /* positional only.. */
     }
 
-    .sc-css-background {
-        foreignObject& {
-            width: var(--group-width);
-            height: var(--group-height);
-            x: var(--group-x);
-            y: var(--group-y);
-        }
-    }
-
     .sc-visual-data-line {
         stroke: color-mix(in srgb, currentColor, grey 10%);
         opacity: 0.8;
@@ -30,54 +21,25 @@
 
     .sc-visual-data-area,
     .sc-visual-data-segment {
-        div& {
-            background-image: linear-gradient(to top,
-                color-mix(in srgb, var(--color), color-mix(in srgb, #777, transparent 50%) 80%),
-                color-mix(in srgb, var(--color), color-mix(in srgb, #111, transparent 20%) 20%));
-            background-image: linear-gradient(to top,
-                color-mix(in srgb, var(--color), #4447 80%),
-                color-mix(in srgb, var(--color), #1112 20%));
-        }
-
-        rect& {
-            fill: color-mix(in srgb, var(--color), #0005 30%); /* Safari compat */
-        }
     }
 
     .sc-visual-data-area {
         width: var(--group-width);
         height: var(--group-height);
-
-        rect& {
-            x: var(--group-x);
-            y: var(--group-y);
-        }
+        x: var(--group-x);
+        y: var(--group-y);
     }
 
     .sc-visual-data-segment {
         width: var(--width);
         height: var(--height);
-
-        div& {
-            position: absolute;
-            inset: 0 0 0 0;
-            translate: var(--x) var(--y);
-            transition:
-                translate var(--transition-duration) var(--transition-timing),
-                width var(--transition-duration) var(--transition-timing),
-                height var(--transition-duration) var(--transition-timing);
-
-        }
-
-        rect& {
-            x: calc(var(--group-x) + var(--x));
-            y: calc(var(--group-y) + var(--y));
-            transition:
-                x var(--transition-duration) var(--transition-timing),
-                y var(--transition-duration) var(--transition-timing),
-                width var(--transition-duration) var(--transition-timing),
-                height var(--transition-duration) var(--transition-timing);
-        }
+        x: calc(var(--group-x) + var(--x));
+        y: calc(var(--group-y) + var(--y));
+        transition:
+            x var(--transition-duration) var(--transition-timing),
+            y var(--transition-duration) var(--transition-timing),
+            width var(--transition-duration) var(--transition-timing),
+            height var(--transition-duration) var(--transition-timing);
     }
 
     .sc-line-marker {
