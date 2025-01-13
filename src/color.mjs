@@ -1,4 +1,9 @@
 
+import {createSVGElement} from './common.mjs';
+
+let gradientIdCounter = 0;
+
+
 export class Color {
     static fromRGB(r, g, b, a) {
         const maxC = Math.max(r, g, b);
@@ -10,8 +15,7 @@ export class Color {
         } else if (maxC === r) {
             h = ((g - b) / d) % 6;
         } else if (maxC === g) {
-            h = (b - r) / d + 2;
-        } else {
+            h = (b - r) / d + 2; } else {
             h = (r - g) / d + 4;
         }
         h = Math.round(h * 60);
@@ -108,14 +112,113 @@ export class Color {
 
 
 let _colorCanvasCtx;
-export function parse(color) {
+export function parse(value) {
+    if (value == null) {
+        throw new TypeError('invalid color or gradient');
+    }
+    if (value instanceof Color) {
+        return value;
+    } else if (value instanceof Gradient) {
+        return value;
+    } else if (typeof value === 'object') {
+        return Gradient.fromObject(value);
+    }
     if (!_colorCanvasCtx) {
         _colorCanvasCtx = (new OffscreenCanvas(1, 1)).getContext('2d', {willReadFrequently: true});
     }
     const ctx = _colorCanvasCtx;
     ctx.clearRect(0, 0, 1, 1);
-    ctx.fillStyle = color;
+    ctx.fillStyle = value;
     ctx.fillRect(0, 0, 1, 1);
     const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1, {colorSpace: 'srgb'}).data;
     return Color.fromRGB(r / 255, g / 255, b / 255, a / 255);
+}
+
+
+export class Gradient {
+
+    static fromObject(obj) {
+        if (obj.type === 'linear') {
+            return new LinearGradient(obj);
+        } else {
+            throw new TypeError("unsupported type");
+        }
+    }
+
+    constructor({type, classes, colors}={}) {
+        this.type = type;
+        this.classes = classes || [];
+        this.colors = [];
+        this.id = `color-gradient-${type}-${gradientIdCounter++}`;
+        if (colors) {
+            for (const x of colors) {
+                if (typeof x === 'string' || (x instanceof Color)) {
+                    this.addColor(x);
+                } else {
+                    this.addColor(x.color, x.offset);
+                }
+            }
+        }
+    }
+
+    addColor(color, offset) {
+        this.colors.push({
+            color: (color instanceof Color) ? color : parse(color),
+            offset
+        });
+    }
+}
+
+
+export class LinearGradient extends Gradient {
+    constructor(options) {
+        super(options);
+        this.angle = options.angle;
+        this.el = createSVGElement('linearGradient');
+        this.el.id = this.id;
+        this.el.setAttribute('x1', 0);
+        this.el.setAttribute('y1', 1);
+        this.el.setAttribute('x2', 0);
+        this.el.setAttribute('y2', 0);
+    }
+
+    render() {
+        this.el.setAttribute('class', 'sc-gradient');
+        this.el.classList.add(...this.classes);
+        const angle = (this.angle || 0) % 360;
+        if (angle) {
+            this.el.setAttribute('gradientTransform', `rotate(${angle} 0.5 0.5)`);
+        } else {
+            this.el.removeAttribute('gradientTransform');
+        }
+        let left = 0;
+        const stops = [];
+        for (const [i, x] of this.colors.entries()) {
+            let offset = x.offset;
+            if (offset == null) {
+                if (i === 0) {
+                    offset = 0;
+                } else if (i === this.colors.length - 1) {
+                    offset = 1;
+                } else {
+                    const nextBorderJump = this.colors.slice(i).findIndex(x => x.offset != null);
+                    let steps, right;
+                    if (nextBorderJump !== -1) {
+                        steps = nextBorderJump + 1;
+                        right = this.colors[nextBorderJump + i].offset;
+                    } else {
+                        steps = this.colors.length - i;
+                        right = 1;
+                    }
+                    offset = left + (right - left) / steps;
+                }
+            }
+            left = offset;
+            const stop = createSVGElement('stop');
+            stop.setAttribute('offset', `${offset * 100}%`);
+            stop.style.setProperty('stop-color', x.color);
+            stops.push(stop);
+        }
+        this.el.replaceChildren(...stops);
+    }
 }

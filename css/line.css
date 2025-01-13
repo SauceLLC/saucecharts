@@ -4,7 +4,9 @@
     stroke-width: 0.1em;
 
     .sc-data {
-        transition: d var(--transition-duration) var(--transition-timing);
+        transition-property: d;
+        transition-timing-function: linear;
+        transition-duration: var(--transition-duration);
     }
 
     svg.sc-plot-region {
@@ -35,11 +37,9 @@
         height: var(--height);
         x: calc(var(--group-x) + var(--x));
         y: calc(var(--group-y) + var(--y));
-        transition:
-            x var(--transition-duration) var(--transition-timing),
-            y var(--transition-duration) var(--transition-timing),
-            width var(--transition-duration) var(--transition-timing),
-            height var(--transition-duration) var(--transition-timing);
+        transition-property: x, y, width, height;
+        transition-timing-function: linear;
+        transition-duration: var(--transition-duration);
     }
 
     .sc-line-marker {

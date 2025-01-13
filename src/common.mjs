@@ -1,4 +1,3 @@
-
 import * as color from './color.mjs';
 
 let globalIdCounter = 0;
@@ -10,6 +9,7 @@ export function createSVGElement(tag) {
 
 
 export class Chart {
+
     constructor(options={}) {
         this.init(options);
         this.id = globalIdCounter++;
@@ -22,12 +22,15 @@ export class Chart {
         this.color = options.color;
         this.padding = options.padding || [0, 0, 0, 0];
         this.tooltipPadding = options.tooltipPadding || [0, 0, 0, 0];
+        this.tooltipPosition = options.tooltipPosition || 'leftright';
         this.disableAnimation = options.disableAnimation;
         this.darkMode = options.darkMode;
+        this.tooltipLinger = options.tooltipLinger ?? 2000;
+        this._gradients = new Set();
         if (options.onTooltip) {
             this.onTooltip = options.onTooltip.bind(this);
         }
-        this._onPointerOverBound = this.onPointerOver.bind(this);
+        this._onPointerEnterBound = this.onPointerEnter.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
         if (options.el) {
             this.setElement(options.el, {merge: options.merge});
@@ -38,6 +41,21 @@ export class Chart {
     }
 
     init(options) {
+    }
+
+    addGradient(gradient) {
+        if (!(gradient instanceof color.Gradient)) {
+            gradient = color.Gradient.fromObject(gradient);
+        }
+        gradient.render();
+        this._gradients.add(gradient);
+        this._defsEl.append(gradient.el);
+        return gradient;
+    }
+
+    removeGradient(gradient) {
+        this._gradients.delete(gradient);
+        gradient.el.remove();
     }
 
     onResize() {
@@ -91,7 +109,7 @@ export class Chart {
         this.el = el;
         if (old) {
             this._resizeObserver.disconnect();
-            old.removeEventListener('pointerover', this._onPointerOverBound);
+            old.removeEventListener('pointerenter', this._onPointerEnterBound);
         }
         if (!merge) {
             el.classList.add('saucechart', 'sc-wrap');
@@ -112,8 +130,10 @@ export class Chart {
         } else {
             el.parentSauceChart.addChart(this);
         }
-        this._rootSvgEl = el.querySelector(`svg.sc-root`);
-        this._tooltipGroup = this._rootSvgEl.querySelector(`.sc-tooltip`);
+        this._rootSvgEl = el.querySelector('svg.sc-root');
+        this._defsEl = this._rootSvgEl.querySelector('defs');
+        this._tooltipGroupEl = this._rootSvgEl.querySelector('.sc-tooltip');
+        this._tooltipBoxEl = el.querySelector('.sc-tooltip-box');
         this._plotRegionEl = createSVGElement('g');
         this._plotRegionEl.dataset.id = this.id;
         this._plotRegionEl.classList.add('sc-plot-region');
@@ -139,7 +159,7 @@ export class Chart {
         this._adjustSize();
         this._resizeObserver.observe(el);
         if (this.isParentChart()) {
-            el.addEventListener('pointerover', this._onPointerOverBound);
+            el.addEventListener('pointerenter', this._onPointerEnterBound);
         }
     }
 
@@ -174,7 +194,7 @@ export class Chart {
         `;
     }
 
-    onPointerOver(ev) {
+    onPointerEnter(ev) {
         if (this._activePointerMove) {
             return;
         }
@@ -183,19 +203,23 @@ export class Chart {
         const positionerEl = this.el.querySelector('.sc-tooltip-positioner');
         const charts = [this, ...this.childCharts];
         let chartPlotOffsets;
-        let lastMoveEvent;
+        let lastMoveEvent = ev;
         let lastDrawSig;
+        let lastFrameTime;
+        const scrollOffsets = [scrollX, scrollY];
         this._activePointerMove = ev => {
+            const frameTime = document.timeline.currentTime;
             ev = ev && ev.type === 'pointermove' ? ev : lastMoveEvent;
-            if (!ev) {
+            if (!ev || frameTime === lastFrameTime) {
                 return;
             }
             lastMoveEvent = ev;
+            lastFrameTime = frameTime;
             const tooltips = [];
-            let drawSig = '';
+            let drawSig = scrollOffsets.join();
             for (let i = 0; i < charts.length; i++) {
                 const chart = charts[i];
-                const xSearch = (ev.x - chartPlotOffsets[i][0] + scrollX) * this.devicePixelRatio;
+                const xSearch = (ev.x - chartPlotOffsets[i][0] + scrollOffsets[0]) * this.devicePixelRatio;
                 const index = chart.findNearestIndexFromXCoord(xSearch);
                 if (index === undefined) {
                     continue;
@@ -207,13 +231,13 @@ export class Chart {
                 } else if (chart.onTooltip) {
                     html = chart.onTooltip(entry, index, chart);
                 }
-                const coordinates = chart.toCoordinates(entry);
+                const coordinates = chart.getMidpointCoordinates(index);
                 tooltips.push({chart, index, entry, coordinates, html});
                 drawSig += ` ${i} ${index} ${coordinates[0]} ${coordinates[1]}`;
             }
             if (drawSig !== lastDrawSig) {
                 lastDrawSig = drawSig;
-                this._drawTooltip(tooltips, positionerEl, chartPlotOffsets[0]);
+                this._drawTooltip(tooltips, positionerEl, chartPlotOffsets[0], scrollOffsets);
             }
         };
         const onDone = () => {
@@ -221,10 +245,10 @@ export class Chart {
             this._activePointerMove = null;
             setTimeout(() => {
                 if (!this._activePointerMove) {
-                    this._tooltipGroup.classList.remove('active');
+                    this._tooltipGroupEl.classList.remove('active');
                     positionerEl.classList.remove('active');
                 }
-            }, 2000);
+            }, this.tooltipLinger);
         };
         const signal = doneCtrl.signal;
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
@@ -232,21 +256,24 @@ export class Chart {
         addEventListener('pointerout', ev => !el.contains(ev.target) && onDone(), {signal});
         el.addEventListener('pointerleave', onDone, {signal});
         el.addEventListener('pointermove', this._activePointerMove, {signal});
-        addEventListener('scroll', this._activePointerMove, {signal, passive: true});
+        addEventListener('scroll', ev => {
+            scrollOffsets[0] = scrollX;
+            scrollOffsets[1] = scrollY;
+            this._activePointerMove();
+        }, {signal, passive: true});
         chartPlotOffsets = charts.map(x => {
             const plotRect = x.el.getBoundingClientRect();
-            return [plotRect.x + scrollX, plotRect.y + scrollY];
+            // XXX still unsure about using scroll offsets here...
+            return [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]];
         });
+        this._activePointerMove();
+        positionerEl.offsetWidth;
         positionerEl.classList.add('active');
-        this._tooltipGroup.classList.add('active');
+        this._tooltipGroupEl.classList.add('active');
     }
 
-    _drawTooltip(tooltips, positionerEl, offset) {
-        // XXX optimize this more...
-        const box = positionerEl.querySelector('.sc-tooltip-box');
-        for (const x of this._tooltipGroup.querySelectorAll('line,circle')) {
-            x.remove();
-        }
+    _drawTooltip(tooltips, positionerEl, offset, scrollOffsets) {
+        const box = this._tooltipBoxEl;
         if (!tooltips.length) {
             box.innerHTML = '';
             return;
@@ -254,33 +281,85 @@ export class Chart {
         const top = this.tooltipPadding[0] * this.devicePixelRatio;
         const bottom = this.tooltipPadding[2] * this.devicePixelRatio;
         const left = this.tooltipPadding[3] * this.devicePixelRatio;
-        const centerX = tooltips.reduce((agg, o) => agg + o.chart.toX(o.entry.x), 0) / tooltips.length;
-        const vertLine = createSVGElement('line');
-        vertLine.classList.add('vertical');
-        vertLine.setAttribute('x1', centerX + left);
-        vertLine.setAttribute('x2', centerX + left);
-        vertLine.setAttribute('y1', this._boxHeight - bottom);
-        vertLine.setAttribute('y2', top);
-        this._tooltipGroup.append(vertLine);
-        for (const {coordinates} of tooltips) {
-            const dot = createSVGElement('circle');
-            dot.setAttribute('cx', coordinates[0]);
-            dot.setAttribute('cy', coordinates[1]);
-            this._tooltipGroup.prepend(dot);
-            if (Math.abs(coordinates[0] - (centerX + left)) > 1) {
-                const horizLine = createSVGElement('line');
-                horizLine.classList.add('horizontal');
-                horizLine.setAttribute('x1', centerX + left);
-                horizLine.setAttribute('x2', coordinates[0]);
-                horizLine.setAttribute('y1', coordinates[1]);
-                horizLine.setAttribute('y2', coordinates[1]);
-                this._tooltipGroup.prepend(horizLine);
+        const centerX = tooltips.reduce((agg, o) => agg + o.coordinates[0], 0) / tooltips.length;
+        let vertLine = this._tooltipGroupEl.querySelector('path.line.vertical');
+        const existingHLines = this._tooltipGroupEl.querySelectorAll('path.line.horizontal');
+        const existingDots = this._tooltipGroupEl.querySelectorAll('circle.dot');
+        if (!vertLine) {
+            vertLine = createSVGElement('path');
+            vertLine.classList.add('line', 'vertical');
+            this._tooltipGroupEl.append(vertLine);
+        }
+        vertLine.setAttribute('d', `M ${centerX + left}, ${this._boxHeight - bottom} V ${top}`);
+        let minX = this._boxWidth;
+        let minY = this._boxHeight;
+        let maxX = 0;
+        let maxY = 0;
+        let extraCount = 0;
+        for (let i = 0; i < tooltips.length; i++) {
+            const [x, y] = tooltips[i].coordinates;
+            let dot = existingDots[i];
+            if (!dot) {
+                dot = createSVGElement('circle');
+                dot.classList.add('dot');
+                this._tooltipGroupEl.prepend(dot);
+            }
+            dot.setAttribute('cx', x);
+            dot.setAttribute('cy', y);
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (x < minX) {
+                minX = x;
+            }
+            if (y > maxY) {
+                maxY = y;
+            }
+            if (y < minY) {
+                minY = y;
+            }
+            if (Math.abs(x - (centerX + left)) > 1) {
+                let horizLine = existingHLines[i];
+                if (!horizLine) {
+                    horizLine = createSVGElement('path');
+                    horizLine.classList.add('line', 'horizontal');
+                    this._tooltipGroupEl.prepend(horizLine);
+                }
+                horizLine.setAttribute('d', `M ${centerX + left} ${y} H ${x}`);
+                extraCount++;
             }
         }
-        const x = centerX / this.devicePixelRatio + offset[0] - scrollX;
-        const y = top / this.devicePixelRatio + offset[1] - scrollY;
+        for (let i = extraCount; i < existingHLines.length; i++) {
+            existingHLines[i].remove();
+        }
+        for (let i = tooltips.length; i < existingDots.length; i++) {
+            existingDots[i].remove();
+        }
+        let anchorX = centerX;
+        const anchorY = top;
+        const tp = this.tooltipPosition;
+        if (typeof tp === 'function') {
+            box.style.setProperty('inset', this.tooltipPostion({
+                chart: this,
+                minX,
+                minY,
+                maxX,
+                maxY,
+                tooltips
+            }));
+        } else if (tp.match(/left|right/)) {
+            let right;
+            if (tp === 'leftright') {
+                right = centerX >= this._boxWidth * 0.5;
+            } else {
+                right = tp === 'right';
+            }
+            anchorX = right ? minX : maxX;
+            box.classList.toggle('right', right);
+        } // XXX WIP
+        const x = anchorX / this.devicePixelRatio + offset[0] - scrollOffsets[0];
+        const y = Math.max(0, anchorY / this.devicePixelRatio + offset[1] - scrollOffsets[1]);
         positionerEl.style.setProperty('translate', `${x}px ${y}px`);
-        box.classList.toggle('right', centerX >= this._boxWidth / 2);
         box.innerHTML = tooltips.map(x => x.html).join('');
     }
 
@@ -292,7 +371,7 @@ export class Chart {
         let left = 0;
         let right = len - 1;
         for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
-            const x = this.toX(this._renderData[i].x);
+            const x = this.getMidpointX(i);
             if (x > searchX) {
                 right = i;
             } else if (x < searchX) {
@@ -301,8 +380,8 @@ export class Chart {
                 return i;
             }
             if (right - left <= 1) {
-                const lDist = searchX - this.toX(this._renderData[left].x);
-                const rDist = this.toX(this._renderData[right].x) - searchX;
+                const lDist = searchX - this.getMidpointX(left);
+                const rDist = this.getMidpointX(right) - searchX;
                 return lDist < rDist ? left : right;
             }
         }
@@ -426,10 +505,30 @@ export class Chart {
             this.yMin;
     }
 
+    getMidpointOffsetX(index) {
+        // Subclasses can use to move tooltip anchoring
+        return 0;
+    }
+
+    getMidpointX(index) {
+        return this.toX(this._renderData[index].x) + this.getMidpointOffsetX(index);
+    }
+
+    getMidpointCoordinates(index) {
+        return [
+            this.toX(this._renderData[index].x) + this.getMidpointOffsetX(index),
+            this.toY(this._renderData[index].y)
+        ];
+    }
+
     reset() {
         if (this.data) {
             this.data.length = 0;
         }
+        for (const x of this._gradients) {
+            x.el.remove();
+        }
+        this._gradients.clear();
         this.doReset();
     }
 

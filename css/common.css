@@ -67,14 +67,14 @@
             .line {
                 opacity: 0.7;
                 stroke: currentColor;
-                stroke-width: 0.10em;
+                stroke-width: 0.12em;
                 stroke-dasharray: 0.25em;
                 stroke-linecap: round;
                 filter: drop-shadow(0 0 0.1em #8888);
 
                 &.horizontal {
-                    stroke-width: 0.08em;
-                    stroke-dasharray: 0.12em;
+                    stroke-width: 0.10em;
+                    stroke-dasharray: 0.20em;
                 }
             }
 

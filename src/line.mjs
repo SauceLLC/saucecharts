@@ -1,8 +1,5 @@
-
 import * as common from './common.mjs';
-
-const isIE6 = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
-    location.search.includes('safari');
+import * as color from './color.mjs';
 
 
 export class LineChart extends common.Chart {
@@ -11,6 +8,7 @@ export class LineChart extends common.Chart {
         this.hidePoints = options.hidePoints;
         this.segments = [];
         this._segmentEls = new Map();
+        this._segmentFills = new Map();
     }
 
     setSegments(segments) {
@@ -35,15 +33,27 @@ export class LineChart extends common.Chart {
             </marker>
         `);
         this._plotRegionEl.innerHTML = `
-            <${isIE6 ? 'g' : 'foreignObject'} clip-path="url(#${pathClipId})" class="sc-css-background">
-                <${isIE6 ? 'rect' : 'div'} class="sc-visual-data-area"></${isIE6 ? 'rect' : 'div'}>
-            </${isIE6 ? 'g' : 'foreignObject'}>
+            <g clip-path="url(#${pathClipId})" class="sc-background">
+                <rect class="sc-visual-data-area"/>
+            </g>
             <path class="sc-data sc-line sc-visual-data-line"
                   marker-start="url(#${pathMarkerId})"
                   marker-mid="url(#${pathMarkerId})"
                   marker-end="url(#${pathMarkerId})"/>
         `;
-        this._backgroundEl = this._plotRegionEl.querySelector('.sc-css-background');
+        this._backgroundEl = this._plotRegionEl.querySelector('.sc-background');
+        if (this._bgGradient) {
+            this.removeGradient(this._bgGradient);
+        }
+        const fill = color.parse(this.getColor());
+        this._bgGradient = this.addGradient({
+            type: 'linear',
+            colors: [
+                fill.lighten(-0.2).alpha(0.2),
+                fill.alpha(0.8),
+            ]
+        });
+        this._backgroundEl.querySelector('rect').setAttribute('fill', `url(#${this._bgGradient.id})`);
         this._pathLineEl = this._plotRegionEl.querySelector(`path.sc-data.sc-line`);
         this._pathAreaEl = defs.querySelector(`[data-sc-id="${this.id}"] path.sc-data.sc-area`);
         this._setBackgroundPos();
@@ -51,10 +61,11 @@ export class LineChart extends common.Chart {
 
     _adjustSize() {
         super._adjustSize();
-        this._setBackgroundPos();
+        this._setBackgroundPos(); // XXX see in
     }
 
     _setBackgroundPos() {
+        // XXX I think we can kill this now that we have to use g and rect
         const el = this._backgroundEl;
         if (!el) {
             return;
@@ -74,6 +85,7 @@ export class LineChart extends common.Chart {
         this._prevData = null;
         this.segments.length = 0;
         this._segmentEls.clear();
+        this._segmentFills.clear();
     }
 
     beforeRender() {
@@ -144,11 +156,7 @@ export class LineChart extends common.Chart {
                 const s = this.segments[i];
                 let el = this._segmentEls.get(s);
                 if (!el) {
-                    if (isIE6) {
-                        el = common.createSVGElement('rect');
-                    } else {
-                        el = document.createElement('div');
-                    }
+                    el = common.createSVGElement('rect');
                     el.classList.add('sc-visual-data-segment');
                     this._backgroundEl.append(el);
                     this._segmentEls.set(s, el);
@@ -164,7 +172,22 @@ export class LineChart extends common.Chart {
                 el.style.setProperty('--width', `${width}px`);
                 el.style.setProperty('--height', `${height}px`);
                 if (s.color) {
-                    el.style.setProperty('--color', s.color);
+                    if (!this._segmentFills.has(s.color)) {
+                        const fill = color.parse(s.color);
+                        const gradient = (fill instanceof color.Gradient) ?
+                            fill :
+                            color.Gradient.fromObject({
+                                type: 'linear',
+                                colors: [
+                                    fill.lighten(-0.2).alpha(0.2),
+                                    fill.alpha(0.8),
+                                ]
+                            });
+                        this._segmentFills.set(s.color, {gradient});
+                        this.addGradient(gradient);
+                    }
+                    const {gradient} = this._segmentFills.get(s.color);
+                    el.setAttribute('fill', `url(#${gradient.id})`);
                 }
             }
             if (unclaimed.size) {

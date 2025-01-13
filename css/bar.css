@@ -2,20 +2,8 @@
 
 .saucechart > svg.sc-root {
     .sc-visual-data-bar {
-        transition:
-            x var(--transition-duration) var(--transition-timing), 
-            y var(--transition-duration) var(--transition-timing), 
-            width var(--transition-duration) var(--transition-timing), 
-            height var(--transition-duration) var(--transition-timing);
-
-        bar-styles {
-            display: block;
-            width: 100%;
-            height: 100%;
-            background-image: linear-gradient(to top,
-                color-mix(in srgb, var(--color), color-mix(in srgb, #777, transparent 50%) 80%),
-                color-mix(in srgb, var(--color), color-mix(in srgb, #111, transparent 20%) 20%));
-            border-radius: 0.10em 0.10em 0 0;
-        }
+        transition-property: x, y, width, height;
+        transition-timing-function: linear;
+        transition-duration: var(--transition-duration);
     }
 }

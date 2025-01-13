@@ -6,7 +6,7 @@ function ts() {
 }
 
 let paused = false;
-let tests = [2];
+let tests = [1, 2];
 let speed = 1000;
 const maxSize = 4000;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
