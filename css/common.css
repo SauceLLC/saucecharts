@@ -1,6 +1,6 @@
 .saucechart {
     --transition-duration: 400ms;
-    --transition-timing: linear;
+    --tooltip-transition-duration: 100ms;
     --background-color: #fff;
     --shade-dir: 1;
     width: 100%;
@@ -13,6 +13,7 @@
 
     &.disable-animation {
         --transition-duration: 0 !important;
+        --tooltip-transition-duration: 0 !important;
     }
 
     &.darkmode {
@@ -40,6 +41,7 @@
         z-index: 10;
         top: 0;
         left: 0;
+        transition: translate var(--tooltip-transition-duration) linear;
 
         &:not(.active) {
             opacity: 0;
@@ -62,7 +64,7 @@
                 display: none;
             }
 
-            line {
+            .line {
                 opacity: 0.7;
                 stroke: currentColor;
                 stroke-width: 0.10em;
