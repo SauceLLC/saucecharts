@@ -26,6 +26,7 @@ export class Chart {
         this.disableAnimation = options.disableAnimation;
         this.darkMode = options.darkMode;
         this.tooltipLinger = options.tooltipLinger ?? 2000;
+        this._tooltipState = {};
         this._gradients = new Set();
         if (options.onTooltip) {
             this.onTooltip = options.onTooltip.bind(this);
@@ -59,17 +60,18 @@ export class Chart {
     }
 
     onResize() {
-        if (!this.disableAnimation) {
+        const hasAnim = !this.el.classList.contains('disable-animation');
+        if (hasAnim) {
             this.el.classList.add('disable-animation');
         }
         try {
             this._adjustSize();
             if (this.data) {
                 this.render();
-                this.el.clientWidth;
             }
         } finally {
-            if (!this.disableAnimation) {
+            if (hasAnim) {
+                this.el.offsetWidth;
                 this.el.classList.remove('disable-animation');
             }
         }
@@ -100,7 +102,7 @@ export class Chart {
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
         if (this.isParentChart()) {
             this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
-            this._rootSvgEl.style.setProperty('--dpr', this.devicePixelRatio);
+            this.el.style.setProperty('--dpr', this.devicePixelRatio);
         }
     }
 
@@ -120,7 +122,7 @@ export class Chart {
                     <g class="sc-plot-regions"></g>
                     <g class="sc-tooltip"></g>
                 </svg>
-                <div class="sc-tooltip-positioner">
+                <div class="sc-tooltip-positioner ${this.tooltipPosition}">
                     <div class="sc-tooltip-box-wrap">
                         <div class="sc-tooltip-box"></div>
                     </div>
@@ -179,6 +181,7 @@ export class Chart {
             throw new TypeError("Improper use of addChart");
         }
         this.childCharts.push(chart);
+        chart.parentChart = this;
         for (const x of this.childCharts) {
             x._computedColor = null;
         }
@@ -195,91 +198,136 @@ export class Chart {
     }
 
     onPointerEnter(ev) {
-        if (this._activePointerMove) {
+        if (this._tooltipState.active) {
             return;
         }
-        const el = this.el;
-        const doneCtrl = new AbortController();
-        const positionerEl = this.el.querySelector('.sc-tooltip-positioner');
-        const charts = [this, ...this.childCharts];
-        let chartPlotOffsets;
-        let lastMoveEvent = ev;
-        let lastDrawSig;
-        let lastFrameTime;
-        const scrollOffsets = [scrollX, scrollY];
-        this._activePointerMove = ev => {
-            const frameTime = document.timeline.currentTime;
-            ev = ev && ev.type === 'pointermove' ? ev : lastMoveEvent;
-            if (!ev || frameTime === lastFrameTime) {
-                return;
-            }
-            lastMoveEvent = ev;
-            lastFrameTime = frameTime;
-            const tooltips = [];
-            let drawSig = scrollOffsets.join();
-            for (let i = 0; i < charts.length; i++) {
-                const chart = charts[i];
-                const xSearch = (ev.x - chartPlotOffsets[i][0] + scrollOffsets[0]) * this.devicePixelRatio;
-                const index = chart.findNearestIndexFromXCoord(xSearch);
-                if (index === undefined) {
-                    continue;
-                }
-                const entry = chart._renderData[index];
-                let html;
-                if (entry.tooltip) {
-                    html = entry.tooltip(entry, index, chart);
-                } else if (chart.onTooltip) {
-                    html = chart.onTooltip(entry, index, chart);
-                }
-                const coordinates = chart.getMidpointCoordinates(index);
-                tooltips.push({chart, index, entry, coordinates, html});
-                drawSig += ` ${i} ${index} ${coordinates[0]} ${coordinates[1]}`;
-            }
-            if (drawSig !== lastDrawSig) {
-                lastDrawSig = drawSig;
-                this._drawTooltip(tooltips, positionerEl, chartPlotOffsets[0], scrollOffsets);
-            }
-        };
+        const state = this._initTooltipState();
         const onDone = () => {
-            doneCtrl.abort();
-            this._activePointerMove = null;
-            setTimeout(() => {
-                if (!this._activePointerMove) {
-                    this._tooltipGroupEl.classList.remove('active');
-                    positionerEl.classList.remove('active');
-                }
-            }, this.tooltipLinger);
+            state.doneController.abort();
+            state.active = false;
+            if (state === this._tooltipState) {
+                setTimeout(() => {
+                    if (!this._tooltipState.active) {
+                        this.hideTooltip();
+                    }
+                }, this.tooltipLinger);
+            } else {
+                debugger;
+            }
         };
-        const signal = doneCtrl.signal;
+        const signal = state.doneController.signal;
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
         addEventListener('pointercancel', onDone, {signal});
-        addEventListener('pointerout', ev => !el.contains(ev.target) && onDone(), {signal});
-        el.addEventListener('pointerleave', onDone, {signal});
-        el.addEventListener('pointermove', this._activePointerMove, {signal});
+        addEventListener('pointerout', ev => !this.el.contains(ev.target) && onDone(), {signal});
+        this.el.addEventListener('pointerleave', onDone, {signal});
+        this.el.addEventListener('pointermove', ev => this.setTooltipPosition({x: ev.x}), {signal});
         addEventListener('scroll', ev => {
-            scrollOffsets[0] = scrollX;
-            scrollOffsets[1] = scrollY;
-            this._activePointerMove();
+            state.scrollOffsets[0] = scrollX;
+            state.scrollOffsets[1] = scrollY;
+            this._updateActiveTooltip();
         }, {signal, passive: true});
-        chartPlotOffsets = charts.map(x => {
-            const plotRect = x.el.getBoundingClientRect();
-            // XXX still unsure about using scroll offsets here...
-            return [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]];
-        });
-        this._activePointerMove();
-        positionerEl.offsetWidth;
-        positionerEl.classList.add('active');
-        this._tooltipGroupEl.classList.add('active');
+        this.setTooltipPosition({x: ev.x});
+        this.showTooltip();
     }
 
-    _drawTooltip(tooltips, positionerEl, offset, scrollOffsets) {
+    hideTooltip({x, y, index}={}) {
+        const state = this._tooltipState;
+        this._tooltipState = {};
+        this._tooltipGroupEl.classList.remove('active');
+        state.positionerEl?.classList.remove('active');
+    }
+
+    showTooltip({x, y, index}={}) {
+        const state = this._tooltipState;
+        if (!state.active) {
+            return;
+        }
+        const hasAnim = !this.el.classList.contains('disable-animation');
+        if (hasAnim) {
+            this.el.classList.add('disable-animation');
+        }
+        try {
+            //state.positionerEl.offsetWidth;  // Prevent transition on first showing
+            this.el.offsetWidth;
+            state.positionerEl.classList.add('active');
+            this._tooltipGroupEl.classList.add('active');
+        } finally {
+            if (hasAnim) {
+                this.el.offsetWidth;
+                this.el.classList.remove('disable-animation');
+            }
+        }
+    }
+
+    _initTooltipState() {
+        const charts = [this, ...this.childCharts];
+        const scrollOffsets = [scrollX, scrollY];
+        return this._tooltipState = {
+            active: true,
+            doneController: new AbortController(),
+            charts,
+            scrollOffsets,
+            positionerEl: this.el.querySelector('.sc-tooltip-positioner'),
+            lastDrawSig: undefined,
+            chartPlotOffsets: charts.map(x => {
+                const plotRect = x.el.getBoundingClientRect();
+                // XXX still unsure about using scroll offsets here...
+                return [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]];
+            })
+        };
+    }
+
+    setTooltipPosition({x, y, index}) {
+        if (!this._tooltipState.active) {
+            this._initTooltipState();
+        }
+        Object.assign(this._tooltipState, {x, y, index});
+        this._updateActiveTooltip();
+    }
+
+    _updateActiveTooltip() {
+        if (!this._tooltipState.active) {
+            return;
+        }
+        const tooltips = [];
+        const state = this._tooltipState;
+        let drawSig = state.scrollOffsets.join();
+        const xRef = state.index != null ? this.getMidpointX(state.index) : state.x;
+        for (let i = 0; i < state.charts.length; i++) {
+            const chart = state.charts[i];
+            const xSearch = (xRef - state.chartPlotOffsets[i][0] + state.scrollOffsets[0]) *
+                this.devicePixelRatio;
+            const index = chart.findNearestIndexFromXCoord(xSearch);
+            if (index === undefined) {
+                continue;
+            }
+            const entry = chart._renderData[index];
+            let html;
+            if (entry.tooltip) {
+                html = entry.tooltip(entry, index, chart);
+            } else if (chart.onTooltip) {
+                html = chart.onTooltip(entry, index, chart);
+            }
+            const coordinates = chart.getMidpointCoordinates(index);
+            tooltips.push({chart, index, entry, coordinates, html});
+            drawSig += ` ${i} ${index} ${coordinates[0]} ${coordinates[1]}`;
+        }
+        if (drawSig !== state.lastDrawSig) {
+            state.lastDrawSig = drawSig;
+            this._drawTooltip(tooltips);
+        }
+    }
+
+    _drawTooltip(tooltips) {
         const box = this._tooltipBoxEl;
         if (!tooltips.length) {
             box.innerHTML = '';
             return;
         }
+        const state = this._tooltipState;
+        const offset = state.chartPlotOffsets[0];
         const top = this.tooltipPadding[0] * this.devicePixelRatio;
-        const bottom = this.tooltipPadding[2] * this.devicePixelRatio;
+        const bottom = this._boxHeight - this.tooltipPadding[2] * this.devicePixelRatio;
         const left = this.tooltipPadding[3] * this.devicePixelRatio;
         const centerX = tooltips.reduce((agg, o) => agg + o.coordinates[0], 0) / tooltips.length;
         let vertLine = this._tooltipGroupEl.querySelector('path.line.vertical');
@@ -290,7 +338,7 @@ export class Chart {
             vertLine.classList.add('line', 'vertical');
             this._tooltipGroupEl.append(vertLine);
         }
-        vertLine.setAttribute('d', `M ${centerX + left}, ${this._boxHeight - bottom} V ${top}`);
+        vertLine.setAttribute('d', `M ${centerX + left}, ${bottom} V ${top}`);
         let minX = this._boxWidth;
         let minY = this._boxHeight;
         let maxX = 0;
@@ -325,7 +373,8 @@ export class Chart {
                     horizLine.classList.add('line', 'horizontal');
                     this._tooltipGroupEl.prepend(horizLine);
                 }
-                horizLine.setAttribute('d', `M ${centerX + left} ${y} H ${x}`);
+                horizLine.setAttribute(
+                    'd', `M ${x}, ${y} L ${centerX + left}, ${Math.min(bottom, Math.max(y, top))}`);
                 extraCount++;
             }
         }
@@ -336,30 +385,52 @@ export class Chart {
             existingDots[i].remove();
         }
         let anchorX = centerX;
-        const anchorY = top;
+        let anchorY = top;
         const tp = this.tooltipPosition;
+        let vAlign, hAlign;
         if (typeof tp === 'function') {
-            box.style.setProperty('inset', this.tooltipPostion({
+            [vAlign, hAlign] = this.tooltipPosition({
                 chart: this,
                 minX,
                 minY,
                 maxX,
                 maxY,
                 tooltips
-            }));
-        } else if (tp.match(/left|right/)) {
-            let right;
-            if (tp === 'leftright') {
-                right = centerX >= this._boxWidth * 0.5;
-            } else {
-                right = tp === 'right';
+            });
+        } else {
+            if (tp.match(/\bleft\b/)) {
+                hAlign = 'left';
+            } else if (tp.match(/\bright\b/)) {
+                hAlign = 'right';
+            } else if (tp.match(/\bleftright\b/)) {
+                hAlign = centerX >= this._boxWidth * 0.5 ? 'left' : 'right';
             }
-            anchorX = right ? minX : maxX;
-            box.classList.toggle('right', right);
-        } // XXX WIP
-        const x = anchorX / this.devicePixelRatio + offset[0] - scrollOffsets[0];
-        const y = Math.max(0, anchorY / this.devicePixelRatio + offset[1] - scrollOffsets[1]);
-        positionerEl.style.setProperty('translate', `${x}px ${y}px`);
+            if (tp.match(/\btop\b/)) {
+                vAlign = 'top';
+            } else if (tp.match(/\bbottom\b/)) {
+                vAlign = 'bottom';
+            }
+            if (hAlign) {
+                anchorX = hAlign === 'left' ? minX : maxX;
+            }
+            if (vAlign) {
+                anchorY = vAlign === 'top' ? top : bottom;
+            }
+        }
+        const x = anchorX / this.devicePixelRatio + offset[0] - state.scrollOffsets[0];
+        const y = Math.max(0, anchorY / this.devicePixelRatio + offset[1] - state.scrollOffsets[1]);
+        box.style.setProperty('left', hAlign === 'left' ?
+            '-100%' :
+            hAlign === 'right' ?
+                0 :
+                '-50%');
+        box.parentElement.style.setProperty('inset', vAlign === 'top' ? 'auto auto 0' : '0 auto');
+        state.positionerEl.style.setProperty('translate', `${x}px ${y}px`);
+        state.positionerEl.style.setProperty('--x-min', `${minX}px`);
+        state.positionerEl.style.setProperty('--x-max', `${maxX}px`);
+        state.positionerEl.style.setProperty('--x-center', `${centerX}px`);
+        state.positionerEl.style.setProperty('--y-min', `${top}px`);
+        state.positionerEl.style.setProperty('--y-max', `${top}px`);
         box.innerHTML = tooltips.map(x => x.html).join('');
     }
 
@@ -458,8 +529,10 @@ export class Chart {
     }
 
     afterRender() {
-        if (this._activePointerMove) {
-            this._activePointerMove();
+        if (this.isParentChart()) {
+            this._updateActiveTooltip();
+        } else if (this.parentChart) {
+            this.parentChart._updateActiveTooltip();
         }
     }
 

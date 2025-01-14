@@ -6,7 +6,7 @@ export class BarChart extends common.Chart {
 
     init(options={}) {
         this._barsMap = new Map();
-        this.barSpacing = options.barSpacing ?? 4;
+        this.barSpacing = options.barSpacing ?? 10;
         this.barRadius = options.barRadius ?? 4;
     }
 
@@ -61,18 +61,6 @@ export class BarChart extends common.Chart {
         const xMaxCoord = this.toX(this.xMax);
         for (let index = 0; index < coords.length; index++) {
             const coord = coords[index];
-            const ref = this.data[index];
-            let bar = this._barsMap.get(ref);
-            if (bar) {
-                remBars.delete(bar);
-            } else {
-                bar = {ref};
-                bar.element = common.createSVGElement('path');
-                bar.element.classList.add('sc-bar', 'sc-visual-data-bar');
-                bar.element.setAttribute('fill', `url(#${this._bgGradient.id})`);
-                manifest.add.push(bar.element);
-                this._barsMap.set(ref, bar);
-            }
             const attrs = {
                 width: coords.length === 1 ?
                     xMaxCoord - xMinCoord :
@@ -83,6 +71,18 @@ export class BarChart extends common.Chart {
                 x: coord[0],
                 y: coord[1],
             };
+            const ref = this.data[index];
+            let bar = this._barsMap.get(ref);
+            if (bar) {
+                remBars.delete(bar);
+            } else {
+                bar = {ref};
+                bar.element = common.createSVGElement('path');
+                bar.element.classList.add('sc-bar', 'sc-visual-data-bar');
+                bar.element.setAttribute('fill', `url(#${this._bgGradient.id})`);
+                manifest.add.push([bar.element, attrs]);
+                this._barsMap.set(ref, bar);
+            }
             const sig = `${attrs.width} ${attrs.height} ${attrs.x} ${attrs.y}`;
             if (bar.sig !== sig) {
                 manifest.update.push([bar.element, attrs]);
@@ -97,30 +97,40 @@ export class BarChart extends common.Chart {
         return manifest;
     }
 
+    _makeBarPath(x, y, width, height) {
+        const radius = Math.min(this.barRadius, width * 0.5, height);
+        return `
+            M ${x}, ${y + height}
+            v ${-height + radius}
+            q 0, ${-radius} ${radius}, ${-radius}
+            h ${width - 2 * radius}
+            q ${radius}, 0 ${radius}, ${radius}
+            v ${height - radius} z
+        `;
+    }
+
     _renderDoLayout({manifest}) {
         for (let i = 0; i < manifest.remove.length; i++) {
             manifest.remove[i].remove();
         }
-        const pad = this.barSpacing * 0.5;
+        for (let i = 0; i < manifest.add.length; i++) {
+            const [element, attrs] = manifest.add[i];
+            if (!this.disableAnimation) {
+                const centerX = attrs.x + attrs.width / 2;
+                const bottom = this._plotHeight + this._plotInset[0];
+                element.setAttribute('d', this._makeBarPath(centerX, bottom, 0, 0));
+            }
+            this._barsEl.append(element);
+        }
+        if (!this.disableAnimation && manifest.add.length) {
+            this._rootSvgEl.clientWidth;
+        }
         for (let i = 0; i < manifest.update.length; i++) {
             const [element, attrs] = manifest.update[i];
-            const radius = Math.min(this.barRadius, attrs.width * 0.5, attrs.height);
-            const width = attrs.width - (2 * radius) - (2 * pad);
-            if (width <= 0 || attrs.height <= 0) {
-                element.removeAttribute('d');
-            } else {
-                element.setAttribute('d', `
-                    M ${attrs.x + pad}, ${attrs.y + attrs.height}
-                    v ${-attrs.height + radius}
-                    q 0, ${-radius} ${radius}, ${-radius}
-                    h ${width}
-                    q ${radius}, 0 ${radius}, ${radius}
-                    v ${attrs.height - radius} z
-                `);
-            }
-        }
-        for (let i = 0; i < manifest.add.length; i++) {
-            this._barsEl.append(manifest.add[i]);
+            const width = Math.max(0, attrs.width - this.barSpacing);
+            const height = Math.max(0, attrs.height);
+            const x = attrs.x + this.barSpacing / 2;
+            element.setAttribute('d', this._makeBarPath(x, attrs.y, width, height));
         }
     }
 

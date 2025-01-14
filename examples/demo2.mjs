@@ -7,14 +7,14 @@ function ts() {
 
 let paused = false;
 const tests = [1, 2, 3, 4, 5, 6, 7, 8];
-//const tests = [3];
+//const tests = [1];
 const speed = 1000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
-    //padding: [5, 10, 15, 20],
+    padding: [5, 10, 15, 20],
 };
 
 document.querySelector('#freq').addEventListener('input', ev => {
@@ -38,7 +38,8 @@ if (tests.includes(1)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
-        title: 'ltr',
+        title: 'ltr (bottom tp)',
+        tooltipPosition: 'bottom',
     });
     setInterval(() => {
         if (paused) return;
@@ -56,7 +57,8 @@ if (tests.includes(2)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i2"),
-        title: 'ltr, 3 points per interval',
+        title: 'ltr, 3 points per interval (left tp)',
+        tooltipPosition: 'left',
     });
     setInterval(async () => {
         if (paused) return;
@@ -78,7 +80,8 @@ if (tests.includes(3)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i3"),
-        title: 'rtl',
+        title: 'rtl (right tp)',
+        tooltipPosition: 'right',
     });
     setInterval(() => {
         if (paused) return;
@@ -96,7 +99,8 @@ if (tests.includes(4)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i4"),
-        title: 'rtl, 2 points per interval',
+        title: 'rtl, 2 points per interval (leftright top tp)',
+        tooltipPosition: 'leftright top',
     });
     setInterval(async () => {
         if (paused) return;
@@ -116,7 +120,8 @@ if (tests.includes(5)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i5"),
-        title: 'random, same size',
+        title: 'random, same size (leftright bottom tp)',
+        tooltipPosition: 'leftright bottom',
     });
     setInterval(() => {
         if (paused) return;
@@ -133,7 +138,8 @@ if (tests.includes(6)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i6"),
-        title: 'random, random size',
+        title: 'random, random size (left top tp)',
+        tooltipPosition: 'left top',
     });
     setInterval(() => {
         if (paused) return;
@@ -150,30 +156,32 @@ if (tests.includes(7)) {
     const data2 = [];
     const data3 = [];
     const data4 = [];
+    const padding = [10, 10, 10, 10];
 
     const sl1 = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i7"),
-        padding: [10, 0, 0, 0],
-        title: 'Multiple graphs',
+        padding,
+        title: 'Multiple graphs (top tp)',
+        tooltipPosition: 'top',
     });
     const sl2 = new sc.BarChart({
         ...commonOptions,
         el: sl1.el,
         merge: true,
-        padding: [sl1.padding[0] + 30, 0, 0, 0],
+        padding: [sl1.padding[0] + 30, ...padding.slice(1)],
     });
     const sl3 = new sc.BarChart({
         ...commonOptions,
         el: sl1.el,
         merge: true,
-        padding: [sl2.padding[0] + 30, 0, 0, 0],
+        padding: [sl2.padding[0] + 30, ...padding.slice(1)],
     });
     const sl4 = new sc.BarChart({
         ...commonOptions,
         el: sl1.el,
         merge: true,
-        padding: [sl3.padding[0] + 30, 0, 0, 0],
+        padding: [sl3.padding[0] + 30, ...padding.slice(1)],
     });
 
     setInterval(() => {
@@ -213,8 +221,11 @@ if (tests.includes(8)) {
         ...commonOptions,
         hidePoints: true,
         el: document.querySelector(".graph.i8"),
-        title: 'large-data',
+        title: 'large-data (right bottom tp)',
+        tooltipPosition: 'right bottom',
+        tooltipPadding: [25, 20, 25, 50],
     });
+    let showingTooltip;
     setInterval(() => {
         if (paused) return;
         i++;
@@ -223,6 +234,18 @@ if (tests.includes(8)) {
             data.shift();
         }
         sl.setData(data);
+        if (Math.random() > 0.80) {
+            sl.setTooltipPosition({index: Math.random() * 100 | 0});
+            if (!showingTooltip) {
+                sl.showTooltip();
+                showingTooltip = true;
+            }
+        }
+        if (Math.random() > 0.95) {
+            console.log("hide");
+            sl.hideTooltip();
+            showingTooltip = false;
+        }
     }, speed);
 }
 

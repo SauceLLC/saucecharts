@@ -2,7 +2,7 @@
 
 .saucechart > svg.sc-root {
     .sc-visual-data-bar {
-        transition-property: x, y, width, height;
+        transition-property: d;
         transition-timing-function: linear;
         transition-duration: var(--transition-duration);
     }
