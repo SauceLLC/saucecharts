@@ -8,13 +8,20 @@ function ts() {
 let paused = false;
 const tests = [1, 2, 3, 4, 5, 6, 7, 8];
 //const tests = [1];
-const speed = 1000;
+const speed = 4000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
-    padding: [5, 10, 15, 20],
+    padding: [50, 100, 15, 200],
+    //tooltipPadding: [25, 20, 25, 0],
+};
+
+const _setInterval = setInterval;
+window.setInterval = (fn, timeout) => {
+    fn();
+    return _setInterval(fn, timeout);
 };
 
 document.querySelector('#freq').addEventListener('input', ev => {
@@ -38,8 +45,8 @@ if (tests.includes(1)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
-        title: 'ltr (bottom tp)',
-        tooltipPosition: 'bottom',
+        title: 'ltr (below tp)',
+        tooltipPosition: 'below',
     });
     setInterval(() => {
         if (paused) return;
@@ -58,7 +65,7 @@ if (tests.includes(2)) {
         ...commonOptions,
         el: document.querySelector(".graph.i2"),
         title: 'ltr, 3 points per interval (left tp)',
-        tooltipPosition: 'left',
+        tooltipPosition: 'above',
     });
     setInterval(async () => {
         if (paused) return;
@@ -138,8 +145,8 @@ if (tests.includes(6)) {
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i6"),
-        title: 'random, random size (left top tp)',
-        tooltipPosition: 'left top',
+        title: 'random, random size (middle center tp)',
+        tooltipPosition: 'middle center',
     });
     setInterval(() => {
         if (paused) return;
@@ -223,7 +230,6 @@ if (tests.includes(8)) {
         el: document.querySelector(".graph.i8"),
         title: 'large-data (right bottom tp)',
         tooltipPosition: 'right bottom',
-        tooltipPadding: [25, 20, 25, 50],
     });
     let showingTooltip;
     setInterval(() => {

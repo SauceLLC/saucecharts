@@ -49,6 +49,63 @@
             pointer-events: none !important;
             transition: opacity 1s, visibility 1s;
         }
+
+        translate:
+            calc((var(--x) + var(--x-offset)))
+            calc((var(--y) + var(--y-offset)));
+
+        &[data-h-align="left"] {
+            --x: var(--x-left);
+            .sc-tooltip-box {
+                left: -100%;
+            }
+        }
+        &[data-h-align="right"] {
+            --x: var(--x-right);
+            .sc-tooltip-box {
+                left: 0;
+            }
+        }
+        &[data-h-align="center"] {
+            --x: var(--x-center);
+            .sc-tooltip-box {
+                left: -50%;
+            }
+        }
+
+        &[data-v-align="above"] {
+            --y: var(--y-top);
+            .sc-tooltip-box-wrap {
+                bottom: 0;
+            }
+        }
+        &[data-v-align="top"] {
+            --y: var(--y-top);
+            .sc-tooltip-box-wrap {
+                top: 0;
+            }
+        }
+        &[data-v-align="middle"] {
+            --y: var(--y-center);
+            .sc-tooltip-box-wrap {
+                display: flex;
+                height: 0;
+                align-items: center;
+                overflow: visible;
+            }
+        }
+        &[data-v-align="bottom"] {
+            --y: var(--y-bottom);
+            .sc-tooltip-box-wrap {
+                bottom: 0;
+            }
+        }
+        &[data-v-align="below"] {
+            --y: var(--y-bottom);
+            .sc-tooltip-box-wrap {
+                top: 0;
+            }
+        }
     }
 
     > svg.sc-root {
@@ -97,7 +154,7 @@
     }
 
     .sc-tooltip-box {
-        margin: calc(4px * var(--dpr));
+        margin: 6px 12px;
         pointer-events: all;
         font-size: 0.9em;
         border-radius: 0.28em;
