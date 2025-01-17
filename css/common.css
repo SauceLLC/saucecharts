@@ -3,6 +3,7 @@
     --tooltip-transition-duration: 100ms;
     --background-color: #fff;
     --shade-dir: 1;
+    --axis-padding: 0.3em;
     width: 100%;
     height: 100%;
     touch-action: none;
@@ -33,6 +34,59 @@
         pointer-events: none;
         padding: 0.2em;
         line-height: 0.9;
+    }
+
+    .sc-axis {
+        .baseline {
+            stroke: color-mix(in srgb, currentColor, transparent 80%);
+            stroke-width: 0.12em;
+            stroke-linecap: round;
+        }
+
+        .tick {
+            stroke: color-mix(in srgb, currentColor, transparent 80%);
+            stroke-width: 0.12em;
+            stroke-linecap: round;
+        }
+
+        .label {
+            font-size: 0.9em;
+        }
+
+        &.y-axis {
+            .label {
+                dominant-baseline: middle;
+                &[data-pct="0"] {
+                    dominant-baseline: no-change;
+                }
+                &[data-pct="1"] {
+                    dominant-baseline: hanging;
+                }
+            }
+
+            &:not(.right) .label {
+                text-anchor: end;
+                translate: calc(-1 * var(--axis-padding)) 0;
+            }
+            &.right .label {
+                translate: var(--axis-padding) 0;
+            }
+        }
+
+        &.x-axis {
+            .label {
+                dominant-baseline: text-before-edge;
+                text-anchor: middle;
+                translate: 0 var(--axis-padding);
+
+                &[data-pct="0"] {
+                    text-anchor: start;
+                }
+                &[data-pct="1"] {
+                    text-anchor: end;
+                }
+            }
+        }
     }
 
     .sc-tooltip-positioner {

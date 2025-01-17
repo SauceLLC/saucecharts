@@ -14,7 +14,7 @@ let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
-    padding: [50, 100, 15, 200],
+    padding: [50, 100, 20, 200],
     //tooltipPadding: [25, 20, 25, 0],
 };
 
@@ -164,9 +164,14 @@ if (tests.includes(7)) {
     const data3 = [];
     const data4 = [];
     const padding = [10, 10, 10, 10];
+    const sharedOptions = {
+        xAxis: {disabled: true},
+        yAxis: {disabled: true},
+    };
 
     const sl1 = new sc.BarChart({
         ...commonOptions,
+        ...sharedOptions,
         el: document.querySelector(".graph.i7"),
         padding,
         title: 'Multiple graphs (top tp)',
@@ -174,18 +179,21 @@ if (tests.includes(7)) {
     });
     const sl2 = new sc.BarChart({
         ...commonOptions,
+        ...sharedOptions,
         el: sl1.el,
         merge: true,
         padding: [sl1.padding[0] + 30, ...padding.slice(1)],
     });
     const sl3 = new sc.BarChart({
         ...commonOptions,
+        ...sharedOptions,
         el: sl1.el,
         merge: true,
         padding: [sl2.padding[0] + 30, ...padding.slice(1)],
     });
     const sl4 = new sc.BarChart({
         ...commonOptions,
+        ...sharedOptions,
         el: sl1.el,
         merge: true,
         padding: [sl3.padding[0] + 30, ...padding.slice(1)],

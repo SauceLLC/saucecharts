@@ -156,8 +156,7 @@ export class LineChart extends common.Chart {
                 const s = this.segments[i];
                 let el = this._segmentEls.get(s);
                 if (!el) {
-                    el = common.createSVGElement('rect');
-                    el.classList.add('sc-visual-data-segment');
+                    el = common.createSVGElement('rect', {class: 'sc-visual-data-segment'});
                     this._backgroundEl.append(el);
                     this._segmentEls.set(s, el);
                 } else {

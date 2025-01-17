@@ -38,7 +38,7 @@ if (tests.includes(1)) {
     const sl = new sc.LineChart({
         ...commonOptions,
         el: document.querySelector(".graph.i1"),
-        onTooltip: o => `${o.x},${o.y.toFixed(6)}`,
+        onTooltip: ({entry}) => `${entry.x},${entry.y.toFixed(6)}`,
         title: 'ltr',
     });
     setInterval(() => {

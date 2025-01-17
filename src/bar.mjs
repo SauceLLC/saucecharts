@@ -77,9 +77,10 @@ export class BarChart extends common.Chart {
                 remBars.delete(bar);
             } else {
                 bar = {ref};
-                bar.element = common.createSVGElement('path');
-                bar.element.classList.add('sc-bar', 'sc-visual-data-bar');
-                bar.element.setAttribute('fill', `url(#${this._bgGradient.id})`);
+                bar.element = common.createSVGElement('path', {
+                    class: 'sc-bar sc-visual-data-bar',
+                    fill: `url(#${this._bgGradient.id})`
+                });
                 manifest.add.push([bar.element, attrs]);
                 this._barsMap.set(ref, bar);
             }

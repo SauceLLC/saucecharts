@@ -3,8 +3,14 @@ import * as color from './color.mjs';
 let globalIdCounter = 0;
 
 
-export function createSVGElement(tag) {
-    return document.createElementNS('http://www.w3.org/2000/svg', tag);
+export function createSVGElement(tag, attrs) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    if (attrs) {
+        for (const [k, v] of Object.entries(attrs)) {
+            el.setAttribute(k, v);
+        }
+    }
+    return el;
 }
 
 
@@ -13,13 +19,15 @@ export class Chart {
     constructor(options={}) {
         this.init(options);
         this.id = globalIdCounter++;
-        this.yMin = this._yMin = options.yMin;
-        this.yMax = this._yMax = options.yMax;
-        this.xMin = this._xMin = options.xMin;
-        this.xMax = this._xMax = options.xMax;
+        this.yMin = this._yMinOption = options.yMin;
+        this.yMax = this._yMaxOption = options.yMax;
+        this.xMin = this._xMinOption = options.xMin;
+        this.xMax = this._xMaxOption = options.xMax;
         this.childCharts = [];
         this.title = options.title;
         this.color = options.color;
+        this.xAxisOptions = options.xAxis || {};
+        this.yAxisOptions = options.yAxis || {};
         this.padding = options.padding || [0, 0, 0, 0];
         this.tooltipPadding = options.tooltipPadding || [0, 0, 0, 0];
         this.tooltipPosition = options.tooltipPosition || 'leftright';
@@ -109,9 +117,92 @@ export class Chart {
         const vPad = this._plotInset[0] + this._plotInset[2];
         this._plotWidth = Math.max(0, this._boxWidth - hPad);
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
+        if (this._xAxisEl) {
+            this._drawXAxis();
+        }
+        if (this._yAxisEl) {
+            this._drawYAxis();
+        }
         if (this.isParentChart()) {
             this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
             this.el.style.setProperty('--dpr', this.devicePixelRatio);
+        }
+    }
+
+    _drawXAxis() {
+        this._drawAxis('horizontal', this._xAxisEl, this.xAxisOptions);
+    }
+
+    _drawYAxis() {
+        this._drawAxis('vertical', this._yAxisEl, this.yAxisOptions);
+    }
+
+    _drawAxis(orientation, el, options) {
+        const vert = orientation === 'vertical';
+        const baseline = el.querySelector('line.baseline');
+        const top = this._plotInset[0];
+        const left = this._plotInset[3];
+        const right = left + this._plotWidth;
+        const bottom = top + this._plotHeight;
+        if (vert) {
+            el.classList.toggle('right', !!options.right);
+            baseline.setAttribute('x1', options.align === 'right' ? right : left);
+            baseline.setAttribute('x2', options.align === 'right' ? right : left);
+            baseline.setAttribute('y1', top);
+            baseline.setAttribute('y2', bottom);
+        } else {
+            baseline.setAttribute('x1', left);
+            baseline.setAttribute('x2', right);
+            baseline.setAttribute('y1', bottom);
+            baseline.setAttribute('y2', bottom);
+        }
+        let ticks = options.ticks;
+        const trackLength = vert ? this._plotHeight : this._plotWidth;
+        if (ticks == null) {
+            ticks = 2 + trackLength / (vert ? 100 : 180) | 0;
+        }
+        const gap = trackLength / (ticks - 1);
+        const tickLen = options.tickLength ?? 10;
+        const format = options.label || this.onAxisLabel.bind(this);
+        const existingTicks = el.querySelectorAll('line.tick');
+        const existingLabels = el.querySelectorAll('text.label');
+        let visualCount = 0;
+        for (let i = options.showFirst ? 0 : 1; i < ticks; i++) {
+            let x1, x2, y1, y2;
+            if (vert) {
+                x1 = options.align === 'right' ? right : left;
+                x2 = x1 + tickLen * (options.align === 'right' ? -1 : 1);
+                y1 = y2 = bottom - i * gap;
+            } else {
+                x1 = x2 = left + i * gap;
+                y1 = bottom;
+                y2 = bottom - tickLen;
+            }
+            let tick = existingTicks[visualCount];
+            if (!tick) {
+                tick = createSVGElement('line', {class: 'tick'});
+                el.append(tick);
+            }
+            tick.setAttribute('x1', x1);
+            tick.setAttribute('x2', x2);
+            tick.setAttribute('y1', y1);
+            tick.setAttribute('y2', y2);
+            let label = existingLabels[visualCount];
+            if (!label) {
+                label = createSVGElement('text', {class: 'label'});
+                el.append(label);
+            }
+            label.setAttribute('x', x1);
+            label.setAttribute('y', y1);
+            label.setAttribute('data-pct', i / (ticks - 1));
+            label.textContent = format({orientation, index: i, ticks, trackLength, options});
+            visualCount++;
+        }
+        for (let i = visualCount; i < existingTicks.length; i++) {
+            existingTicks[i].remove();
+        }
+        for (let i = visualCount; i < existingLabels.length; i++) {
+            existingLabels[i].remove();
         }
     }
 
@@ -145,9 +236,7 @@ export class Chart {
         this._defsEl = this._rootSvgEl.querySelector('defs');
         this._tooltipGroupEl = this._rootSvgEl.querySelector('.sc-tooltip');
         this._tooltipBoxEl = el.querySelector('.sc-tooltip-box');
-        this._plotRegionEl = createSVGElement('g');
-        this._plotRegionEl.dataset.id = this.id;
-        this._plotRegionEl.classList.add('sc-plot-region');
+        this._plotRegionEl = createSVGElement('g', {'data-id': this.id, class: 'sc-plot-region'});
         if (this.color) {
             this._plotRegionEl.style.setProperty('--color', this.color);
             this._computedColor = null;
@@ -156,6 +245,16 @@ export class Chart {
         if (this.title) {
             el.insertAdjacentHTML('beforeend',
                                   `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
+        }
+        if (!this.xAxisOptions.disabled) {
+            this._xAxisEl = createSVGElement('g', {class: 'sc-axis x-axis'});
+            this._xAxisEl.innerHTML = `<line class="baseline"></line>`;
+            this._rootSvgEl.append(this._xAxisEl);
+        }
+        if (!this.yAxisOptions.disabled) {
+            this._yAxisEl = createSVGElement('g', {class: 'sc-axis y-axis'});
+            this._yAxisEl.innerHTML = `<line class="baseline"></line>`;
+            this._rootSvgEl.append(this._yAxisEl);
         }
         if (this.disableAnimation) {
             this.el.classList.add('disable-animation');
@@ -197,13 +296,33 @@ export class Chart {
         this._computedColor = null;
     }
 
-    onTooltip(entry, index, chart) {
+    onTooltip({entry, chart}) {
         return `
             <div class="sc-tooltip-entry" data-chart-id="${this.id}"
                  style="--color:${chart.getColor()};">
                 <key>${entry.x.toFixed(2)}:</key><value>${entry.y.toFixed(2)}</value>
             </div>
         `;
+    }
+
+    onAxisLabel({orientation, index, ticks}) {
+        let range;
+        if (orientation === 'vertical') {
+            range = this.yMax - this.yMin;
+        } else {
+            range = this.xMax - this.xMin;
+        }
+        const number = range * (index / (ticks - 1));
+        if (isNaN(number)) {
+            return '';
+        }
+        if (range <= 1) {
+            return number.toLocaleString(undefined, {maximumFractionDigits: 2, minimumFractionDigits: 2});
+        } else if (range < 100) {
+            return number.toLocaleString(undefined, {maximumFractionDigits: 1});
+        } else {
+            return number.toLocaleString(undefined, {useGrouping: 'min2', maximumFractionDigits: 0});
+        }
     }
 
     onPointerEnter(ev) {
@@ -336,9 +455,9 @@ export class Chart {
             const entry = chart._renderData[index];
             let html;
             if (entry.tooltip) {
-                html = entry.tooltip(entry, index, chart);
+                html = entry.tooltip({entry, index, chart});
             } else if (chart.onTooltip) {
-                html = chart.onTooltip(entry, index, chart);
+                html = chart.onTooltip({entry, index, chart});
             }
             const coordinates = chart.getMidpointCoordinates(index);
             tooltips.push({chart, index, entry, coordinates, html});
@@ -366,8 +485,7 @@ export class Chart {
         const existingDots = this._tooltipGroupEl.querySelectorAll('circle.dot');
         const posEl = state.positionerEl;
         if (!vertLine) {
-            vertLine = createSVGElement('path');
-            vertLine.classList.add('line', 'vertical');
+            vertLine = createSVGElement('path', {class: 'line vertical'});
             this._tooltipGroupEl.append(vertLine);
         }
         vertLine.setAttribute('d', `M ${centerX}, ${bottom} V ${top}`);
@@ -380,8 +498,7 @@ export class Chart {
             const [x, y] = tooltips[i].coordinates;
             let dot = existingDots[i];
             if (!dot) {
-                dot = createSVGElement('circle');
-                dot.classList.add('dot');
+                dot = createSVGElement('circle', {class: 'dot'});
                 this._tooltipGroupEl.prepend(dot);
             }
             dot.setAttribute('cx', x);
@@ -401,8 +518,7 @@ export class Chart {
             if (Math.abs(x - centerX) > 1) {
                 let horizLine = existingHLines[i];
                 if (!horizLine) {
-                    horizLine = createSVGElement('path');
-                    horizLine.classList.add('line', 'horizontal');
+                    horizLine = createSVGElement('path', {class: 'line horizontal'});
                     this._tooltipGroupEl.prepend(horizLine);
                 }
                 horizLine.setAttribute(
@@ -502,13 +618,23 @@ export class Chart {
             this.doReset();
             return;
         }
+        const scaleBefore = [this.xMin, this.xMax, this.yMin, this.yMax].join();
         this.doRender(this.beforeRender());
+        const scaleAfter = [this.xMin, this.xMax, this.yMin, this.yMax].join();
+        if (scaleAfter !== scaleBefore) {
+            if (this._xAxisEl) {
+                this._drawXAxis();
+            }
+            if (this._yAxisEl) {
+                this._drawYAxis();
+            }
+        }
         this.afterRender();
     }
 
     beforeRender() {
         const data = this.normalizeData(this.data);
-        if (this._yMin == null || this._yMax == null) {
+        if (this._yMinOption == null || this._yMaxOption == null) {
             let min = Infinity;
             let max = -Infinity;
             for (let i = 0; i < data.length; i++) {
@@ -520,17 +646,17 @@ export class Chart {
                     max = v;
                 }
             }
-            if (this._yMin == null) {
+            if (this._yMinOption == null) {
                 this.yMin = min;
             }
-            if (this._yMax == null) {
+            if (this._yMaxOption == null) {
                 this.yMax = max;
             }
         }
-        if (this._xMin == null) {
+        if (this._xMinOption == null) {
             this.xMin = data[0].x;
         }
-        if (this._xMax == null) {
+        if (this._xMaxOption == null) {
             this.xMax = data[data.length - 1].x;
         }
         this._renderData = data;
