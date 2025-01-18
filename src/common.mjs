@@ -29,7 +29,7 @@ export class Chart {
         this.xAxisOptions = options.xAxis || {};
         this.yAxisOptions = options.yAxis || {};
         this.padding = options.padding || [0, 0, 0, 0];
-        this.tooltipPadding = options.tooltipPadding || [0, 0, 0, 0];
+        this.tooltipPadding = options.tooltipPadding || [this.padding[0], this.padding[2]];
         this.tooltipPosition = options.tooltipPosition || 'leftright';
         this.disableAnimation = options.disableAnimation;
         this.darkMode = options.darkMode;
@@ -54,7 +54,7 @@ export class Chart {
             const offsets = this._tooltipState.scrollOffsets;
             offsets[0] = scrollX;
             offsets[1] = scrollY;
-            this._updateTooltip();
+            this._updateTooltip({disableAnimation: true});
         }, {passive: true});
     }
 
@@ -76,7 +76,24 @@ export class Chart {
         gradient.el.remove();
     }
 
-    onResize() {
+    onResize(entries) {
+        for (let i = 0; i < entries.length; i++) {
+            const x = entries[i];
+            if (x.target === this._tooltipBoxEl) {
+                requestAnimationFrame(() => this._onResizeTooltip(x));
+            } else if (x.target === this.el) {
+                requestAnimationFrame(() => this._onResizeContainer());
+            }
+        }
+    }
+
+    _onResizeTooltip(entry) {
+        const minChange = 10;
+        const courseWidth = Math.ceil(entry.borderBoxSize[0].inlineSize / minChange) * minChange;
+        this._tooltipPositionerEl.style.setProperty('--course-width', `${courseWidth}px`);
+    }
+
+    _onResizeContainer() {
         const hasAnim = !this.el.classList.contains('disable-animation');
         if (hasAnim) {
             this.el.classList.add('disable-animation');
@@ -118,15 +135,19 @@ export class Chart {
         const vPad = this._plotInset[0] + this._plotInset[2];
         this._plotWidth = Math.max(0, this._boxWidth - hPad);
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
+        if (this.isParentChart()) {
+            this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
+            this.el.style.setProperty('--dpr', this.devicePixelRatio);
+        }
         if (this._xAxisEl) {
             this._drawXAxis();
         }
         if (this._yAxisEl) {
             this._drawYAxis();
         }
-        if (this.isParentChart()) {
-            this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
-            this.el.style.setProperty('--dpr', this.devicePixelRatio);
+        if (this._tooltipState.visible) {
+            this._establishTooltipState();
+            this._updateTooltip({disableAnimation: true});
         }
     }
 
@@ -236,6 +257,7 @@ export class Chart {
         this._rootSvgEl = el.querySelector('svg.sc-root');
         this._defsEl = this._rootSvgEl.querySelector('defs');
         this._tooltipGroupEl = this._rootSvgEl.querySelector('.sc-tooltip');
+        this._tooltipPositionerEl = el.querySelector('.sc-tooltip-positioner'),
         this._tooltipBoxEl = el.querySelector('.sc-tooltip-box');
         this._plotRegionEl = createSVGElement('g', {'data-id': this.id, class: 'sc-plot-region'});
         if (this.color) {
@@ -268,6 +290,7 @@ export class Chart {
         }
         this.el.classList.toggle('darkmode', darkMode);
         this._adjustSize();
+        this._resizeObserver.observe(this._tooltipBoxEl);
         this._resizeObserver.observe(el);
         if (this.isParentChart()) {
             el.addEventListener('pointerenter', this._onPointerEnterBound);
@@ -327,10 +350,10 @@ export class Chart {
     }
 
     onPointerEnter(ev) {
-        const state = this._establishTooltipState();
-        if (state.pointerActive) {
+        if (this._tooltipState.pointerActive) {
             return;
         }
+        const state = this._establishTooltipState();
         const pointerId = ev.pointerId;
         state.pointerActive = true;
         state.pointerAborter = new AbortController();
@@ -365,8 +388,7 @@ export class Chart {
         if (!state.visible) {
             return;
         }
-        this._tooltipGroupEl.classList.remove('active');
-        state.positionerEl?.classList.remove('active');
+        this.el.classList.remove('tooltip-active');
         state.visible = false;
     }
 
@@ -380,8 +402,7 @@ export class Chart {
             this.el.classList.add('disable-animation');
         }
         try {
-            state.positionerEl.classList.add('active');
-            this._tooltipGroupEl.classList.add('active');
+            this.el.classList.add('tooltip-active');
             state.visible = true;
         } finally {
             if (hasAnim) {
@@ -417,8 +438,8 @@ export class Chart {
             positionCallback,
             hAlign,
             vAlign,
-            positionerEl: this.el.querySelector('.sc-tooltip-positioner'),
             lastDrawSig: undefined,
+            hasDrawn: false,
             chartPlotOffsets: charts.map(x => {
                 const plotRect = x.el.getBoundingClientRect();
                 return [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]];
@@ -444,7 +465,7 @@ export class Chart {
         }
     }
 
-    _updateTooltip() {
+    _updateTooltip(options={}) {
         const tooltips = [];
         const state = this._tooltipState;
         let drawSig = state.scrollOffsets.join();
@@ -470,7 +491,19 @@ export class Chart {
         }
         if (drawSig !== state.lastDrawSig) {
             state.lastDrawSig = drawSig;
-            this._drawTooltip(tooltips);
+            const disableAnim = (options.disableAnimation || !state.hasDrawn) &&
+                !this.el.classList.contains('disable-animation');
+            if (disableAnim) {
+                this.el.classList.add('disable-animation');
+            }
+            try {
+                this._drawTooltip(tooltips);
+            } finally {
+                if (disableAnim) {
+                    this.el.offsetWidth;
+                    this.el.classList.remove('disable-animation');
+                }
+            }
         }
     }
 
@@ -482,13 +515,12 @@ export class Chart {
         }
         const state = this._tooltipState;
         const top = this.tooltipPadding[0] * this.devicePixelRatio;
-        const bottom = this._boxHeight - this.tooltipPadding[2] * this.devicePixelRatio;
+        const bottom = this._boxHeight - this.tooltipPadding[1] * this.devicePixelRatio;
         const centerX = tooltips.reduce((agg, o) => agg + o.coordinates[0], 0) / tooltips.length;
         const centerY = top + (bottom - top) / 2;
         let vertLine = this._tooltipGroupEl.querySelector('path.line.vertical');
         const existingHLines = this._tooltipGroupEl.querySelectorAll('path.line.horizontal');
         const existingDots = this._tooltipGroupEl.querySelectorAll('circle.dot');
-        const posEl = state.positionerEl;
         if (!vertLine) {
             vertLine = createSVGElement('path', {class: 'line vertical'});
             this._tooltipGroupEl.append(vertLine);
@@ -554,18 +586,19 @@ export class Chart {
             vAlign = state.vAlign;
         }
         box.innerHTML = tooltips.map(x => x.html).join('');
+        const posEl = this._tooltipPositionerEl;
         posEl.dataset.hAlign = hAlign;
         posEl.dataset.vAlign = vAlign;
         const f = 1 / this.devicePixelRatio;
-        const offset = state.chartPlotOffsets[0];
-        posEl.style.setProperty('--x-offset', `${offset[0] - state.scrollOffsets[0]}px`);
-        posEl.style.setProperty('--y-offset', `${offset[1] - state.scrollOffsets[1]}px`);
-        posEl.style.setProperty('--x-left', `${minX * f}px`);
-        posEl.style.setProperty('--x-right', `${maxX * f}px`);
-        posEl.style.setProperty('--x-center', `${centerX * f}px`);
-        posEl.style.setProperty('--y-center', `${centerY * f}px`);
-        posEl.style.setProperty('--y-top', `${Math.min(minY, top) * f}px`);
-        posEl.style.setProperty('--y-bottom', `${Math.max(maxY, bottom) * f}px`);
+        const offtX = state.chartPlotOffsets[0][0] - state.scrollOffsets[0];
+        const offtY = state.chartPlotOffsets[0][1] - state.scrollOffsets[1];
+        posEl.style.setProperty('--x-left', `${minX * f + offtX}px`);
+        posEl.style.setProperty('--x-right', `${maxX * f + offtX}px`);
+        posEl.style.setProperty('--x-center', `${centerX * f + offtX}px`);
+        posEl.style.setProperty('--y-center', `${centerY * f + offtY}px`);
+        posEl.style.setProperty('--y-top', `${Math.min(minY, top) * f + offtY}px`);
+        posEl.style.setProperty('--y-bottom', `${Math.max(maxY, bottom) * f + offtY}px`);
+        state.hasDrawn = true;
     }
 
     findNearestIndexFromXCoord(searchX) {

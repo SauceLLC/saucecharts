@@ -13,8 +13,7 @@ let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
     hidePoints: false,
-    padding: [5, 10, 15, 100],
-    NOtooltipPadding: [5, 0, 15, 0],
+    padding: [20, 5, 20, 40],
 };
 
 document.querySelector('#freq').addEventListener('input', ev => {
@@ -25,13 +24,6 @@ document.querySelector('#freq').addEventListener('input', ev => {
 
 let dir = 1;
 let steps = 0;
-/*setInterval(() => {
-    if ((steps++) > 2) {
-        dir = -dir;
-        steps = 0;
-    }
-    maxSize += dir;
-}, speed * 2);*/
 
 if (tests.includes(1)) {
     const data = [];
@@ -153,28 +145,28 @@ if (tests.includes(7)) {
     const data2 = [];
     const data3 = [];
     const data4 = [];
+    const shared = {...commonOptions, xAxis: {disabled: true}, yAxis: {disabled: true}};
 
     const sl1 = new sc.LineChart({
-        ...commonOptions,
+        ...shared,
         el: document.querySelector(".graph.i7"),
-        padding: [10, 0, 0, 0],
-        tooltipPadding: [0, 0, 0, 0],
+        padding: [20, 0, 0, 0],
         title: 'Multiple graphs',
     });
     const sl2 = new sc.LineChart({
-        ...commonOptions,
+        ...shared,
         el: sl1.el,
         merge: true,
         padding: [sl1.padding[0] + 30, 0, 0, 0],
     });
     const sl3 = new sc.LineChart({
-        ...commonOptions,
+        ...shared,
         el: sl1.el,
         merge: true,
         padding: [sl2.padding[0] + 30, 0, 0, 0],
     });
     const sl4 = new sc.LineChart({
-        ...commonOptions,
+        ...shared,
         el: sl1.el,
         merge: true,
         padding: [sl3.padding[0] + 30, 0, 0, 0],

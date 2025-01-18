@@ -6,8 +6,8 @@ export class BarChart extends common.Chart {
 
     init(options={}) {
         this._barsMap = new Map();
-        this.barSpacing = options.barSpacing ?? 10;
-        this.barRadius = options.barRadius ?? 4;
+        this.barSpacing = options.barSpacing ?? 6;
+        this.barRadius = options.barRadius ?? 3;
     }
 
     setElement(el, options) {

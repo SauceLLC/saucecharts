@@ -13,9 +13,8 @@ const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
-    hidePoints: false,
-    padding: [50, 100, 20, 200],
-    //tooltipPadding: [25, 20, 25, 0],
+    padding: [20, 5, 20, 40],
+    tooltipPadding: [20, 20],
 };
 
 const _setInterval = setInterval;
@@ -229,15 +228,15 @@ if (tests.includes(7)) {
 
 
 if (tests.includes(8)) {
-    const size = 100;
+    const size = 1000;
     let i = size;
     const data = Array.from(new Array(size)).map((x, i) => Math.sin(i / 50));
     const sl = new sc.BarChart({
         ...commonOptions,
-        hidePoints: true,
         el: document.querySelector(".graph.i8"),
         title: 'large-data (right bottom tp)',
         tooltipPosition: 'right bottom',
+        barSpacing: 0,
     });
     let showingTooltip;
     setInterval(() => {

@@ -1,6 +1,6 @@
 .saucechart {
     --transition-duration: 400ms;
-    --tooltip-transition-duration: 100ms;
+    --tooltip-transition-duration: 200ms;
     --axis-padding: 0.3em;
     touch-action: none;
     -webkit-touch-callout: none;
@@ -40,25 +40,29 @@
     }
 
     .sc-axis {
+        --rotate: none;
+
         .baseline,
         .tick {
             stroke: color-mix(in srgb, var(--fg-color), transparent 80%);
-            stroke: hsl(from var(--fg-color) h s l / 0.8);
+            stroke: hsl(from var(--fg-color) h s calc(l + 30 * var(--shade-dir)) / 0.8);
         }
 
         .baseline {
-            stroke-width: 0.12em;
+            stroke-width: 0.10em;
             stroke-linecap: round;
         }
 
         .tick {
-            stroke-width: 0.12em;
+            stroke-width: 0.10em;
             stroke-linecap: round;
         }
 
         .label {
             font-size: 0.9em;
-            stroke: hsl(from var(--fg-color) h s l / 0.9);
+            fill: hsl(from var(--fg-color) h s l / 0.9);
+            transform-box: border-box;
+            rotate: var(--rotate);
         }
 
         &.y-axis {
@@ -98,38 +102,34 @@
     }
 
     .sc-tooltip-positioner {
+        --viewport-margin: 2ch;
         pointer-events: none;
         position: fixed;
         z-index: 10;
         top: 0;
         left: 0;
         transition: translate var(--tooltip-transition-duration) linear;
-
-        &:not(.active) {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none !important;
-            transition: opacity 1s, visibility 1s;
-        }
-
-        translate:
-            calc((var(--x) + var(--x-offset)))
-            calc((var(--y) + var(--y-offset)));
+        translate: var(--x) var(--y);
 
         &[data-h-align="left"] {
-            --x: var(--x-left);
+            --x: max(var(--course-width) + var(--viewport-margin), var(--x-left));
+
             .sc-tooltip-box {
                 left: -100%;
             }
         }
         &[data-h-align="right"] {
-            --x: var(--x-right);
+            --x: min(var(--x-right), 100vw - var(--course-width) - var(--viewport-margin));
+
             .sc-tooltip-box {
                 left: 0;
             }
         }
         &[data-h-align="center"] {
-            --x: var(--x-center);
+            --x: max(var(--course-width) / 2 + var(--viewport-margin),
+                     min(var(--x-center),
+                         100vw - var(--course-width) / 2 - var(--viewport-margin)));
+
             .sc-tooltip-box {
                 left: -50%;
             }
@@ -170,19 +170,24 @@
         }
     }
 
+    &:not(.tooltip-active) {
+        .sc-tooltip-positioner {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none !important;
+            transition: opacity 1s, visibility 1s;
+        }
+
+        .sc-tooltip {
+            display: none;
+        }
+    }
+
     > svg.sc-root {
         stroke-width: 0.1em;
         font-size: calc(1em * var(--dpr, 1));
 
-        svg.sc-plot-region {
-            overflow: visible; /* positional only.. */
-        }
-
         .sc-tooltip {
-            &:not(.active) {
-                display: none;
-            }
-
             .line {
                 stroke: hsl(from var(--fg-color) h s l / 0.7);
                 stroke-width: 0.14em;
@@ -226,6 +231,7 @@
         width: max-content;
         max-width: 22ch;
         overflow: hidden;
+        transition: left var(--tooltip-transition-duration) linear;
 
         &:empty {
             display: none;
