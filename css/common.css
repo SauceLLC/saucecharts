@@ -40,20 +40,25 @@
     }
 
     .sc-axis {
-        .baseline {
+        .baseline,
+        .tick {
             stroke: color-mix(in srgb, var(--fg-color), transparent 80%);
+            stroke: hsl(from var(--fg-color) h s l / 0.8);
+        }
+
+        .baseline {
             stroke-width: 0.12em;
             stroke-linecap: round;
         }
 
         .tick {
-            stroke: color-mix(in srgb, var(--fg-color), transparent 80%);
             stroke-width: 0.12em;
             stroke-linecap: round;
         }
 
         .label {
             font-size: 0.9em;
+            stroke: hsl(from var(--fg-color) h s l / 0.9);
         }
 
         &.y-axis {
@@ -78,7 +83,7 @@
 
         &.x-axis {
             .label {
-                dominant-baseline: text-before-edge;
+                dominant-baseline: hanging;
                 text-anchor: middle;
                 translate: 0 var(--axis-padding);
 
