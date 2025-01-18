@@ -49,8 +49,8 @@ export class LineChart extends common.Chart {
         this._bgGradient = this.addGradient({
             type: 'linear',
             colors: [
-                fill.lighten(-0.2).alpha(0.2),
-                fill.alpha(0.8),
+                fill.lighten(-0.2).alpha(0.3),
+                fill.alpha(0.86),
             ]
         });
         this._backgroundEl.querySelector('rect').setAttribute('fill', `url(#${this._bgGradient.id})`);
@@ -178,8 +178,8 @@ export class LineChart extends common.Chart {
                             color.Gradient.fromObject({
                                 type: 'linear',
                                 colors: [
-                                    fill.lighten(-0.2).alpha(0.2),
-                                    fill.alpha(0.8),
+                                    fill.lighten(-0.2).alpha(0.3),
+                                    fill.alpha(0.86),
                                 ]
                             });
                         this._segmentFills.set(s.color, {gradient});

@@ -350,7 +350,11 @@ export class Chart {
         addEventListener('pointercancel', onDone, {signal});
         addEventListener('pointerout', ev => !this.el.contains(ev.target) && onDone(), {signal});
         this.el.addEventListener('pointerleave', onDone, {signal});
-        this.el.addEventListener('pointermove', ev => this._setTooltipPosition({x: ev.x}), {signal});
+        let af;
+        this.el.addEventListener('pointermove', ev => {
+            cancelAnimationFrame(af);
+            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x}));
+        }, {signal});
         this._setTooltipPosition({x: ev.x});
         this.showTooltip();
     }
@@ -499,7 +503,7 @@ export class Chart {
             let dot = existingDots[i];
             if (!dot) {
                 dot = createSVGElement('circle', {class: 'dot'});
-                this._tooltipGroupEl.prepend(dot);
+                this._tooltipGroupEl.append(dot);
             }
             dot.setAttribute('cx', x);
             dot.setAttribute('cy', y);
@@ -548,6 +552,7 @@ export class Chart {
                 state.hAlign;
             vAlign = state.vAlign;
         }
+        box.innerHTML = tooltips.map(x => x.html).join('');
         posEl.dataset.hAlign = hAlign;
         posEl.dataset.vAlign = vAlign;
         const f = 1 / this.devicePixelRatio;
@@ -560,7 +565,6 @@ export class Chart {
         posEl.style.setProperty('--y-center', `${centerY * f}px`);
         posEl.style.setProperty('--y-top', `${Math.min(minY, top) * f}px`);
         posEl.style.setProperty('--y-bottom', `${Math.max(maxY, bottom) * f}px`);
-        box.innerHTML = tooltips.map(x => x.html).join('');
     }
 
     findNearestIndexFromXCoord(searchX) {

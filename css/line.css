@@ -9,20 +9,11 @@
         transition-duration: var(--transition-duration);
     }
 
-    svg.sc-plot-region {
-        overflow: visible; /* positional only.. */
-    }
-
     .sc-visual-data-line {
-        stroke: color-mix(in srgb, currentColor, grey 10%);
-        opacity: 0.8;
+        stroke: hsl(from currentColor h s calc(l + (15 * var(--shade-dir))) / 0.8);
         fill: none;
         stroke-linecap: round;
         stroke-linejoin: round;
-    }
-
-    .sc-visual-data-area,
-    .sc-visual-data-segment {
     }
 
     .sc-visual-data-area {
@@ -45,9 +36,9 @@
     .sc-line-marker {
         circle.sc-dot {
             r: 0.12em;
-            stroke: currentColor;
-            opacity: 0.8;
-            fill: color-mix(in srgb, currentColor, transparent 50%);
+            stroke-width: 0.04em;
+            stroke: hsl(from currentColor h s calc(l + (15 * var(--shade-dir))) / 0.8);
+            fill: hsl(from currentColor h s calc(l + (50 * var(--shade-dir))) / 0.8);
         }
     }
 }
