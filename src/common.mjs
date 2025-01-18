@@ -102,6 +102,7 @@ export class Chart {
             this._boxHeight = null;
             this._plotWidth = null;
             this._plotHeight = null;
+            this._plotInset = [0, 0, 0, 0];
             return;
         }
         const ar = width / height;

@@ -1,25 +1,28 @@
 .saucechart {
     --transition-duration: 400ms;
     --tooltip-transition-duration: 100ms;
-    --background-color: #fff;
-    --shade-dir: 1;
     --axis-padding: 0.3em;
-    width: 100%;
-    height: 100%;
     touch-action: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
     position: relative;
 
+    &:not(.darkmode) {
+        --fg-color: black;
+        --bg-color: white;
+        --shade-dir: 1;
+    }
+    &.darkmode {
+        --fg-color: white;
+        --bg-color: black;
+        --shade-dir: -1;
+    }
+
+
     &.disable-animation {
         --transition-duration: 0 !important;
         --tooltip-transition-duration: 0 !important;
-    }
-
-    &.darkmode {
-        --background-color: #000;
-        --shade-dir: -1;
     }
 
     .sc-title {
@@ -38,13 +41,13 @@
 
     .sc-axis {
         .baseline {
-            stroke: color-mix(in srgb, currentColor, transparent 80%);
+            stroke: color-mix(in srgb, var(--fg-color), transparent 80%);
             stroke-width: 0.12em;
             stroke-linecap: round;
         }
 
         .tick {
-            stroke: color-mix(in srgb, currentColor, transparent 80%);
+            stroke: color-mix(in srgb, var(--fg-color), transparent 80%);
             stroke-width: 0.12em;
             stroke-linecap: round;
         }
@@ -176,7 +179,7 @@
             }
 
             .line {
-                stroke: hsl(from currentColor h s l / 0.7);
+                stroke: hsl(from var(--fg-color) h s l / 0.7);
                 stroke-width: 0.14em;
                 stroke-dasharray: 0.25em;
                 stroke-linecap: round;
@@ -190,8 +193,8 @@
             circle {
                 r: 0.30em;
                 stroke-width: 0.10em;
-                stroke: hsl(from currentColor h s calc(l + 10 * var(--shade-dir)) / 0.8);
-                fill: hsl(from currentColor h s calc(l + 80 * var(--shade-dir)) / 0.9);
+                stroke: hsl(from var(--fg-color) h s calc(l + 10 * var(--shade-dir)) / 0.8);
+                fill: hsl(from var(--fg-color) h s calc(l + 80 * var(--shade-dir)) / 0.9);
             }
         }
     }
@@ -209,11 +212,11 @@
         pointer-events: all;
         font-size: 0.9em;
         border-radius: 0.28em;
-        background-color: color-mix(in srgb, var(--background-color), #d76b1380 10%);
+        background-color: color-mix(in srgb, var(--bg-color), #d76b1380 10%);
         padding: 0.1em 0.3em;
         display: flex;
         flex-direction: column;
-        border: 0.08em solid color-mix(in srgb, currentColor, #7772 50%);
+        border: 0.08em solid color-mix(in srgb, var(--fg-color), #7772 50%);
         box-shadow: 0.08em 0.08em 0.3em 0 #0005;
         width: max-content;
         max-width: 22ch;
@@ -238,7 +241,7 @@
                 display: block;
                 margin-right: 0.3em;
                 background-color: var(--color);
-                border: 0.1em solid currentColor;
+                border: 0.1em solid var(--fg-color);
                 flex: 0 0 auto;
             }
 

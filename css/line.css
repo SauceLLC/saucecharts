@@ -10,7 +10,7 @@
     }
 
     .sc-visual-data-line {
-        stroke: hsl(from currentColor h s calc(l + (15 * var(--shade-dir))) / 0.8);
+        stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
         fill: none;
         stroke-linecap: round;
         stroke-linejoin: round;
@@ -37,8 +37,8 @@
         circle.sc-dot {
             r: 0.12em;
             stroke-width: 0.04em;
-            stroke: hsl(from currentColor h s calc(l + (15 * var(--shade-dir))) / 0.8);
-            fill: hsl(from currentColor h s calc(l + (50 * var(--shade-dir))) / 0.8);
+            stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
+            fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.8);
         }
     }
 }
