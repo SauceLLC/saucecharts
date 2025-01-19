@@ -377,9 +377,10 @@ export class Chart {
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x}));
+            const disableAnimation = this.data.length > this._plotWidth;
+            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x, disableAnimation}));
         }, {signal});
-        this._setTooltipPosition({x: ev.x});
+        this._setTooltipPosition({x: ev.x, disableAnimation: true});
         this.showTooltip();
     }
 
@@ -453,15 +454,15 @@ export class Chart {
         return this._setTooltipPosition(options);
     }
 
-    _setTooltipPosition({x, y, index}) {
+    _setTooltipPosition({x, y, index, disableAnimation}) {
         Object.assign(this._tooltipState, {x, y, index});
-        this._updateTooltip();
+        this._updateTooltip({disableAnimation});
     }
 
-    updateVisibleTooltip() {
+    updateVisibleTooltip(options) {
         const chart = this.isParentChart() ? this : this.parentChart;
         if (chart && chart._tooltipState.visible) {
-            chart._updateTooltip();
+            chart._updateTooltip(options);
         }
     }
 
