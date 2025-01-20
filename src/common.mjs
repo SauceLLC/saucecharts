@@ -14,6 +14,52 @@ export function createSVGElement(tag, attrs) {
 }
 
 
+// Ported from https://github.com/joshcarr/largest-triangle-three-buckets.js
+// See: https://github.com/sveinn-steinarsson/flot-downsample
+function largestTriangleThreeBuckets(inData, outLen) {
+    if (!outLen || outLen >= inData.length) {
+        return inData;
+    }
+    const outData = [inData[0]];
+    const every = (inData.length - 2) / (outLen - 2);
+    let a = 0;
+    let nextA;
+    let maxAreaPoint;
+    for (let i = 0; i < outLen - 2; i++) {
+        const bStart = ((i + 1) * every | 0) + 1;
+        const bEnd = Math.min(inData.length, ((i + 2) * every | 0) + 1);
+        const bFactor = 1 / (bEnd - bStart);
+        let avgX = 0, avgY = 0;
+        for (let ii = bStart; ii < bEnd; ii++) {
+            avgX += inData[ii].x * bFactor;
+            avgY += inData[ii].y * bFactor;
+        }
+        const rangeFrom = ((i + 0) * every | 0) + 1;
+        const rangeTo = ((i + 1) * every | 0) + 1;
+        const aX = inData[a].x;
+        const aY = inData[a].y;
+        const aXAvgDist = aX - avgX;
+        const ayAvgDist = avgY - aY;
+        let maxArea = -1;
+        for (let ii = rangeFrom; ii < rangeTo; ii++) {
+            const area = Math.abs((aXAvgDist * (inData[ii].y - aY)) - (ayAvgDist * (aX - inData[ii].x)));
+            if (area > maxArea) {
+                maxArea = area;
+                maxAreaPoint = inData[ii];
+                nextA = i;
+            }
+        }
+        outData.push(maxAreaPoint);
+        a = nextA;
+    }
+    outData.push(inData[inData.length - 1]);
+    return outData;
+}
+
+
+const resample = largestTriangleThreeBuckets;
+
+
 export class Chart {
 
     constructor(options={}) {
@@ -350,7 +396,7 @@ export class Chart {
     }
 
     onPointerEnter(ev) {
-        if (this._tooltipState.pointerActive) {
+        if (this._tooltipState.pointerActive || !this.data?.length) {
             return;
         }
         const state = this._establishTooltipState();
@@ -632,20 +678,27 @@ export class Chart {
     }
 
     normalizeData(data) {
-        let norm;
+        const norm = new Array(data.length);
         if (!data.length) {
-            norm = [];
-        } else if (Array.isArray(data[0])) {
+            return norm;
+        }
+        if (Array.isArray(data[0])) {
             // [[x, y], [x1, y1], ...]
-            norm = data.map(([x, y]) => ({x: x || 0, y: y || 0}));
+            for (let i = 0; i < data.length; i++) {
+                norm[i] = {x: data[i][0] || 0, y: data[i][1] || 0};
+            }
         } else if (typeof data[0] === 'object') {
             // [{x, y, ...}, {x, y, ...}, ...]
-            norm = data.map(o => ({...o, x: o.x || 0, y: o.y || 0}));
+            for (let i = 0; i < data.length; i++) {
+                const o = data[i];
+                norm[i] = {...o, x: o.x || 0, y: o.y || 0};
+            }
         } else {
             // [y, y1, ...]
-            norm = data.map((y, x) => ({x, y: y || 0}));
+            for (let i = 0; i < data.length; i++) {
+                norm[i] = {x: i, y: data[i] || 0};
+            }
         }
-        norm.sort((a, b) => a.x - b.x);
         return norm;
     }
 
@@ -672,7 +725,10 @@ export class Chart {
     }
 
     beforeRender() {
-        const data = this.normalizeData(this.data);
+        let data = this.normalizeData(this.data);
+        if (data.length > this._plotWidth * 1.5) {
+            data = resample(data, this._plotWidth | 0);
+        }
         if (this._yMinOption == null || this._yMaxOption == null) {
             let min = Infinity;
             let max = -Infinity;

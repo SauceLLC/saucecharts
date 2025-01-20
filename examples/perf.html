@@ -69,10 +69,11 @@
                 disableAnimation,
             });
 
-            function updateSegments(i) {
-                if (Math.random() < 0.95 && i) {
+            function updateSegments(i, chance) {
+                if (segments.length) {
                     segments[segments.length - 1].width++;
-                } else {
+                }
+                if (Math.random() < chance) {
                     segments.push({
                         x: data[i][0],
                         width: 0,
@@ -87,7 +88,8 @@
             }
             const segments = [];
             for (let i = 0; i < data.length; i++) {
-                updateSegments(i);
+                const chance = 20 / data.length;
+                updateSegments(i, chance);
             }
 
             c1.setData(data);
