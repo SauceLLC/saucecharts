@@ -88,17 +88,23 @@ export class LineChart extends common.Chart {
         this._segmentFills.clear();
     }
 
-    beforeRender() {
-        const r = super.beforeRender();
-        if (this.yMax === this.yMin) {
-            this.yMin -= 0.5;
-            this.yMax += 0.5;
+    adjustScale(manifest) {
+        super.adjustScale(manifest);
+        const data = manifest.data;
+        if (this._xMinOption == null) {
+            this.xMin = data[0].x;
+        }
+        if (this._xMaxOption == null) {
+            this.xMax = data[data.length - 1].x;
         }
         if (this.xMax === this.xMin) {
             this.xMin -= 0.5;
             this.xMax += 0.5;
         }
-        return r;
+        if (this.yMax === this.yMin) {
+            this.yMin -= 0.5;
+            this.yMax += 0.5;
+        }
     }
 
     doRender({data}) {
@@ -112,7 +118,7 @@ export class LineChart extends common.Chart {
     }
 
     _renderBeforeLayout({data}) {
-        const coords = data.map(this.toCoordinates.bind(this));
+        const coords = data.map(o => [this.toX(o.x), this.toY(o.y)]);
         let needForceLayout = false;
         if (!this.disableAnimation && this._prevCoords) {
             // We can use CSS to animate the transition but we have to use a little hack

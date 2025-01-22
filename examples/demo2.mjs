@@ -47,9 +47,10 @@ if (tests.includes(1)) {
         title: 'ltr (below tp)',
         tooltipPosition: 'below',
     });
+    self.chart1 = sl;
     setInterval(() => {
         if (paused) return;
-        data.push([ts(), Math.sin(ts() / sinFactor)]);
+        data.push([5, Math.sin(ts() / sinFactor)]);
         while (data.length > maxSize) {
             data.shift();
         }
@@ -66,13 +67,14 @@ if (tests.includes(2)) {
         title: 'ltr, 3 points per interval (left tp)',
         tooltipPosition: 'above',
     });
+    self.chart2 = sl;
     setInterval(async () => {
         if (paused) return;
-        data.push([ts(), Math.sin(ts() / sinFactor)]);
+        data.push([1, Math.sin(ts() / sinFactor)]);
         await sleep(speed / 3);
-        data.push([ts(), Math.sin(ts() / sinFactor)]);
+        data.push([0.5, Math.sin(ts() / sinFactor)]);
         await sleep(speed / 3);
-        data.push([ts(), Math.sin(ts() / sinFactor)]);
+        data.push([1, Math.sin(ts() / sinFactor)]);
         while (data.length > maxSize * 3) {
             data.shift();
         }
@@ -89,9 +91,10 @@ if (tests.includes(3)) {
         title: 'rtl (right tp)',
         tooltipPosition: 'right',
     });
+    self.chart3 = sl;
     setInterval(() => {
         if (paused) return;
-        data.unshift([-ts(), Math.sin(ts() / sinFactor)]);
+        data.unshift(Math.sin(ts() / sinFactor));
         while (data.length > maxSize) {
             data.pop();
         }
@@ -110,9 +113,9 @@ if (tests.includes(4)) {
     });
     setInterval(async () => {
         if (paused) return;
-        data.unshift([-ts(), Math.sin(ts() / sinFactor)]);
+        data.unshift(Math.sin(ts() / sinFactor));
         await sleep(speed / 2);
-        data.unshift([-ts(), Math.sin(ts() / sinFactor)]);
+        data.unshift(Math.sin(ts() / sinFactor));
         while (data.length > maxSize * 2) {
             data.pop();
         }
@@ -200,25 +203,25 @@ if (tests.includes(7)) {
 
     setInterval(() => {
         if (paused) return;
-        data1.push([ts(), Math.sin(ts() / sinFactor)]);
+        data1.push([1, Math.sin(ts() / sinFactor)]);
         while (data1.length > maxSize) {
             data1.shift();
         }
         sl1.setData(data1);
 
-        data2.unshift([-ts(), Math.sin(ts() / sinFactor)]);
+        data2.unshift([1, Math.sin(ts() / sinFactor)]);
         while (data2.length > maxSize) {
             data2.pop();
         }
         sl2.setData(data2);
 
-        data3.push([ts(), Math.cos(ts() / sinFactor)]);
+        data3.push([1, Math.cos(ts() / sinFactor)]);
         while (data3.length > maxSize) {
             data3.shift();
         }
         sl3.setData(data3);
 
-        data4.unshift([-ts(), Math.cos(ts() / sinFactor)]);
+        data4.unshift([1, Math.cos(ts() / sinFactor)]);
         while (data4.length > maxSize) {
             data4.pop();
         }
@@ -228,9 +231,9 @@ if (tests.includes(7)) {
 
 
 if (tests.includes(8)) {
-    const size = 1000;
+    const size = 100;
     let i = size;
-    const data = Array.from(new Array(size)).map((x, i) => Math.sin(i / 50));
+    const data = Array.from(new Array(size)).map((x, i) => Math.sin(i / (size / 20)));
     const sl = new sc.BarChart({
         ...commonOptions,
         el: document.querySelector(".graph.i8"),
@@ -238,17 +241,18 @@ if (tests.includes(8)) {
         tooltipPosition: 'right bottom',
         barSpacing: 0,
     });
+    sl.setData(data);
     let showingTooltip;
     setInterval(() => {
         if (paused) return;
         i++;
-        data.push(Math.sin(i / 50));
+        data.push(Math.sin(i / (size / 20)));
         while (data.length > size) {
             data.shift();
         }
         sl.setData(data);
         if (Math.random() > 0.80) {
-            sl.setTooltipPosition({index: Math.random() * 100 | 0});
+            sl.setTooltipPosition({index: Math.random() * size | 0});
             if (!showingTooltip) {
                 sl.showTooltip();
                 showingTooltip = true;

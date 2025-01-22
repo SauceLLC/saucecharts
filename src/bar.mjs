@@ -37,38 +37,73 @@ export class BarChart extends common.Chart {
         this._renderDoLayout({manifest});
     }
 
-    beforeRender() {
-        const r = super.beforeRender();
+    normalizeData(data) {
+        // Convert to width and height to center-x and top-y..
+        const norm = new Array(data.length);
+        if (!data.length) {
+            return norm;
+        }
+        if (Array.isArray(data[0])) {
+            // [[width, y], [width, y], ...]
+            const width = data[0][0] || 0;
+            norm[0] = {width, x: width / 2, y: data[0][1] || 0};
+            let offt = width;
+            for (let i = 1; i < data.length; i++) {
+                const o = data[i];
+                const width = o[0] || 0;
+                offt += width;
+                norm[i] = {width, x: offt - (width / 2), y: o[1] || 0};
+            }
+        } else if (typeof data[0] === 'object') {
+            // [{width, y, ...}, {width, y, ...}, ...]
+            const width = data[0].width || 0;
+            norm[0] = {...data[0], width, x: width / 2, y: data[0].y || 0};
+            let offt = width;
+            for (let i = 1; i < data.length; i++) {
+                const o = data[i];
+                const width = o.width || 0;
+                offt += width;
+                norm[i] = {...o, width, x: offt - (width / 2), y: o.y || 0};
+            }
+        } else {
+            // [y, y1, ...]
+            for (let i = 0; i < data.length; i++) {
+                norm[i] = {width: 1, x: i + 0.5, y: data[i] || 0};
+            }
+        }
+        return norm;
+    }
+
+    adjustScale(manifest) {
+        super.adjustScale(manifest);
         if (this.yMax === this.yMin) {
             this.yMin -= 1;
         }
-        if (this.xMax === this.xMin) {
-            this.xMax += 1;
+        if (this._xMinOption == null) {
+            this.xMin = 0;
         }
-        return r;
+        if (this._xMaxOption == null) {
+            this.xMax = manifest.data.reduce((agg, x) => agg + x.width, 0);
+        }
     }
 
     _renderBeforeLayout({data}) {
-        const coords = data.map(this.toCoordinates.bind(this));
+        let offt = this.xMin;
+        const coords = data.map(o =>
+            [[this.toX(offt), this.toX(offt += o.width)], this.toY(o.y)]);
         const remBars = new Set(this._barsMap.values());
         const manifest = {
             add: [],
             remove: [],
             update: [],
         };
-        const xMinCoord = this.toX(this.xMin);
-        const yMinCoord = this.toY(this.yMin);
-        const xMaxCoord = this.toX(this.xMax);
+        const yMinCoord = this.toY(Math.max(0, this.yMin));
         for (let index = 0; index < coords.length; index++) {
             const coord = coords[index];
             const attrs = {
-                width: coords.length === 1 ?
-                    xMaxCoord - xMinCoord :
-                    index < coords.length - 1 ?
-                        coords[index + 1][0] - coord[0] :
-                        xMaxCoord - coord[0],
+                width: coord[0][1] - coord[0][0],
                 height: yMinCoord - coord[1],
-                x: coord[0],
+                x: coord[0][0],
                 y: coord[1],
             };
             const ref = this.data[index];
@@ -99,15 +134,26 @@ export class BarChart extends common.Chart {
     }
 
     _makeBarPath(x, y, width, height) {
-        const radius = Math.min(this.barRadius, width * 0.5, height);
-        return `
-            M ${x}, ${y + height}
-            v ${-height + radius}
-            q 0, ${-radius} ${radius}, ${-radius}
-            h ${width - 2 * radius}
-            q ${radius}, 0 ${radius}, ${radius}
-            v ${height - radius} z
-        `;
+        const radius = Math.min(this.barRadius, width * 0.5, Math.abs(height));
+        if (height >= 0) {
+            return `
+                M ${x}, ${y + height}
+                v ${-height + radius}
+                q 0, ${-radius} ${radius}, ${-radius}
+                h ${width - (2 * radius)}
+                q ${radius}, 0 ${radius}, ${radius}
+                v ${height - radius} z
+            `;
+        } else {
+            return `
+                M ${x}, ${y + height}
+                v ${-height - radius}
+                q 0, ${radius} ${radius}, ${radius}
+                h ${width - (2 * radius)}
+                q ${radius}, 0 ${radius}, ${-radius}
+                v ${height + radius} z
+            `;
+        }
     }
 
     _renderDoLayout({manifest}) {
@@ -118,7 +164,7 @@ export class BarChart extends common.Chart {
             const [element, attrs] = manifest.add[i];
             if (!this.disableAnimation) {
                 const centerX = attrs.x + attrs.width / 2;
-                const bottom = this._plotHeight + this._plotInset[0];
+                const bottom = attrs.y + attrs.height;
                 element.setAttribute('d', this._makeBarPath(centerX, bottom, 0, 0));
             }
             this._barsEl.append(element);
@@ -129,21 +175,8 @@ export class BarChart extends common.Chart {
         for (let i = 0; i < manifest.update.length; i++) {
             const [element, attrs] = manifest.update[i];
             const width = Math.max(0, attrs.width - this.barSpacing);
-            const height = Math.max(0, attrs.height);
             const x = attrs.x + this.barSpacing / 2;
-            element.setAttribute('d', this._makeBarPath(x, attrs.y, width, height));
+            element.setAttribute('d', this._makeBarPath(x, attrs.y, width, attrs.height));
         }
-    }
-
-    getMidpointOffsetX(index) {
-        if (!this._renderData || !this._renderData.length) {
-            return 0;
-        }
-        const width = this._renderData.length === 1 ?
-            this.xMax - this.xMin :
-            index < this._renderData.length - 1 ?
-                this._renderData[index + 1].x - this._renderData[index].x :
-                this.xMax - this._renderData[index].x;
-        return this.toScaleX(width / 2);
     }
 }

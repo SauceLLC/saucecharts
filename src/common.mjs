@@ -65,10 +65,10 @@ export class Chart {
     constructor(options={}) {
         this.init(options);
         this.id = globalIdCounter++;
-        this.yMin = this._yMinOption = options.yMin;
-        this.yMax = this._yMaxOption = options.yMax;
-        this.xMin = this._xMinOption = options.xMin;
-        this.xMax = this._xMaxOption = options.xMax;
+        this._yMinOption = options.yMin;
+        this._yMaxOption = options.yMax;
+        this._xMinOption = options.xMin;
+        this._xMaxOption = options.xMax;
         this.childCharts = [];
         this.title = options.title;
         this.color = options.color;
@@ -227,7 +227,7 @@ export class Chart {
         let ticks = options.ticks;
         const trackLength = vert ? this._plotHeight : this._plotWidth;
         if (ticks == null) {
-            ticks = 2 + trackLength / (vert ? 100 : 180) | 0;
+            ticks = 2 + Math.floor((trackLength / devicePixelRatio) / (vert ? 100 : 200));
         }
         const gap = trackLength / (ticks - 1);
         const tickLen = options.tickLength ?? 10;
@@ -366,11 +366,11 @@ export class Chart {
         this._computedColor = null;
     }
 
-    onTooltip({entry, chart}) {
+    onTooltip({entry, index, chart}) {
         return `
             <div class="sc-tooltip-entry" data-chart-id="${this.id}"
-                 style="--color:${chart.getColor()};">
-                <key>${entry.x.toFixed(2)}:</key><value>${entry.y.toFixed(2)}</value>
+                 style="--color:${entry.color || chart.getColor()};">
+                <key>${index}:</key><value>${entry.y.toFixed(2)}</value>
             </div>
         `;
     }
@@ -710,10 +710,10 @@ export class Chart {
             this.doReset();
             return;
         }
-        const scaleBefore = [this.xMin, this.xMax, this.yMin, this.yMax].join();
-        this.doRender(this.beforeRender());
-        const scaleAfter = [this.xMin, this.xMax, this.yMin, this.yMax].join();
-        if (scaleAfter !== scaleBefore) {
+        const manifest = this.beforeRender();
+        const beforeScale = [this.xMin, this.xMax, this.yMin, this.yMax].join();
+        this.adjustScale(manifest);
+        if ([this.xMin, this.xMax, this.yMin, this.yMax].join() !== beforeScale) {
             if (this._xAxisEl) {
                 this._drawXAxis();
             }
@@ -721,6 +721,7 @@ export class Chart {
                 this._drawYAxis();
             }
         }
+        this.doRender(manifest);
         this.afterRender();
     }
 
@@ -729,6 +730,11 @@ export class Chart {
         if (data.length > this._plotWidth * 1.5) {
             data = resample(data, this._plotWidth | 0);
         }
+        this._renderData = data;
+        return {data};
+    }
+
+    adjustScale({data}) {
         if (this._yMinOption == null || this._yMaxOption == null) {
             let min = Infinity;
             let max = -Infinity;
@@ -748,26 +754,14 @@ export class Chart {
                 this.yMax = max;
             }
         }
-        if (this._xMinOption == null) {
-            this.xMin = data[0].x;
-        }
-        if (this._xMaxOption == null) {
-            this.xMax = data[data.length - 1].x;
-        }
-        this._renderData = data;
-        return {data};
     }
 
-    doRender(options) {
-        // subclass
+    doRender(manifest) {
+        throw new Error("subclass impl required");
     }
 
     afterRender() {
         this.updateVisibleTooltip();
-    }
-
-    toCoordinates(o) {
-        return [this.toX(o.x), this.toY(o.y)];
     }
 
     toX(value) {
@@ -789,13 +783,6 @@ export class Chart {
         return value * (this._plotHeight / (this.yMax - this.yMin));
     }
 
-    fromCoordinates(xy) {
-        return {
-            x: this.fromX(xy[0]),
-            y: this.fromY(xy[1]),
-        };
-    }
-
     fromX(value) {
         return (value - this._plotInset[3]) /
             (this._plotWidth / (this.xMax - this.xMin)) +
@@ -808,18 +795,13 @@ export class Chart {
             this.yMin;
     }
 
-    getMidpointOffsetX(index) {
-        // Subclasses can use to move tooltip anchoring
-        return 0;
-    }
-
     getMidpointX(index) {
-        return this.toX(this._renderData[index].x) + this.getMidpointOffsetX(index);
+        return this.toX(this._renderData[index].x);
     }
 
     getMidpointCoordinates(index) {
         return [
-            this.toX(this._renderData[index].x) + this.getMidpointOffsetX(index),
+            this.toX(this._renderData[index].x),
             this.toY(this._renderData[index].y)
         ];
     }
@@ -835,9 +817,7 @@ export class Chart {
         this.doReset();
     }
 
-    doReset() {
-        // subclass
-    }
+    doReset() {}
 
     makePath(coords, {css, closed}={}) {
         if (!coords.length) {
