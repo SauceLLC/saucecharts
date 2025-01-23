@@ -147,7 +147,6 @@ export class Gradient {
 
     constructor({type, classes, colors}={}) {
         this.type = type;
-        this.classes = classes || [];
         this.colors = [];
         this.id = `color-gradient-${type}-${gradientIdCounter++}`;
         if (colors) {
@@ -184,7 +183,6 @@ export class LinearGradient extends Gradient {
 
     render() {
         this.el.setAttribute('class', 'sc-gradient');
-        this.el.classList.add(...this.classes);
         const angle = (this.angle || 0) % 360;
         if (angle) {
             this.el.setAttribute('gradientTransform', `rotate(${angle} 0.5 0.5)`);

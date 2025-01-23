@@ -1,15 +1,27 @@
 import * as sc from '../src/index.mjs';
 
+
+function randomColor() {
+    return '#' + [
+        (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
+        (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
+        (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
+        (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
+    ].join('');
+}
+
+
 function ts() {
     //return Date.now();
     return 1e1 + Math.round(performance.now());
 }
 
+
 let paused = false;
 const tests = [1, 2, 3, 4, 5, 6, 7, 8];
 //const tests = [1];
-const speed = 4000;
-const maxSize = 40;
+const speed = 2000;
+const maxSize = 10;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
@@ -70,11 +82,11 @@ if (tests.includes(2)) {
     self.chart2 = sl;
     setInterval(async () => {
         if (paused) return;
-        data.push([1, Math.sin(ts() / sinFactor)]);
+        data.push({color: randomColor(), width: 1, y: Math.sin(ts() / sinFactor)});
         await sleep(speed / 3);
-        data.push([0.5, Math.sin(ts() / sinFactor)]);
+        data.push({color: 'hsl(100, 50, 50 / 2)', width: 0.5, y: Math.sin(ts() / sinFactor)});
         await sleep(speed / 3);
-        data.push([1, Math.sin(ts() / sinFactor)]);
+        data.push({color: randomColor(), width: 1, y: Math.sin(ts() / sinFactor)});
         while (data.length > maxSize * 3) {
             data.shift();
         }

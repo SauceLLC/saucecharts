@@ -48,7 +48,7 @@
             let sinFactor = maxSize / 20;
             //speed = 1000;
             const sleep = ms => new Promise(r => setTimeout(r, ms));
-            let disableAnimation = false;
+            let disableAnimation = true;
             const commonOptions = {
                 hidePoints: false,
                 //padding: [10, 10, 10, 10],
@@ -101,7 +101,8 @@
                 if (paused) {
                     return;
                 }
-                data.push([index, Math.sin(index / sinFactor)]);
+                data.sort((a, b) => Math.random() > 0.95 ? Math.random() > 0.5 ? -1 : 1 : 0);
+                //data.push([index, Math.sin(index / sinFactor)]);
                 updateSegments(data.length - 1);
 
                 while (data.length > maxSize) {

@@ -3,14 +3,8 @@ import * as color from './color.mjs';
 let globalIdCounter = 0;
 
 
-export function createSVGElement(tag, attrs) {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-    if (attrs) {
-        for (const [k, v] of Object.entries(attrs)) {
-            el.setAttribute(k, v);
-        }
-    }
-    return el;
+export function createSVGElement(tag) {
+    return document.createElementNS('http://www.w3.org/2000/svg', tag);
 }
 
 
@@ -248,7 +242,8 @@ export class Chart {
             }
             let tick = existingTicks[visualCount];
             if (!tick) {
-                tick = createSVGElement('line', {class: 'tick'});
+                tick = createSVGElement('line');
+                tick.classList.add('tick');
                 el.append(tick);
             }
             tick.setAttribute('x1', x1);
@@ -257,7 +252,8 @@ export class Chart {
             tick.setAttribute('y2', y2);
             let label = existingLabels[visualCount];
             if (!label) {
-                label = createSVGElement('text', {class: 'label'});
+                label = createSVGElement('text');
+                label.classList.add('label');
                 el.append(label);
             }
             label.setAttribute('x', x1);
@@ -305,7 +301,9 @@ export class Chart {
         this._tooltipGroupEl = this._rootSvgEl.querySelector('.sc-tooltip');
         this._tooltipPositionerEl = el.querySelector('.sc-tooltip-positioner'),
         this._tooltipBoxEl = el.querySelector('.sc-tooltip-box');
-        this._plotRegionEl = createSVGElement('g', {'data-id': this.id, class: 'sc-plot-region'});
+        this._plotRegionEl = createSVGElement('g');
+        this._plotRegionEl.classList.add('sc-plot-region');
+        this._plotRegionEl.dataset.id = this.id;
         if (this.color) {
             this._plotRegionEl.style.setProperty('--color', this.color);
             this._computedColor = null;
@@ -316,12 +314,14 @@ export class Chart {
                                   `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
         }
         if (!this.xAxisOptions.disabled) {
-            this._xAxisEl = createSVGElement('g', {class: 'sc-axis x-axis'});
+            this._xAxisEl = createSVGElement('g');
+            this._xAxisEl.classList.add('sc-axis', 'x-axis');
             this._xAxisEl.innerHTML = `<line class="baseline"></line>`;
             this._rootSvgEl.append(this._xAxisEl);
         }
         if (!this.yAxisOptions.disabled) {
-            this._yAxisEl = createSVGElement('g', {class: 'sc-axis y-axis'});
+            this._yAxisEl = createSVGElement('g');
+            this._yAxisEl.classList.add('sc-axis', 'y-axis');
             this._yAxisEl.innerHTML = `<line class="baseline"></line>`;
             this._rootSvgEl.append(this._yAxisEl);
         }
@@ -423,8 +423,7 @@ export class Chart {
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            const disableAnimation = this.data.length > this._plotWidth;
-            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x, disableAnimation}));
+            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x}));
         }, {signal});
         this._setTooltipPosition({x: ev.x, disableAnimation: true});
         this.showTooltip();
@@ -569,7 +568,8 @@ export class Chart {
         const existingHLines = this._tooltipGroupEl.querySelectorAll('path.line.horizontal');
         const existingDots = this._tooltipGroupEl.querySelectorAll('circle.dot');
         if (!vertLine) {
-            vertLine = createSVGElement('path', {class: 'line vertical'});
+            vertLine = createSVGElement('path');
+            vertLine.classList.add('line', 'vertical');
             this._tooltipGroupEl.append(vertLine);
         }
         vertLine.setAttribute('d', `M ${centerX}, ${bottom} V ${top}`);
@@ -582,7 +582,8 @@ export class Chart {
             const [x, y] = tooltips[i].coordinates;
             let dot = existingDots[i];
             if (!dot) {
-                dot = createSVGElement('circle', {class: 'dot'});
+                dot = createSVGElement('circle');
+                dot.classList.add('dot');
                 this._tooltipGroupEl.append(dot);
             }
             dot.setAttribute('cx', x);
@@ -602,7 +603,8 @@ export class Chart {
             if (Math.abs(x - centerX) > 1) {
                 let horizLine = existingHLines[i];
                 if (!horizLine) {
-                    horizLine = createSVGElement('path', {class: 'line horizontal'});
+                    horizLine = createSVGElement('path');
+                    horizLine.classList.add('line', 'horizontal');
                     this._tooltipGroupEl.prepend(horizLine);
                 }
                 horizLine.setAttribute(
@@ -674,6 +676,7 @@ export class Chart {
 
     setData(data) {
         this.data = data;
+        this.normalizedData = this.normalizeData(data);
         this.render();
     }
 
@@ -685,18 +688,18 @@ export class Chart {
         if (Array.isArray(data[0])) {
             // [[x, y], [x1, y1], ...]
             for (let i = 0; i < data.length; i++) {
-                norm[i] = {x: data[i][0] || 0, y: data[i][1] || 0};
+                norm[i] = {index: i, x: data[i][0] || 0, y: data[i][1] || 0};
             }
         } else if (typeof data[0] === 'object') {
             // [{x, y, ...}, {x, y, ...}, ...]
             for (let i = 0; i < data.length; i++) {
                 const o = data[i];
-                norm[i] = {...o, x: o.x || 0, y: o.y || 0};
+                norm[i] = {...o, index: i, x: o.x || 0, y: o.y || 0};
             }
         } else {
             // [y, y1, ...]
             for (let i = 0; i < data.length; i++) {
-                norm[i] = {x: i, y: data[i] || 0};
+                norm[i] = {index: i, x: i, y: data[i] || 0};
             }
         }
         return norm;
@@ -726,7 +729,7 @@ export class Chart {
     }
 
     beforeRender() {
-        let data = this.normalizeData(this.data);
+        let data = this.normalizedData;
         if (data.length > this._plotWidth * 1.5) {
             data = resample(data, this._plotWidth | 0);
         }
@@ -810,6 +813,7 @@ export class Chart {
         if (this.data) {
             this.data.length = 0;
         }
+        this._renderData = null;
         for (const x of this._gradients) {
             x.el.remove();
         }

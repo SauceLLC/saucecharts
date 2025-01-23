@@ -8,7 +8,7 @@ function ts() {
 let paused = false;
 let tests = [1, 2];
 let speed = 1000;
-const maxSize = 4000;
+const maxSize = 10;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 speed = 1000;
 const sleep = ms => new Promise(r => setTimeout(r, ms));

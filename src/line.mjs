@@ -85,6 +85,9 @@ export class LineChart extends common.Chart {
         this._prevData = null;
         this.segments.length = 0;
         this._segmentEls.clear();
+        for (const x of this._segmentFills.values()) {
+            this.removeGradient(x.gradient);
+        }
         this._segmentFills.clear();
     }
 
@@ -156,51 +159,51 @@ export class LineChart extends common.Chart {
     _renderDoLayout({coords}) {
         this._pathLineEl.setAttribute('d', this.makePath(coords));
         this._pathAreaEl.setAttribute('d', this.makePath(coords, {closed: true}));
-        if (this.segments.length) {
-            const unclaimed = new Set(this._segmentEls.keys());
-            for (let i = 0; i < this.segments.length; i++) {
-                const s = this.segments[i];
-                let el = this._segmentEls.get(s);
-                if (!el) {
-                    el = common.createSVGElement('rect', {class: 'sc-visual-data-segment'});
-                    this._backgroundEl.append(el);
-                    this._segmentEls.set(s, el);
-                } else {
-                    unclaimed.delete(s);
-                }
-                const x = s.x != null ? this.toX(s.x) - this._plotInset[3] : 0;
-                const y = s.y != null ? this.toY(s.y) - this._plotInset[0] : 0;
-                const width = s.width != null ? this.toScaleX(s.width) : this._plotWidth - x;
-                const height = s.height != null ? this.toScaleY(s.height) : this._plotHeight - y;
-                el.style.setProperty('--x', `${x}px`);
-                el.style.setProperty('--y', `${y}px`);
-                el.style.setProperty('--width', `${width}px`);
-                el.style.setProperty('--height', `${height}px`);
-                if (s.color) {
-                    if (!this._segmentFills.has(s.color)) {
-                        const fill = color.parse(s.color);
-                        const gradient = (fill instanceof color.Gradient) ?
-                            fill :
-                            color.Gradient.fromObject({
-                                type: 'linear',
-                                colors: [
-                                    fill.lighten(-0.2).alpha(0.3),
-                                    fill.alpha(0.86),
-                                ]
-                            });
-                        this._segmentFills.set(s.color, {gradient});
-                        this.addGradient(gradient);
-                    }
-                    const {gradient} = this._segmentFills.get(s.color);
-                    el.setAttribute('fill', `url(#${gradient.id})`);
-                }
+        const unclaimedEls = new Set(this._segmentEls.keys());
+        const unclaimedFills = new Set(this._segmentFills.keys());
+        for (let i = 0; i < this.segments.length; i++) {
+            const s = this.segments[i];
+            let el = this._segmentEls.get(s);
+            if (!el) {
+                el = common.createSVGElement('rect');
+                el.classList.add('sc-visual-data-segment');
+                this._backgroundEl.append(el);
+                this._segmentEls.set(s, el);
+            } else {
+                unclaimedEls.delete(s);
             }
-            if (unclaimed.size) {
-                for (const x of unclaimed) {
-                    this._segmentEls.get(x).remove();
-                    this._segmentEls.delete(x);
+            const x = s.x != null ? this.toX(s.x) - this._plotInset[3] : 0;
+            const y = s.y != null ? this.toY(s.y) - this._plotInset[0] : 0;
+            const width = s.width != null ? this.toScaleX(s.width) : this._plotWidth - x;
+            const height = s.height != null ? this.toScaleY(s.height) : this._plotHeight - y;
+            el.style.setProperty('--x', `${x}px`);
+            el.style.setProperty('--y', `${y}px`);
+            el.style.setProperty('--width', `${width}px`);
+            el.style.setProperty('--height', `${height}px`);
+            if (s.color) {
+                unclaimedFills.delete(s.color);
+                let segFill = this._segmentFills.get(s.color);
+                if (!segFill) {
+                    const fill = color.parse(s.color);
+                    const gradient = this.addGradient((fill instanceof color.Gradient) ? fill : {
+                        type: 'linear',
+                        colors: [
+                            fill.lighten(-0.2).alpha(0.3),
+                            fill.alpha(0.86),
+                        ]
+                    });
+                    this._segmentFills.set(s.color, segFill = {gradient});
                 }
+                el.setAttribute('fill', `url(#${segFill.gradient.id})`);
             }
+        }
+        for (const x of unclaimedEls) {
+            this._segmentEls.get(x).remove();
+            this._segmentEls.delete(x);
+        }
+        for (const x of unclaimedFills) {
+            this.removeGradient(this._segmentFills.get(x).gradient);
+            this._segmentFills.delete(x);
         }
     }
 }
