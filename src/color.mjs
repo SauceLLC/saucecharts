@@ -57,15 +57,9 @@ export class Color {
         return new this.constructor(this.h, this.s, this.l, this.a);
     }
 
-    alpha(a) {
+    hue(h) {
         const c = this.clone();
-        c.a = a;
-        return c;
-    }
-
-    light(l) {
-        const c = this.clone();
-        c.l = l;
+        c.h = h;
         return c;
     }
 
@@ -75,38 +69,48 @@ export class Color {
         return c;
     }
 
-    lighten(ld) {
+    light(l) {
         const c = this.clone();
-        c.l += ld;
+        c.l = l;
         return c;
     }
 
-    saturate(sd) {
+    alpha(a) {
         const c = this.clone();
-        c.s += sd;
+        c.a = a;
         return c;
     }
 
-    hue(h) {
+    adjustHue(h) {
         const c = this.clone();
         c.h = h;
         return c;
     }
 
+    adjustLight(ld) {
+        const c = this.clone();
+        c.l += ld;
+        return c;
+    }
+
+    adjustSaturation(sd) {
+        const c = this.clone();
+        c.s += sd;
+        return c;
+    }
+
+    adjustAlpha(ad) {
+        const c = this.clone();
+        c.a += ad;
+        return c;
+    }
+
     toString(options={}) {
-        const h = Math.round(this.h * 360);
-        const s = Math.round(this.s * 100);
-        const l = Math.round(this.l * 100);
-        if (options.legacy) {
-            if (this.a !== undefined) {
-                return `hsla(${h}deg, ${s}%, ${l}%, ${Number(this.a.toFixed(4))})`;
-            } else {
-                return `hsl(${h}deg, ${s}%, ${l}%)`;
-            }
-        } else {
-            const a = this.a !== undefined ? ` / ${Math.round(this.a * 100)}%` : '';
-            return `hsl(${h}deg ${s}% ${l}%${a})`;
-        }
+        const h = Number((this.h * 360).toFixed(3));
+        const s = Number((this.s * 100).toFixed(3));
+        const l = Number((this.l * 100).toFixed(3));
+        const a = this.a !== undefined ? ` / ${Number((this.a * 100).toFixed(3))}%` : '';
+        return `hsl(${h} ${s} ${l}%${a})`;
     }
 }
 
@@ -145,7 +149,7 @@ export class Gradient {
         }
     }
 
-    constructor({type, classes, colors}={}) {
+    constructor({type, colors}={}) {
         this.type = type;
         this.colors = [];
         this.id = `color-gradient-${type}-${gradientIdCounter++}`;
@@ -172,7 +176,7 @@ export class Gradient {
 export class LinearGradient extends Gradient {
     constructor(options) {
         super(options);
-        this.angle = options.angle;
+        this.rotate = options.rotate;
         this.el = createSVGElement('linearGradient');
         this.el.id = this.id;
         this.el.setAttribute('x1', 0);
@@ -183,9 +187,9 @@ export class LinearGradient extends Gradient {
 
     render() {
         this.el.setAttribute('class', 'sc-gradient');
-        const angle = (this.angle || 0) % 360;
-        if (angle) {
-            this.el.setAttribute('gradientTransform', `rotate(${angle} 0.5 0.5)`);
+        const rotate = (this.rotate || 0) % 360;
+        if (rotate) {
+            this.el.setAttribute('gradientTransform', `rotate(${rotate} 0.5 0.5)`);
         } else {
             this.el.removeAttribute('gradientTransform');
         }

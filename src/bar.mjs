@@ -1,13 +1,14 @@
 import * as common from './common.mjs';
-import * as color from './color.mjs';
+import * as colorMod from './color.mjs';
 
 
 export class BarChart extends common.Chart {
 
     init(options={}) {
-        this._barsMap = new Map();
         this.barSpacing = options.barSpacing ?? 6;
-        this.barRadius = options.barRadius ?? 3;
+        this.barRadius = options.barRadius ?? 6;
+        this._bars = new Map();
+        this._barsPendingRemoval = new Map();
         this._barFills = new Map();
     }
 
@@ -15,32 +16,21 @@ export class BarChart extends common.Chart {
         super.setElement(el, options);
         this._plotRegionEl.innerHTML = `<g class="sc-bars"></g>`;
         this._barsEl = this._plotRegionEl.querySelector(`g.sc-bars`);
-        if (this._bgGradient) {
-            this.removeGradient(this._bgGradient);
-        }
-        const fill = color.parse(this.getColor());
-        this._bgGradient = this.addGradient({
-            type: 'linear',
-            colors: [
-                fill.lighten(-0.2).alpha(0.2),
-                fill.alpha(0.8),
-            ]
-        });
     }
 
     doReset() {
         this._barsEl.innerHTML = '';
-        this._barsMap.clear();
+        this._bars.clear();
+        this._barsPendingRemoval.clear();
         for (const x of this._barFills.values()) {
             this.removeGradient(x.gradient);
         }
         this._barFills.clear();
-
     }
 
-    doRender({data}) {
-        const manifest = this._renderBeforeLayout({data});
-        this._renderDoLayout({manifest});
+    doRender(manifest, options) {
+        this._renderDoLayout(this._renderBeforeLayout(manifest, options), options);
+        this._schedGC();
     }
 
     normalizeData(data) {
@@ -63,7 +53,7 @@ export class BarChart extends common.Chart {
         } else if (typeof data[0] === 'object') {
             // [{width, y, ...}, {width, y, ...}, ...]
             const width = data[0].width || 0;
-            norm[0] = {...data[0], width, x: width / 2, y: data[0].y || 0};
+            norm[0] = {...data[0], index: 0, width, x: width / 2, y: data[0].y || 0};
             let offt = width;
             for (let i = 1; i < data.length; i++) {
                 const o = data[i];
@@ -80,6 +70,18 @@ export class BarChart extends common.Chart {
         return norm;
     }
 
+    getMidpointX(entry) {
+        const key = this.data[entry.index];
+        if (!key) {
+            throw new Error("unexpected"); // XXX for now, probably okay to return undefined
+        }
+        const bar = this._bars.get(key);
+        if (!bar) {
+            throw new Error("unexpected"); // XXX for now, probably okay to return undefined
+        }
+        return bar.attrs.x + bar.attrs.width / 2;
+    }
+
     adjustScale(manifest) {
         super.adjustScale(manifest);
         if (this.yMax === this.yMin) {
@@ -93,127 +95,206 @@ export class BarChart extends common.Chart {
         }
     }
 
-    _renderBeforeLayout({data}) {
-        const unclaimedBars = new Set(this._barsMap.keys());
-        const unclaimedFills = new Set(this._barFills.keys());
-        const manifest = {
+    _renderBeforeLayout({data, resampling}, options={}) {
+        const unclaimed = new Map(this._bars);
+        const layout = {
             add: [],
             remove: [],
             update: [],
         };
         const yMinCoord = this.toY(Math.max(0, this.yMin));
         let xOfft = this.xMin;
+        const adding = [];
         for (let index = 0; index < data.length; index++) {
             const entry = data[index];
             const x1 = this.toX(xOfft);
             const x2 = this.toX(xOfft += entry.width);
             const y = this.toY(entry.y);
-            // Important: ref must be from this.data so in-place array mutations
-            // like appending new records to the existing array can be handled
-            // as individual updates.
-            const ref = this.data[entry.index];
+            const height = yMinCoord - y;
+            const color = entry.color || this.getColor();
+            const fillKey = `${color}-${height < 0 ? 'down' : 'up'}`;
+            let barFill = this._barFills.get(fillKey);
+            if (!barFill) {
+                const fill = colorMod.parse(color);
+                const gradient = this.addGradient((fill instanceof colorMod.Gradient) ? fill : {
+                    rotate: height < 0 ? 180 : 0,
+                    type: 'linear',
+                    colors: [
+                        fill.adjustAlpha(-0.5).adjustLight(-0.2),
+                        fill.adjustAlpha(-0.14),
+                    ]
+                });
+                this._barFills.set(fillKey, barFill = {gradient});
+            }
             const attrs = {
                 width: x2 - x1,
-                height: yMinCoord - y,
+                height,
                 x: x1,
                 y,
+                fill: `url(#${barFill.gradient.id})`,
             };
-            let bar = this._barsMap.get(ref);
-            if (bar) {
-                unclaimedBars.delete(ref);
-            } else {
-                const el = common.createSVGElement('path');
-                el.classList.add('sc-bar', 'sc-visual-data-bar');
-                this._barsMap.set(ref, bar = {el});
-                manifest.add.push([el, attrs]);
-            }
-            if (entry.color) {
-                unclaimedFills.delete(entry.color);
-                let barFill = this._barFills.get(entry.color);
-                if (!barFill) {
-                    const fill = color.parse(entry.color);
-                    const gradient = this.addGradient((fill instanceof color.Gradient) ? fill : {
-                        type: 'linear',
-                        colors: [
-                            fill.lighten(-0.2).alpha(0.3),
-                            fill.alpha(0.86),
-                        ]
-                    });
-                    this._barFills.set(entry.color, barFill = {gradient});
+            // Important: ref must be from this.data so in-place array mutations
+            // like appending new records to the existing array can be handled
+            // as individual updates.  Also, getMidpointX now depends on this.
+            const ref = this.data[entry.index];
+            let bar = this._bars.get(ref);
+            if (!bar) {
+                bar = this._barsPendingRemoval.get(ref);
+                if (bar) {
+                    bar.sig = null;
+                    this._barsPendingRemoval.delete(ref);
+                    this._bars.set(ref, bar);
                 }
-                attrs.fill = `url(#${barFill.gradient.id})`;
             } else {
-                attrs.fill = `url(#${this._bgGradient.id})`;
+                unclaimed.delete(ref);
+            }
+            if (!bar) {
+                bar = {};
+                adding.push({bar, ref});
             }
             const sig = `${attrs.width} ${attrs.height} ${attrs.x} ${attrs.y} ${attrs.fill}`;
             if (bar.sig !== sig) {
-                manifest.update.push([bar.el, attrs]);
                 bar.sig = sig;
+                bar.attrs = attrs;
+                bar.fillKey = fillKey;
+                if (bar.el) {
+                    layout.update.push(bar);
+                }
             }
         }
-        for (const x of unclaimedBars) {
-            manifest.remove.push({el: this._barsMap.get(x).el});
-            this._barsMap.delete(x);
+        let unclaimedIter = adding.length && resampling && unclaimed.size && unclaimed.entries();
+        for (let i = 0; i < adding.length; i++) {
+            const {bar, ref} = adding[i];
+            if (resampling) {
+                if (unclaimedIter) {
+                    const next = unclaimedIter.next().value;
+                    if (next) {
+                        const [oldKey, replace] = next;
+                        unclaimed.delete(oldKey);
+                        this._bars.delete(oldKey);
+                        Object.assign(replace, bar);
+                        this._bars.set(ref, replace);
+                        layout.update.push(replace);
+                        continue;
+                    } else {
+                        unclaimedIter = null;
+                    }
+                }
+                if (this._barsPendingRemoval.size) {
+                    const [oldKey, replace] = this._barsPendingRemoval.entries().next().value;
+                    this._barsPendingRemoval.delete(oldKey);
+                    Object.assign(replace, bar);
+                    this._bars.set(ref, replace);
+                    layout.update.push(replace);
+                    continue;
+                }
+            }
+            bar.el = common.createSVGElement('path');
+            bar.el.classList.add('sc-bar', 'sc-visual-data-bar');
+            this._bars.set(ref, bar);
+            layout.add.push(bar);
+            layout.update.push(bar);
         }
-        for (const x of unclaimedFills) {
-            const gradient = this._barFills.get(x).gradient;
-            manifest.remove.push({gradient});
-            this._barFills.delete(x);
+        for (const [key, bar] of unclaimed) {
+            bar.lastUsed = document.timeline.currentTime;
+            this._bars.delete(key);
+            this._barsPendingRemoval.set(key, bar);
+            layout.remove.push(bar);
         }
-        return manifest;
+        if (options.disableAnimation) {
+            // Terminate any active animations from previously removed bars (test case: aggressive resizing)
+            for (const bar of this._barsPendingRemoval.values()) {
+                layout.remove.push(bar);
+            }
+        }
+        return layout;
     }
 
-    _makeBarPath(x, y, width, height) {
-        const radius = Math.min(this.barRadius, width * 0.5, Math.abs(height));
-        if (height >= 0) {
-            return `
-                M ${x}, ${y + height}
-                v ${-height + radius}
-                q 0, ${-radius} ${radius}, ${-radius}
-                h ${width - (2 * radius)}
-                q ${radius}, 0 ${radius}, ${radius}
-                v ${height - radius} z
-            `;
-        } else {
-            return `
-                M ${x}, ${y + height}
-                v ${-height - radius}
-                q 0, ${radius} ${radius}, ${radius}
-                h ${width - (2 * radius)}
-                q ${radius}, 0 ${radius}, ${-radius}
-                v ${height + radius} z
-            `;
-        }
-    }
-
-    _renderDoLayout({manifest}) {
-        for (let i = 0; i < manifest.remove.length; i++) {
-            const x = manifest.remove[i];
-            if (x.el) {
-                x.el.remove();
-            }
-            if (x.gradient) {
-                this.removeGradient(x.gradient);
-            }
-        }
-        for (let i = 0; i < manifest.add.length; i++) {
-            const [el, attrs] = manifest.add[i];
-            if (!this.disableAnimation) {
+    _renderDoLayout(layout, {disableAnimation}={}) {
+        for (let i = 0; i < layout.add.length; i++) {
+            const {el, attrs} = layout.add[i];
+            if (!disableAnimation) {
                 const centerX = attrs.x + attrs.width / 2;
                 const bottom = attrs.y + attrs.height;
                 el.setAttribute('d', this._makeBarPath(centerX, bottom, 0, 0));
             }
             this._barsEl.append(el);
         }
-        if (!this.disableAnimation && manifest.add.length) {
+        for (let i = 0; i < layout.remove.length; i++) {
+            const bar = layout.remove[i];
+            if (!disableAnimation) {
+                const centerX = bar.attrs.x + bar.attrs.width / 2;
+                const bottom = bar.attrs.y + bar.attrs.height;
+                console.count("shrink");
+                bar.el.setAttribute('d', this._makeBarPath(centerX, bottom, 0, 0));
+            } else {
+                bar.el.removeAttribute('d');
+            }
+        }
+        if ((!disableAnimation && layout.add.length) || disableAnimation) {
             this._rootSvgEl.clientWidth;
         }
-        for (let i = 0; i < manifest.update.length; i++) {
-            const [el, attrs] = manifest.update[i];
+        for (let i = 0; i < layout.update.length; i++) {
+            const {el, attrs} = layout.update[i];
             const width = Math.max(0, attrs.width - this.barSpacing);
             const x = attrs.x + this.barSpacing / 2;
             el.setAttribute('d', this._makeBarPath(x, attrs.y, width, attrs.height));
             el.setAttribute('fill', attrs.fill);
+        }
+    }
+
+    _makeBarPath(x, y, width, height) {
+        const radius = Math.min(this.barRadius, width * 0.5, Math.abs(height));
+        const rCtrl = height < 0 ? -radius : radius;
+        return (
+            `M ${x}, ${y + height} ` +
+            `v ${-height + rCtrl} ` +
+            `q 0, ${-rCtrl} ${radius}, ${-rCtrl} ` +
+            `h ${width - (2 * radius)} ` +
+            `q ${radius}, 0 ${radius}, ${rCtrl} ` +
+            `v ${height - rCtrl} Z`
+        );
+    }
+
+    _schedGC() {
+        if (this._gcTimeout) {
+            return;
+        }
+        this._gcTimeout = setTimeout(() => {
+            const run = () => (this._gcTimeout = null, this._gc());
+            if (window.requestIdleCallback) {
+                requestIdleCallback(run, {timeout: 100});
+            } else {
+                run();
+            }
+        }, 400);
+    }
+
+    _gc() {
+        const animDurRaw = getComputedStyle(this.el).getPropertyValue('--transition-duration');
+        const animDur = (parseFloat(animDurRaw) * (animDurRaw.endsWith('ms') ? 1 : 1000)) || 0;
+        const unclaimedFills = new Set(this._barFills.keys());
+        for (const x of this._bars.values()) {
+            unclaimedFills.delete(x.fillKey);
+        }
+        const expiration = document.timeline.currentTime - animDur - 100;
+        let more;
+        for (const [key, bar] of this._barsPendingRemoval) {
+            if (bar.lastUsed > expiration) {
+                more = true;
+                unclaimedFills.delete(bar.fillKey);
+            } else {
+                this._barsPendingRemoval.delete(key);
+                bar.el.remove();
+            }
+        }
+        for (const x of unclaimedFills) {
+            const {gradient} = this._barFills.get(x);
+            this.removeGradient(gradient);
+            this._barFills.delete(x);
+        }
+        if (more) {
+            this._schedGC();
         }
     }
 }

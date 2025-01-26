@@ -1,4 +1,4 @@
-import * as color from './color.mjs';
+import * as colorMod from './color.mjs';
 
 let globalIdCounter = 0;
 
@@ -66,6 +66,7 @@ export class Chart {
         this.childCharts = [];
         this.title = options.title;
         this.color = options.color;
+        this.tooltipOptions = options.tooltip || {};
         this.xAxisOptions = options.xAxis || {};
         this.yAxisOptions = options.yAxis || {};
         this.padding = options.padding || [0, 0, 0, 0];
@@ -76,9 +77,6 @@ export class Chart {
         this.tooltipLinger = options.tooltipLinger ?? 800;
         this._tooltipState = {};
         this._gradients = new Set();
-        if (options.onTooltip) {
-            this.onTooltip = options.onTooltip.bind(this);
-        }
         this._onPointerEnterBound = this.onPointerEnter.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
         if (options.el) {
@@ -102,8 +100,8 @@ export class Chart {
     }
 
     addGradient(gradient) {
-        if (!(gradient instanceof color.Gradient)) {
-            gradient = color.Gradient.fromObject(gradient);
+        if (!(gradient instanceof colorMod.Gradient)) {
+            gradient = colorMod.Gradient.fromObject(gradient);
         }
         gradient.render();
         this._gradients.add(gradient);
@@ -122,7 +120,7 @@ export class Chart {
             if (x.target === this._tooltipBoxEl) {
                 requestAnimationFrame(() => this._onResizeTooltip(x));
             } else if (x.target === this.el) {
-                requestAnimationFrame(() => this._onResizeContainer());
+                requestAnimationFrame(() => this._onResizeContainer(x));
             }
         }
     }
@@ -133,27 +131,29 @@ export class Chart {
         this._tooltipPositionerEl.style.setProperty('--course-width', `${courseWidth}px`);
     }
 
-    _onResizeContainer() {
-        const hasAnim = !this.el.classList.contains('disable-animation');
+    _onResizeContainer(resize) {
+        const hasAnim = !this.el.classList.contains('sc-disable-animation');
         if (hasAnim) {
-            this.el.classList.add('disable-animation');
+            this.el.classList.add('sc-disable-animation');
         }
         try {
-            this._adjustSize();
+            this._adjustSize(resize.contentRect.width, resize.contentRect.height);
             if (this.data) {
-                this.render();
+                this.render({disableAnimation: true, forceAxis: true});
             }
         } finally {
             if (hasAnim) {
                 this.el.offsetWidth;
-                this.el.classList.remove('disable-animation');
+                this.el.classList.remove('sc-disable-animation');
             }
         }
     }
 
-    _adjustSize() {
+    _adjustSize(width, height) {
         this.devicePixelRatio = devicePixelRatio || 1;
-        const {width, height} = this._rootSvgEl.getBoundingClientRect();
+        if (width === undefined) {
+            ({width, height} = this._rootSvgEl.getBoundingClientRect());
+        }
         if (!width || !height) {
             this._boxWidth = null;
             this._boxHeight = null;
@@ -179,15 +179,8 @@ export class Chart {
             this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
             this.el.style.setProperty('--dpr', this.devicePixelRatio);
         }
-        if (this._xAxisEl) {
-            this._drawXAxis();
-        }
-        if (this._yAxisEl) {
-            this._drawYAxis();
-        }
         if (this._tooltipState.visible) {
             this._establishTooltipState();
-            this._updateTooltip({disableAnimation: true});
         }
     }
 
@@ -201,13 +194,13 @@ export class Chart {
 
     _drawAxis(orientation, el, options) {
         const vert = orientation === 'vertical';
-        const baseline = el.querySelector('line.baseline');
+        const baseline = el.querySelector('line.sc-baseline');
         const top = this._plotInset[0];
         const left = this._plotInset[3];
         const right = left + this._plotWidth;
         const bottom = top + this._plotHeight;
         if (vert) {
-            el.classList.toggle('right', !!options.right);
+            el.classList.toggle('sc-right', !!options.right);
             baseline.setAttribute('x1', options.align === 'right' ? right : left);
             baseline.setAttribute('x2', options.align === 'right' ? right : left);
             baseline.setAttribute('y1', top);
@@ -226,8 +219,8 @@ export class Chart {
         const gap = trackLength / (ticks - 1);
         const tickLen = options.tickLength ?? 10;
         const format = options.label || this.onAxisLabel.bind(this);
-        const existingTicks = el.querySelectorAll('line.tick');
-        const existingLabels = el.querySelectorAll('text.label');
+        const existingTicks = el.querySelectorAll('line.sc-tick');
+        const existingLabels = el.querySelectorAll('text.sc-label');
         let visualCount = 0;
         for (let i = options.showFirst ? 0 : 1; i < ticks; i++) {
             let x1, x2, y1, y2;
@@ -243,7 +236,7 @@ export class Chart {
             let tick = existingTicks[visualCount];
             if (!tick) {
                 tick = createSVGElement('line');
-                tick.classList.add('tick');
+                tick.classList.add('sc-tick');
                 el.append(tick);
             }
             tick.setAttribute('x1', x1);
@@ -253,7 +246,7 @@ export class Chart {
             let label = existingLabels[visualCount];
             if (!label) {
                 label = createSVGElement('text');
-                label.classList.add('label');
+                label.classList.add('sc-label');
                 el.append(label);
             }
             label.setAttribute('x', x1);
@@ -279,9 +272,17 @@ export class Chart {
         }
         if (!merge) {
             el.classList.add('saucechart', 'sc-wrap');
+            el.classList.toggle('sc-disable-animation', !!this.disableAnimation);
+            let darkMode = this.darkMode;
+            if (darkMode === undefined) {
+                const currentColor = getComputedStyle(el).getPropertyValue('color');
+                const c = colorMod.parse(currentColor);
+                darkMode = c.l >= 0.5;
+            }
+            this.el.classList.toggle('sc-darkmode', darkMode);
             el.innerHTML = `
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-                     class="sc-root" style="position:absolute; top:0; left:0; width:100%; height:100%;">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg"
+                     preserveAspectRatio="none" class="sc-root">
                     <defs></defs>
                     <g class="sc-plot-regions"></g>
                     <g class="sc-tooltip"></g>
@@ -291,6 +292,7 @@ export class Chart {
                         <div class="sc-tooltip-box"></div>
                     </div>
                 </div>`;
+
             el.parentSauceChart = this;
             this.childCharts.length = 0;
         } else {
@@ -315,26 +317,16 @@ export class Chart {
         }
         if (!this.xAxisOptions.disabled) {
             this._xAxisEl = createSVGElement('g');
-            this._xAxisEl.classList.add('sc-axis', 'x-axis');
-            this._xAxisEl.innerHTML = `<line class="baseline"></line>`;
+            this._xAxisEl.classList.add('sc-axis', 'sc-x-axis');
+            this._xAxisEl.innerHTML = `<line class="sc-baseline"></line>`;
             this._rootSvgEl.append(this._xAxisEl);
         }
         if (!this.yAxisOptions.disabled) {
             this._yAxisEl = createSVGElement('g');
-            this._yAxisEl.classList.add('sc-axis', 'y-axis');
-            this._yAxisEl.innerHTML = `<line class="baseline"></line>`;
+            this._yAxisEl.classList.add('sc-axis', 'sc-y-axis');
+            this._yAxisEl.innerHTML = `<line class="sc-baseline"></line>`;
             this._rootSvgEl.append(this._yAxisEl);
         }
-        if (this.disableAnimation) {
-            this.el.classList.add('disable-animation');
-        }
-        let darkMode = this.darkMode;
-        if (darkMode === undefined) {
-            const currentColor = getComputedStyle(el).getPropertyValue('color');
-            const c = color.parse(currentColor);
-            darkMode = c.l >= 0.5;
-        }
-        this.el.classList.toggle('darkmode', darkMode);
         this._adjustSize();
         this._resizeObserver.observe(this._tooltipBoxEl);
         this._resizeObserver.observe(el);
@@ -366,13 +358,17 @@ export class Chart {
         this._computedColor = null;
     }
 
-    onTooltip({entry, index, chart}) {
-        return `
-            <div class="sc-tooltip-entry" data-chart-id="${this.id}"
-                 style="--color:${entry.color || chart.getColor()};">
-                <key>${index}:</key><value>${entry.y.toFixed(2)}</value>
-            </div>
-        `;
+    onTooltip({entry, chart}) {
+        if (this.tooltipOptions.format) {
+            return this.tooltipOptions.format.apply(this, arguments);
+        } else {
+            return `
+                <div class="sc-tooltip-entry" data-chart-id="${this.id}"
+                     style="--color:${entry.color || chart.getColor()};">
+                    <key>${entry.index}:</key><value>${entry.y.toFixed(2)}</value>
+                </div>
+            `;
+        }
     }
 
     onAxisLabel({orientation, index, ticks}) {
@@ -434,7 +430,7 @@ export class Chart {
         if (!state.visible) {
             return;
         }
-        this.el.classList.remove('tooltip-active');
+        this.el.classList.remove('sc-tooltip-active');
         state.visible = false;
     }
 
@@ -443,17 +439,19 @@ export class Chart {
         if (state.visible) {
             return;
         }
-        const hasAnim = !this.el.classList.contains('disable-animation');
+        const posEl = this._tooltipPositionerEl;
+        const hasAnim = !posEl.classList.contains('sc-disable-animation') &&
+            !this.el.classList.contains('sc-disable-animation');
         if (hasAnim) {
-            this.el.classList.add('disable-animation');
+            posEl.classList.add('sc-disable-animation');
         }
         try {
-            this.el.classList.add('tooltip-active');
+            this.el.classList.add('sc-tooltip-active');
             state.visible = true;
         } finally {
             if (hasAnim) {
-                this.el.offsetWidth;
-                this.el.classList.remove('disable-animation');
+                posEl.offsetWidth;
+                posEl.classList.remove('sc-disable-animation');
             }
         }
     }
@@ -515,39 +513,40 @@ export class Chart {
         const tooltips = [];
         const state = this._tooltipState;
         let drawSig = state.scrollOffsets.join();
-        const xRef = state.index != null ? this.getMidpointX(state.index) : state.x;
+        const xRef = state.index != null ? this.toX(this.normalizedData[state.index].x) : state.x;
         for (let i = 0; i < state.charts.length; i++) {
             const chart = state.charts[i];
             const xSearch = (xRef - state.chartPlotOffsets[i][0] + state.scrollOffsets[0]) *
                 this.devicePixelRatio;
-            const index = chart.findNearestIndexFromXCoord(xSearch);
-            if (index === undefined) {
+            const entry = chart.findNearestFromXCoord(xSearch);
+            if (entry === undefined) {
                 continue;
             }
-            const entry = chart._renderData[index];
             let html;
             if (entry.tooltip) {
-                html = entry.tooltip({entry, index, chart});
+                html = entry.tooltip({entry, chart});
             } else if (chart.onTooltip) {
-                html = chart.onTooltip({entry, index, chart});
+                html = chart.onTooltip({entry, chart});
             }
-            const coordinates = chart.getMidpointCoordinates(index);
-            tooltips.push({chart, index, entry, coordinates, html});
-            drawSig += ` ${i} ${index} ${coordinates[0]} ${coordinates[1]}`;
+            const coordinates = [chart.getMidpointX(entry), chart.toY(entry.y)];
+            tooltips.push({chart, entry, coordinates, html});
+            drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
         }
         if (drawSig !== state.lastDrawSig) {
             state.lastDrawSig = drawSig;
+            const posEl = this._tooltipPositionerEl;
             const disableAnim = (options.disableAnimation || !state.hasDrawn) &&
-                !this.el.classList.contains('disable-animation');
+                (!posEl.classList.contains('sc-disable-animation') &&
+                 !this.el.classList.contains('sc-disable-animation'));
             if (disableAnim) {
-                this.el.classList.add('disable-animation');
+                posEl.classList.add('sc-disable-animation');
             }
             try {
                 this._drawTooltip(tooltips);
             } finally {
                 if (disableAnim) {
-                    this.el.offsetWidth;
-                    this.el.classList.remove('disable-animation');
+                    posEl.offsetWidth;
+                    posEl.classList.remove('sc-disable-animation');
                 }
             }
         }
@@ -564,12 +563,12 @@ export class Chart {
         const bottom = this._boxHeight - this.tooltipPadding[1] * this.devicePixelRatio;
         const centerX = tooltips.reduce((agg, o) => agg + o.coordinates[0], 0) / tooltips.length;
         const centerY = top + (bottom - top) / 2;
-        let vertLine = this._tooltipGroupEl.querySelector('path.line.vertical');
-        const existingHLines = this._tooltipGroupEl.querySelectorAll('path.line.horizontal');
-        const existingDots = this._tooltipGroupEl.querySelectorAll('circle.dot');
+        let vertLine = this._tooltipGroupEl.querySelector('.sc-line.sc-vertical');
+        const existingHLines = this._tooltipGroupEl.querySelectorAll('.sc-line.sc-horizontal');
+        const existingDots = this._tooltipGroupEl.querySelectorAll('circle.sc-highlight-dot');
         if (!vertLine) {
             vertLine = createSVGElement('path');
-            vertLine.classList.add('line', 'vertical');
+            vertLine.classList.add('sc-line', 'sc-vertical');
             this._tooltipGroupEl.append(vertLine);
         }
         vertLine.setAttribute('d', `M ${centerX}, ${bottom} V ${top}`);
@@ -583,7 +582,7 @@ export class Chart {
             let dot = existingDots[i];
             if (!dot) {
                 dot = createSVGElement('circle');
-                dot.classList.add('dot');
+                dot.classList.add('sc-highlight-dot');
                 this._tooltipGroupEl.append(dot);
             }
             dot.setAttribute('cx', x);
@@ -604,7 +603,7 @@ export class Chart {
                 let horizLine = existingHLines[i];
                 if (!horizLine) {
                     horizLine = createSVGElement('path');
-                    horizLine.classList.add('line', 'horizontal');
+                    horizLine.classList.add('sc-line', 'sc-horizontal');
                     this._tooltipGroupEl.prepend(horizLine);
                 }
                 horizLine.setAttribute(
@@ -650,7 +649,7 @@ export class Chart {
         state.hasDrawn = true;
     }
 
-    findNearestIndexFromXCoord(searchX) {
+    findNearestFromXCoord(searchX) {
         if (!this._renderData || !this._renderData.length) {
             return;
         }
@@ -658,26 +657,27 @@ export class Chart {
         let left = 0;
         let right = len - 1;
         for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
-            const x = this.getMidpointX(i);
+            const entry = this._renderData[i];
+            const x = this.getMidpointX(entry);
             if (x > searchX) {
                 right = i;
             } else if (x < searchX) {
                 left = i;
             } else {
-                return i;
+                return this._renderData[i];
             }
             if (right - left <= 1) {
-                const lDist = searchX - this.getMidpointX(left);
-                const rDist = this.getMidpointX(right) - searchX;
-                return lDist < rDist ? left : right;
+                const lDist = searchX - this.getMidpointX(this._renderData[left]);
+                const rDist = this.getMidpointX(this._renderData[right]) - searchX;
+                return this._renderData[lDist < rDist ? left : right];
             }
         }
     }
 
-    setData(data) {
+    setData(data, options) {
         this.data = data;
         this.normalizedData = this.normalizeData(data);
-        this.render();
+        this.render(options);
     }
 
     normalizeData(data) {
@@ -705,7 +705,7 @@ export class Chart {
         return norm;
     }
 
-    render() {
+    render(options={}) {
         if (!this.el || !this._boxWidth || !this._boxHeight) {
             return;
         }
@@ -713,10 +713,12 @@ export class Chart {
             this.doReset();
             return;
         }
-        const manifest = this.beforeRender();
-        const beforeScale = [this.xMin, this.xMax, this.yMin, this.yMax].join();
+        options.disableAnimation = options.disableAnimation || this.disableAnimation;
+        const manifest = this.beforeRender(options);
+        const beforeScale = options.forceAxis || [this.xMin, this.xMax, this.yMin, this.yMax].join();
         this.adjustScale(manifest);
-        if ([this.xMin, this.xMax, this.yMin, this.yMax].join() !== beforeScale) {
+        this.doRender(manifest, options);
+        if (options.forceAxis || [this.xMin, this.xMax, this.yMin, this.yMax].join() !== beforeScale) {
             if (this._xAxisEl) {
                 this._drawXAxis();
             }
@@ -724,20 +726,25 @@ export class Chart {
                 this._drawYAxis();
             }
         }
-        this.doRender(manifest);
-        this.afterRender();
+        this.afterRender(manifest, options);
     }
 
-    beforeRender() {
+    beforeRender(options) {
         let data = this.normalizedData;
-        if (data.length > this._plotWidth * 1.5) {
+        const resampling = data.length > this._plotWidth * 1.5;
+        if (resampling) {
             data = resample(data, this._plotWidth | 0);
+            //data = resample(data, 100 + 10 * Math.random() | 0);
         }
         this._renderData = data;
-        return {data};
+        return {data, resampling};
     }
 
     adjustScale({data}) {
+        this.xMin = this._xMinOption;
+        this.xMax = this._xMaxOption;
+        this.yMin = this._yMinOption;
+        this.yMax = this._yMaxOption;
         if (this._yMinOption == null || this._yMaxOption == null) {
             let min = Infinity;
             let max = -Infinity;
@@ -759,11 +766,11 @@ export class Chart {
         }
     }
 
-    doRender(manifest) {
+    doRender(manifest, options) {
         throw new Error("subclass impl required");
     }
 
-    afterRender() {
+    afterRender(manifest, options) {
         this.updateVisibleTooltip();
     }
 
@@ -798,15 +805,8 @@ export class Chart {
             this.yMin;
     }
 
-    getMidpointX(index) {
-        return this.toX(this._renderData[index].x);
-    }
-
-    getMidpointCoordinates(index) {
-        return [
-            this.toX(this._renderData[index].x),
-            this.toY(this._renderData[index].y)
-        ];
+    getMidpointX(entry) {
+        return this.toX(entry.x);
     }
 
     reset() {

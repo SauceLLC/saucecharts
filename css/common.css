@@ -1,5 +1,5 @@
 .saucechart {
-    --transition-duration: 400ms;
+    --transition-duration: 4000ms;
     --tooltip-transition-duration: 200ms;
     --axis-padding: 0.3em;
     touch-action: none;
@@ -8,19 +8,19 @@
     user-select: none;
     position: relative;
 
-    &:not(.darkmode) {
+    &:not(.sc-darkmode) {
         --fg-color: black;
         --bg-color: white;
         --shade-dir: 1;
     }
-    &.darkmode {
+    &.sc-darkmode {
         --fg-color: white;
         --bg-color: black;
         --shade-dir: -1;
     }
 
 
-    &.disable-animation {
+    &.sc-disable-animation {
         --transition-duration: 0 !important;
         --tooltip-transition-duration: 0 !important;
     }
@@ -42,31 +42,31 @@
     .sc-axis {
         --rotate: none;
 
-        .baseline,
-        .tick {
+        .sc-baseline,
+        .sc-tick {
             stroke: color-mix(in srgb, var(--fg-color), transparent 80%);
             stroke: hsl(from var(--fg-color) h s calc(l + 30 * var(--shade-dir)) / 0.8);
         }
 
-        .baseline {
+        .sc-baseline {
             stroke-width: 0.10em;
             stroke-linecap: round;
         }
 
-        .tick {
+        .sc-tick {
             stroke-width: 0.10em;
             stroke-linecap: round;
         }
 
-        .label {
+        .sc-label {
             font-size: 0.9em;
             fill: hsl(from var(--fg-color) h s l / 0.9);
             transform-box: border-box;
             rotate: var(--rotate);
         }
 
-        &.y-axis {
-            .label {
+        &.sc-y-axis {
+            .sc-label {
                 dominant-baseline: middle;
                 &[data-pct="0"] {
                     dominant-baseline: no-change;
@@ -76,17 +76,17 @@
                 }
             }
 
-            &:not(.right) .label {
+            &:not(.sc-right) .sc-label {
                 text-anchor: end;
                 translate: calc(-1 * var(--axis-padding)) 0;
             }
-            &.right .label {
+            &.sc-right .sc-label {
                 translate: var(--axis-padding) 0;
             }
         }
 
-        &.x-axis {
-            .label {
+        &.sc-x-axis {
+            .sc-label {
                 dominant-baseline: hanging;
                 text-anchor: middle;
                 translate: 0 var(--axis-padding);
@@ -110,6 +110,10 @@
         left: 0;
         transition: translate var(--tooltip-transition-duration) linear;
         translate: var(--x) var(--y);
+
+        &.sc-disable-animation {
+            --tooltip-transition-duration: 0 !important;
+        }
 
         &[data-h-align="left"] {
             --x: max(var(--course-width) + var(--viewport-margin), var(--x-left));
@@ -137,18 +141,21 @@
 
         &[data-v-align="above"] {
             --y: var(--y-top);
+
             .sc-tooltip-box-wrap {
                 bottom: 0;
             }
         }
         &[data-v-align="top"] {
             --y: var(--y-top);
+
             .sc-tooltip-box-wrap {
                 top: 0;
             }
         }
         &[data-v-align="middle"] {
             --y: var(--y-center);
+
             .sc-tooltip-box-wrap {
                 display: flex;
                 height: 0;
@@ -158,19 +165,21 @@
         }
         &[data-v-align="bottom"] {
             --y: var(--y-bottom);
+
             .sc-tooltip-box-wrap {
                 bottom: 0;
             }
         }
         &[data-v-align="below"] {
             --y: var(--y-bottom);
+
             .sc-tooltip-box-wrap {
                 top: 0;
             }
         }
     }
 
-    &:not(.tooltip-active) {
+    &:not(.sc-tooltip-active) {
         .sc-tooltip-positioner {
             opacity: 0;
             visibility: hidden;
@@ -184,23 +193,25 @@
     }
 
     > svg.sc-root {
+        width: 100%;
+        height: 100%;
         stroke-width: 0.1em;
         font-size: calc(1em * var(--dpr, 1));
 
         .sc-tooltip {
-            .line {
+            .sc-line {
                 stroke: hsl(from var(--fg-color) h s l / 0.7);
                 stroke-width: 0.14em;
                 stroke-dasharray: 0.25em;
                 stroke-linecap: round;
 
-                &.horizontal {
+                &.sc-horizontal {
                     stroke-width: 0.10em;
                     stroke-dasharray: 0.20em;
                 }
             }
 
-            circle {
+            circle.sc-highlight-dot {
                 r: 0.30em;
                 stroke-width: 0.10em;
                 stroke: hsl(from var(--fg-color) h s calc(l + 10 * var(--shade-dir)) / 0.8);

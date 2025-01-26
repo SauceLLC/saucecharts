@@ -48,7 +48,7 @@
             let sinFactor = maxSize / 20;
             //speed = 1000;
             const sleep = ms => new Promise(r => setTimeout(r, ms));
-            let disableAnimation = true;
+            let disableAnimation = false
             const commonOptions = {
                 hidePoints: false,
                 //padding: [10, 10, 10, 10],
@@ -125,7 +125,7 @@
     </head>
     <body>
         <div class="controls">
-            <label><input type="checkbox" oninput="document.documentElement.classList.toggle('darkmode'); document.querySelectorAll('.saucechart').forEach(x => x.classList.toggle('darkmode'));"/> Dark mode</label>
+            <label><input type="checkbox" oninput="document.documentElement.classList.toggle('darkmode'); document.querySelectorAll('.saucechart').forEach(x => x.classList.toggle('sc-darkmode'));"/> Dark mode</label>
             <button type="button" id="playpause">Play/Pause</button>
         </div>
         <div class="graph i1"></div>

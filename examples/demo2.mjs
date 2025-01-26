@@ -6,7 +6,7 @@ function randomColor() {
         (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
         (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
         (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
-        (Math.random() * 0x100 | 0).toString(16).padStart(2, '0'),
+        (0x50 + Math.random() * 0x50 | 0).toString(16).padStart(2, '0'),
     ].join('');
 }
 
@@ -19,9 +19,8 @@ function ts() {
 
 let paused = false;
 const tests = [1, 2, 3, 4, 5, 6, 7, 8];
-//const tests = [1];
 const speed = 2000;
-const maxSize = 10;
+const maxSize = 14;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const commonOptions = {
@@ -84,7 +83,7 @@ if (tests.includes(2)) {
         if (paused) return;
         data.push({color: randomColor(), width: 1, y: Math.sin(ts() / sinFactor)});
         await sleep(speed / 3);
-        data.push({color: 'hsl(100, 50, 50 / 2)', width: 0.5, y: Math.sin(ts() / sinFactor)});
+        data.push({color: 'hsl(100 50 50)', width: 0.5, y: Math.sin(ts() / sinFactor)});
         await sleep(speed / 3);
         data.push({color: randomColor(), width: 1, y: Math.sin(ts() / sinFactor)});
         while (data.length > maxSize * 3) {
@@ -215,25 +214,25 @@ if (tests.includes(7)) {
 
     setInterval(() => {
         if (paused) return;
-        data1.push([1, Math.sin(ts() / sinFactor)]);
+        data1.push([1, 1 + Math.sin(ts() / sinFactor)]);
         while (data1.length > maxSize) {
             data1.shift();
         }
         sl1.setData(data1);
 
-        data2.unshift([1, Math.sin(ts() / sinFactor)]);
+        data2.unshift([1, 1 + Math.sin(ts() / sinFactor)]);
         while (data2.length > maxSize) {
             data2.pop();
         }
         sl2.setData(data2);
 
-        data3.push([1, Math.cos(ts() / sinFactor)]);
+        data3.push([1, 1 + Math.cos(ts() / sinFactor)]);
         while (data3.length > maxSize) {
             data3.shift();
         }
         sl3.setData(data3);
 
-        data4.unshift([1, Math.cos(ts() / sinFactor)]);
+        data4.unshift([1, 1 + Math.cos(ts() / sinFactor)]);
         while (data4.length > maxSize) {
             data4.pop();
         }
