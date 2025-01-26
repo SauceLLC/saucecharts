@@ -49,7 +49,7 @@ export class LineChart extends common.Chart {
         this._bgGradient = this.addGradient({
             type: 'linear',
             colors: [
-                fill.adjustAlpha(-0.5).adjustLight(-0.2),
+                fill.adjustAlpha(-0.7).adjustLight(-0.2),
                 fill.adjustAlpha(-0.14),
             ]
         });
@@ -110,20 +110,20 @@ export class LineChart extends common.Chart {
         }
     }
 
-    doRender({data}) {
-        const {needForceLayout, coords, ...layoutOptions} = this._renderBeforeLayout({data});
+    doRender(manifest) {
+        const {needForceLayout, coords, ...layoutOptions} = this._renderBeforeLayout(manifest);
         if (needForceLayout) {
             this._plotRegionEl.clientWidth;
         }
         this._renderDoLayout({coords, ...layoutOptions});
         this._prevCoords = coords;
-        this._prevData = data;
+        this._prevData = manifest.data;
     }
 
-    _renderBeforeLayout({data}) {
+    _renderBeforeLayout({data, disableAnimation}) {
         const coords = data.map(o => [this.toX(o.x), this.toY(o.y)]);
         let needForceLayout = false;
-        if (!this.disableAnimation && this._prevCoords) {
+        if (!disableAnimation && this._prevCoords) {
             // We can use CSS to animate the transition but we have to use a little hack
             // because it only animates when the path has the same number (or more) points.
             if (this._prevCoords.length !== coords.length) {
@@ -188,7 +188,7 @@ export class LineChart extends common.Chart {
                     const gradient = this.addGradient((fill instanceof color.Gradient) ? fill : {
                         type: 'linear',
                         colors: [
-                            fill.adjustAlpha(-0.5).adjustLight(-0.2),
+                            fill.adjustAlpha(-0.7).adjustLight(-0.2),
                             fill.adjustAlpha(-0.14),
                         ]
                     });
