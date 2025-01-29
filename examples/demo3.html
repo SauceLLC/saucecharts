@@ -27,6 +27,7 @@
 
             body {
                 .graph {
+                    --transition-duration: 1.8s;
                     resize: both;
                     width: 1000px;
                     max-width: 100%;
@@ -38,7 +39,129 @@
                 }
             }
         </style>
-        <script src="demo3.mjs" type="module"></script>
+        <script type="module">
+            import * as sc from '../src/index.mjs';
+
+            const colors = ['black', 'white', 'blue', 'red', 'green', 'ping', 'orange', 'yellow'];
+
+            function ts() {
+                //return Date.now();
+                return 1e1 + Math.round(performance.now());
+            }
+
+            let paused = false;
+            const tests = [1, 2, 3];
+            let speed = 2000;
+            const maxSize = 14;
+            let sinFactor = speed / Number(document.querySelector('#freq').value);
+            const disableAnimation = false;
+            const commonOptions = {
+                hidePoints: false,
+                padding: [15, 5, 5, 5],
+            };
+
+            document.querySelector('#freq').addEventListener('input', ev => {
+                const f = Number(ev.currentTarget.value);
+                console.log('freq', f, maxSize / f);
+                sinFactor = speed / f;
+            });
+
+            if (tests.includes(1)) {
+                const data = [];
+                const c1 = new sc.BarChart({
+                    ...commonOptions,
+                    el: document.querySelector(".graph.i1"),
+                    title: 'ltr',
+                    disableAnimation,
+                });
+                const c2 = new sc.LineChart({
+                    ...commonOptions,
+                    el: document.querySelector(".graph.i1"),
+                    merge: true,
+                    title: 'ltr',
+                    disableAnimation,
+                });
+                setInterval(() => {
+                    if (paused) return;
+                    const x = ts();
+                    data.push([x, Math.sin(x / sinFactor)]);
+                    while (data.length > maxSize) {
+                        data.shift();
+                    }
+                    c1.setData(data);
+                    c2.setData(data);
+                    if (data.length % 100 === 0) {
+                        console.log('c1', performance.now() / data.length, data.length);
+                    }
+                }, speed);
+            }
+
+            if (tests.includes(2)) {
+                const data = [];
+                const segments = [];
+                const sl = new sc.LineChart({
+                    ...commonOptions,
+                    el: document.querySelector(".graph.i2"),
+                    title: 'segments',
+                    disableAnimation,
+                });
+                let colorStep = 0;
+                setInterval(async () => {
+                    if (paused) return;
+                    const x = ts();
+                    const y = Math.sin(x / sinFactor);
+                    data.push([x, y]);
+                    if (data.length > 1) {
+                        segments.push({
+                            x: data.at(-2)[0],
+                            width: x - data.at(-2)[0],
+                            color: colors[colorStep++ % colors.length],
+                        });
+                    }
+                    while (data.length > maxSize) {
+                        data.shift();
+                        segments.shift();
+                    }
+                    sl.setSegments(segments, {render: false});
+                    sl.setData(data);
+                }, speed);
+            }
+
+            if (tests.includes(3)) {
+                const data = [];
+                const segments = [];
+                const sl = new sc.LineChart({
+                    ...commonOptions,
+                    el: document.querySelector(".graph.i3"),
+                    title: 'segments, rtl',
+                    disableAnimation,
+                });
+                let colorStep = 0;
+                setInterval(async () => {
+                    if (paused) return;
+                    const x = -ts();
+                    const y = Math.cos(x / sinFactor);
+                    data.unshift([x, y]);
+                    if (data.length > 1) {
+                        segments.unshift({
+                            x: x,
+                            width: data.length > 1 ? data[1][0] - x : 0,
+                            color: colors[colorStep++ % colors.length],
+                        });
+                    }
+                    while (data.length > maxSize) {
+                        data.pop();
+                        segments.pop();
+                    }
+                    sl.setSegments(segments, {render: false});
+                    sl.setData(data);
+                }, speed);
+            }
+
+            document.querySelector('#playpause').addEventListener('click', () => {
+                paused = !paused;
+            });
+        </script>
     </head>
     <body>
         <div class="controls">
@@ -48,5 +171,6 @@
         </div>
         <div class="graph i1"></div>
         <div class="graph i2"></div>
+        <div class="graph i3"></div>
     </body>
 </html>

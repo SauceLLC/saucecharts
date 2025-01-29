@@ -6,7 +6,7 @@ function ts() {
 }
 
 let paused = false;
-let tests = [1, 2, 3, 4, 5, 6, 7, 8];
+const tests = [1, 2, 3, 4, 5, 6, 7, 8];
 const speed = 1000;
 const maxSize = 40;
 let sinFactor = speed / Number(document.querySelector('#freq').value);
@@ -22,8 +22,6 @@ document.querySelector('#freq').addEventListener('input', ev => {
     sinFactor = speed / f;
 });
 
-let dir = 1;
-let steps = 0;
 
 if (tests.includes(1)) {
     const data = [];
@@ -111,7 +109,11 @@ if (tests.includes(5)) {
         ...commonOptions,
         el: document.querySelector(".graph.i5"),
         hidePoints: true,
-        title: 'random, same size',
+        title: 'random, same size, manual range',
+        xMin: -19,
+        xMax: 100,
+        yMin: -100,
+        yMax: 100,
     });
     setInterval(() => {
         if (paused) return;
