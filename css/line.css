@@ -1,8 +1,6 @@
 @import 'common.css';
 
 .saucechart > svg.sc-root {
-    stroke-width: 0.1em;
-
     .sc-data {
         transition-property: d;
         transition-timing-function: linear;
@@ -16,18 +14,7 @@
         stroke-linejoin: round;
     }
 
-    .sc-visual-data-area {
-        width: var(--group-width);
-        height: var(--group-height);
-        x: var(--group-x);
-        y: var(--group-y);
-    }
-
     .sc-visual-data-segment {
-        width: var(--width);
-        height: var(--height);
-        x: calc(var(--group-x) + var(--x));
-        y: calc(var(--group-y) + var(--y));
         transition-property: x, y, width, height;
         transition-timing-function: linear;
         transition-duration: var(--transition-duration);

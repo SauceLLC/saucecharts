@@ -72,26 +72,26 @@ export class BarChart extends common.Chart {
 
     getMidpointX(entry) {
         const key = this.data[entry.index];
-        if (!key) {
-            throw new Error("unexpected"); // XXX for now, probably okay to return undefined
+        if (key === undefined) {
+            throw new Error("unexpected");
         }
         const bar = this._bars.get(key);
         if (!bar) {
-            throw new Error("unexpected"); // XXX for now, probably okay to return undefined
+            throw new Error("unexpected");
         }
         return bar.attrs.x + bar.attrs.width / 2;
     }
 
     adjustScale(manifest) {
         super.adjustScale(manifest);
-        if (this.yMax === this.yMin) {
-            this.yMin -= 1;
+        if (this._yMax === this._yMin) {
+            this._yMin -= 1;
         }
-        if (this._xMinOption == null) {
-            this.xMin = 0;
+        if (this.xMin == null) {
+            this._xMin = 0;
         }
-        if (this._xMaxOption == null) {
-            this.xMax = manifest.data.reduce((agg, x) => agg + x.width, 0);
+        if (this.xMax == null) {
+            this._xMax = manifest.data.reduce((agg, x) => agg + x.width, 0);
         }
     }
 
@@ -102,8 +102,8 @@ export class BarChart extends common.Chart {
             remove: [],
             update: [],
         };
-        const yMinCoord = this.toY(Math.max(0, this.yMin));
-        let xOfft = this.xMin;
+        const yMinCoord = this.toY(Math.max(0, this._yMin));
+        let xOfft = this._xMin;
         const adding = [];
         for (let index = 0; index < data.length; index++) {
             const entry = data[index];
@@ -211,29 +211,27 @@ export class BarChart extends common.Chart {
     }
 
     _renderDoLayout(layout, {disableAnimation}={}) {
+        const plotQuarterX = this._plotWidth / 4 + this._plotInset[3];
         for (let i = 0; i < layout.add.length; i++) {
             const {el, attrs} = layout.add[i];
             if (!disableAnimation) {
                 const centerX = attrs.x + attrs.width / 2;
-                const bottom = attrs.y + attrs.height;
-                el.setAttribute('d', this._makeBarPath(centerX, bottom, 0, 0));
+                const bottom = this.toY(Math.max(0, this._yMin));
+                let x = centerX;
+                if (centerX < plotQuarterX) {
+                    x = this.toX(this._xMin);
+                } else if (centerX > plotQuarterX * 3) {
+                    x = this.toX(this._xMax);
+                }
+                el.setAttribute('d', this._makeBarPath(x, bottom, 0, 0));
             }
             this._barsEl.append(el);
         }
-        for (let i = 0; i < layout.remove.length; i++) {
-            const bar = layout.remove[i];
-            if (!disableAnimation) {
-                const centerX = bar.attrs.x + bar.attrs.width / 2;
-                const bottom = bar.attrs.y + bar.attrs.height;
-                console.count("shrink");
-                bar.el.setAttribute('d', this._makeBarPath(centerX, bottom, 0, 0));
-            } else {
-                bar.el.removeAttribute('d');
-            }
-        }
+
         if ((!disableAnimation && layout.add.length) || disableAnimation) {
             this._rootSvgEl.clientWidth;
         }
+
         for (let i = 0; i < layout.update.length; i++) {
             const {el, attrs} = layout.update[i];
             const width = Math.max(0, attrs.width - this.barSpacing);
@@ -241,17 +239,35 @@ export class BarChart extends common.Chart {
             el.setAttribute('d', this._makeBarPath(x, attrs.y, width, attrs.height));
             el.setAttribute('fill', attrs.fill);
         }
+
+        for (let i = 0; i < layout.remove.length; i++) {
+            const {attrs, el} = layout.remove[i];
+            if (!disableAnimation) {
+                const centerX = attrs.x + attrs.width / 2;
+                const bottom = this.toY(Math.max(0, this._yMin));
+                let x = centerX;
+                if (centerX < plotQuarterX) {
+                    x = this.toX(this._xMin);
+                } else if (centerX > plotQuarterX * 3) {
+                    x = this.toX(this._xMax);
+                }
+                el.setAttribute('d', this._makeBarPath(x, bottom, 0, 0));
+            } else {
+                el.removeAttribute('d');
+            }
+        }
+
     }
 
     _makeBarPath(x, y, width, height) {
         const radius = Math.min(this.barRadius, width * 0.5, Math.abs(height));
         const rCtrl = height < 0 ? -radius : radius;
         return (
-            `M ${x}, ${y + height} ` +
+            `M ${x},${y + height} ` +
             `v ${-height + rCtrl} ` +
-            `q 0, ${-rCtrl} ${radius}, ${-rCtrl} ` +
+            `q 0,${-rCtrl} ${radius},${-rCtrl} ` +
             `h ${width - (2 * radius)} ` +
-            `q ${radius}, 0 ${radius}, ${rCtrl} ` +
+            `q ${radius},0 ${radius},${rCtrl} ` +
             `v ${height - rCtrl} Z`
         );
     }
@@ -260,19 +276,14 @@ export class BarChart extends common.Chart {
         if (this._gcTimeout) {
             return;
         }
-        this._gcTimeout = setTimeout(() => {
-            const run = () => (this._gcTimeout = null, this._gc());
-            if (window.requestIdleCallback) {
-                requestIdleCallback(run, {timeout: 100});
-            } else {
-                run();
-            }
-        }, 400);
+        this._gcTimeout = common.requestIdle(() => {
+            this._gcTimeout = null;
+            this._gc();
+        });
     }
 
     _gc() {
-        const animDurRaw = getComputedStyle(this.el).getPropertyValue('--transition-duration');
-        const animDur = (parseFloat(animDurRaw) * (animDurRaw.endsWith('ms') ? 1 : 1000)) || 0;
+        const animDur = common.getStyleValue(this.el, '--transition-duration', 'time') || 0;
         const unclaimedFills = new Set(this._barFills.keys());
         for (const x of this._bars.values()) {
             unclaimedFills.delete(x.fillKey);

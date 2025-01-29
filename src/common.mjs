@@ -8,6 +8,36 @@ export function createSVGElement(tag) {
 }
 
 
+export function getStyleValue(el, key, type) {
+    const raw = getComputedStyle(el).getPropertyValue(key);
+    if (!type) {
+        return raw;
+    } else if (type === 'number') {
+        return parseFloat(raw);
+    } else if (type === 'time') {
+        return parseFloat(raw) * (raw.endsWith('ms') ? 1 : 1000);
+    }
+}
+
+
+export function requestIdle(cb, timeout=400) {
+    if (window.requestIdleCallback) {
+        return requestIdleCallback(cb, {timeout});
+    } else {
+        return setTimeout(cb, timeout / 2);
+    }
+}
+
+
+export function cancelIdle(id) {
+    if (window.requestIdleCallback) {
+        return cancelIdleCallback(id);
+    } else {
+        return clearTimeout(id);
+    }
+}
+
+
 // Ported from https://github.com/joshcarr/largest-triangle-three-buckets.js
 // See: https://github.com/sveinn-steinarsson/flot-downsample
 function largestTriangleThreeBuckets(inData, outLen) {
@@ -59,16 +89,16 @@ export class Chart {
     constructor(options={}) {
         this.init(options);
         this.id = globalIdCounter++;
-        this._yMinOption = options.yMin;
-        this._yMaxOption = options.yMax;
-        this._xMinOption = options.xMin;
-        this._xMaxOption = options.xMax;
+        this.yMin = options.yMin;
+        this.yMax = options.yMax;
+        this.xMin = options.xMin;
+        this.xMax = options.xMax;
         this.childCharts = [];
         this.title = options.title;
         this.color = options.color;
-        this.tooltipOptions = options.tooltip || {};
-        this.xAxisOptions = options.xAxis || {};
-        this.yAxisOptions = options.yAxis || {};
+        this.tooltip = options.tooltip || {};
+        this.xAxis = options.xAxis || {};
+        this.yAxis = options.yAxis || {};
         this.padding = options.padding || [0, 0, 0, 0];
         this.tooltipPadding = options.tooltipPadding || [this.padding[0], this.padding[2]];
         this.tooltipPosition = options.tooltipPosition || 'leftright';
@@ -185,11 +215,11 @@ export class Chart {
     }
 
     _drawXAxis() {
-        this._drawAxis('horizontal', this._xAxisEl, this.xAxisOptions);
+        this._drawAxis('horizontal', this._xAxisEl, this.xAxis);
     }
 
     _drawYAxis() {
-        this._drawAxis('vertical', this._yAxisEl, this.yAxisOptions);
+        this._drawAxis('vertical', this._yAxisEl, this.yAxis);
     }
 
     _drawAxis(orientation, el, options) {
@@ -275,8 +305,7 @@ export class Chart {
             el.classList.toggle('sc-disable-animation', !!this.disableAnimation);
             let darkMode = this.darkMode;
             if (darkMode === undefined) {
-                const currentColor = getComputedStyle(el).getPropertyValue('color');
-                const c = colorMod.parse(currentColor);
+                const c = colorMod.parse(getStyleValue(el, 'color'));
                 darkMode = c.l >= 0.5;
             }
             this.el.classList.toggle('sc-darkmode', darkMode);
@@ -315,29 +344,30 @@ export class Chart {
             el.insertAdjacentHTML('beforeend',
                                   `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
         }
-        if (!this.xAxisOptions.disabled) {
+        if (!this.xAxis.disabled) {
             this._xAxisEl = createSVGElement('g');
             this._xAxisEl.classList.add('sc-axis', 'sc-x-axis');
             this._xAxisEl.innerHTML = `<line class="sc-baseline"></line>`;
             this._rootSvgEl.append(this._xAxisEl);
         }
-        if (!this.yAxisOptions.disabled) {
+        if (!this.yAxis.disabled) {
             this._yAxisEl = createSVGElement('g');
             this._yAxisEl.classList.add('sc-axis', 'sc-y-axis');
             this._yAxisEl.innerHTML = `<line class="sc-baseline"></line>`;
             this._rootSvgEl.append(this._yAxisEl);
         }
-        this._adjustSize();
         this._resizeObserver.observe(this._tooltipBoxEl);
         this._resizeObserver.observe(el);
-        if (this.isParentChart()) {
+        if (this.isParentChart() && !this.tooltip.disabled) {
             el.addEventListener('pointerenter', this._onPointerEnterBound);
         }
+        // Let subclass do work before/after this method but always before adjustSize..
+        queueMicrotask(() => this._adjustSize());
     }
 
     getColor() {
         if (!this._computedColor) {
-            this._computedColor = getComputedStyle(this._plotRegionEl).getPropertyValue('--color');
+            this._computedColor = getStyleValue(this._plotRegionEl, '--color');
         }
         return this._computedColor;
     }
@@ -359,8 +389,8 @@ export class Chart {
     }
 
     onTooltip({entry, chart}) {
-        if (this.tooltipOptions.format) {
-            return this.tooltipOptions.format.apply(this, arguments);
+        if (this.tooltip.format) {
+            return this.tooltip.format.apply(this, arguments);
         } else {
             return `
                 <div class="sc-tooltip-entry" data-chart-id="${this.id}"
@@ -373,12 +403,15 @@ export class Chart {
 
     onAxisLabel({orientation, index, ticks}) {
         let range;
+        let start;
         if (orientation === 'vertical') {
-            range = this.yMax - this.yMin;
+            start = this._yMin;
+            range = this._yMax - this._yMin;
         } else {
-            range = this.xMax - this.xMin;
+            start = this._xMin;
+            range = this._xMax - this._xMin;
         }
-        const number = range * (index / (ticks - 1));
+        const number = start + (range * (index / (ticks - 1)));
         if (isNaN(number)) {
             return '';
         }
@@ -674,10 +707,12 @@ export class Chart {
         }
     }
 
-    setData(data, options) {
+    setData(data, options={}) {
         this.data = data;
         this.normalizedData = this.normalizeData(data);
-        this.render(options);
+        if (options.render !== false) {
+            this.render(options);
+        }
     }
 
     normalizeData(data) {
@@ -715,10 +750,10 @@ export class Chart {
         }
         options.disableAnimation = options.disableAnimation || this.disableAnimation;
         const manifest = this.beforeRender(options);
-        const beforeScale = options.forceAxis || [this.xMin, this.xMax, this.yMin, this.yMax].join();
+        const beforeScale = options.forceAxis || [this._xMin, this._xMax, this._yMin, this._yMax].join();
         this.adjustScale(manifest);
         this.doRender(manifest, options);
-        if (options.forceAxis || [this.xMin, this.xMax, this.yMin, this.yMax].join() !== beforeScale) {
+        if (options.forceAxis || [this._xMin, this._xMax, this._yMin, this._yMax].join() !== beforeScale) {
             if (this._xAxisEl) {
                 this._drawXAxis();
             }
@@ -734,18 +769,17 @@ export class Chart {
         const resampling = data.length > this._plotWidth * 1.5;
         if (resampling) {
             data = resample(data, this._plotWidth | 0);
-            //data = resample(data, 100 + 10 * Math.random() | 0);
         }
         this._renderData = data;
         return {data, resampling};
     }
 
     adjustScale({data}) {
-        this.xMin = this._xMinOption;
-        this.xMax = this._xMaxOption;
-        this.yMin = this._yMinOption;
-        this.yMax = this._yMaxOption;
-        if (this._yMinOption == null || this._yMaxOption == null) {
+        this._xMin = this.xMin;
+        this._xMax = this.xMax;
+        this._yMin = this.yMin;
+        this._yMax = this.yMax;
+        if (this.yMin == null || this.yMax == null) {
             let min = Infinity;
             let max = -Infinity;
             for (let i = 0; i < data.length; i++) {
@@ -757,11 +791,11 @@ export class Chart {
                     max = v;
                 }
             }
-            if (this._yMinOption == null) {
-                this.yMin = min;
+            if (this.yMin == null) {
+                this._yMin = min;
             }
-            if (this._yMaxOption == null) {
-                this.yMax = max;
+            if (this.yMax == null) {
+                this._yMax = max;
             }
         }
     }
@@ -775,34 +809,34 @@ export class Chart {
     }
 
     toX(value) {
-        return (value - this.xMin) *
-            (this._plotWidth / (this.xMax - this.xMin)) +
+        return (value - this._xMin) *
+            (this._plotWidth / (this._xMax - this._xMin)) +
             this._plotInset[3];
     }
 
     toScaleX(value) {
-        return value * (this._plotWidth / (this.xMax - this.xMin));
+        return value * (this._plotWidth / (this._xMax - this._xMin));
     }
 
     toY(value) {
         return this._plotHeight + this._plotInset[0] -
-            ((value - this.yMin) * (this._plotHeight / (this.yMax - this.yMin)));
+            ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
     }
 
     toScaleY(value) {
-        return value * (this._plotHeight / (this.yMax - this.yMin));
+        return value * (this._plotHeight / (this._yMax - this._yMin));
     }
 
     fromX(value) {
         return (value - this._plotInset[3]) /
-            (this._plotWidth / (this.xMax - this.xMin)) +
-            this.xMin;
+            (this._plotWidth / (this._xMax - this._xMin)) +
+            this._xMin;
     }
 
     fromY(value) {
         return (this._plotHeight - value + this._plotInset[0]) /
-            (this._plotHeight / (this.yMax - this.yMin)) +
-            this.yMin;
+            (this._plotHeight / (this._yMax - this._yMin)) +
+            this._yMin;
     }
 
     getMidpointX(entry) {
@@ -827,16 +861,16 @@ export class Chart {
         if (!coords.length) {
             return '';
         }
-        const sep = css ? ' ' : '\n';
-        const start = closed ?
-            `${sep}M ${this._plotInset[3]} ${this._plotHeight + this._plotInset[0]}${sep}L ` :
-            `${sep}M `;
-        const end = closed ?
-            `${sep}L ${this._plotWidth + this._plotInset[3]} ` +
-                `${this._plotHeight + this._plotInset[0]}${sep}Z` :
-            '';
-        const join = `${sep}L `;
-        const path = start + coords.map(c => `${c[0]} ${c[1]}`).join(join) + end;
+        let path = closed ?
+            `M ${coords[0][0]},${this._plotHeight + this._plotInset[0]} V ${coords[0][1]}` :
+            `M ${coords[0][0]},${coords[0][1]}`;
+        for (let i = 1; i < coords.length; i++) {
+            const [x, y] = coords[i];
+            path += ` L ${x},${y}`;
+        }
+        if (closed) {
+            path += ` V ${this._plotHeight + this._plotInset[0]} Z`;
+        }
         return css ? `path('${path}')` : path;
     }
 }
