@@ -247,7 +247,7 @@ export class Chart {
             ticks = 2 + Math.floor((trackLength / devicePixelRatio) / (vert ? 100 : 200));
         }
         const gap = trackLength / (ticks - 1);
-        const tickLen = options.tickLength ?? 10;
+        const tickLen = options.tickLength ?? 6;
         const format = options.label || this.onAxisLabel.bind(this);
         const existingTicks = el.querySelectorAll('line.sc-tick');
         const existingLabels = el.querySelectorAll('text.sc-label');

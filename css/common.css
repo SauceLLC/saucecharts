@@ -44,7 +44,6 @@
 
         .sc-baseline,
         .sc-tick {
-            stroke: color-mix(in srgb, var(--fg-color), transparent 80%);
             stroke: hsl(from var(--fg-color) h s calc(l + 30 * var(--shade-dir)) / 0.8);
         }
 
