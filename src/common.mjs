@@ -168,9 +168,7 @@ export class Chart {
         }
         try {
             this._adjustSize(resize.contentRect.width, resize.contentRect.height);
-            if (this.data) {
-                this.render({disableAnimation: true, forceAxis: true});
-            }
+            this.render({disableAnimation: true});
         } finally {
             if (hasAnim) {
                 this.el.offsetWidth;
@@ -362,7 +360,10 @@ export class Chart {
             el.addEventListener('pointerenter', this._onPointerEnterBound);
         }
         // Let subclass do work before/after this method but always before adjustSize..
-        queueMicrotask(() => this._adjustSize());
+        queueMicrotask(() => {
+            this._adjustSize();
+            this.render();
+        });
     }
 
     getColor() {
@@ -750,10 +751,12 @@ export class Chart {
         }
         options.disableAnimation = options.disableAnimation || this.disableAnimation;
         const manifest = this.beforeRender(options);
-        const beforeScale = options.forceAxis || [this._xMin, this._xMax, this._yMin, this._yMax].join();
         this.adjustScale(manifest);
         this.doRender(manifest, options);
-        if (options.forceAxis || [this._xMin, this._xMax, this._yMin, this._yMax].join() !== beforeScale) {
+        const axisSig = `${this._xMin}-${this._xMax}-${this._yMin}-${this._yMax}-` +
+            `${this._plotWidth}-${this._plotHeight}`;
+        if (this._lastAxisSig !== axisSig) {
+            this._lastAxisSig = axisSig;
             if (this._xAxisEl) {
                 this._drawXAxis();
             }
@@ -848,6 +851,7 @@ export class Chart {
             this.data.length = 0;
         }
         this._renderData = null;
+        this._lastAxisSig = null;
         for (const x of this._gradients) {
             x.el.remove();
         }

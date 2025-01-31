@@ -115,30 +115,6 @@ export class Color {
 }
 
 
-let _colorCanvasCtx;
-export function parse(value) {
-    if (value == null) {
-        throw new TypeError('invalid color or gradient');
-    }
-    if (value instanceof Color) {
-        return value;
-    } else if (value instanceof Gradient) {
-        return value;
-    } else if (typeof value === 'object') {
-        return Gradient.fromObject(value);
-    }
-    if (!_colorCanvasCtx) {
-        _colorCanvasCtx = (new OffscreenCanvas(1, 1)).getContext('2d', {willReadFrequently: true});
-    }
-    const ctx = _colorCanvasCtx;
-    ctx.clearRect(0, 0, 1, 1);
-    ctx.fillStyle = value;
-    ctx.fillRect(0, 0, 1, 1);
-    const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1, {colorSpace: 'srgb'}).data;
-    return Color.fromRGB(r / 255, g / 255, b / 255, a / 255);
-}
-
-
 export class Gradient {
 
     static fromObject(obj) {
@@ -223,4 +199,28 @@ export class LinearGradient extends Gradient {
         }
         this.el.replaceChildren(...stops);
     }
+}
+
+
+let _colorCanvasCtx;
+export function parse(value) {
+    if (value == null) {
+        throw new TypeError('invalid color or gradient');
+    }
+    if (value instanceof Color) {
+        return value;
+    } else if (value instanceof Gradient) {
+        return value;
+    } else if (typeof value === 'object') {
+        return Gradient.fromObject(value);
+    }
+    if (!_colorCanvasCtx) {
+        _colorCanvasCtx = (new OffscreenCanvas(1, 1)).getContext('2d', {willReadFrequently: true});
+    }
+    const ctx = _colorCanvasCtx;
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = value;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1, {colorSpace: 'srgb'}).data;
+    return Color.fromRGB(r / 255, g / 255, b / 255, a / 255);
 }

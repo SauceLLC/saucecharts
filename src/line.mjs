@@ -67,8 +67,7 @@ export class LineChart extends common.Chart {
         const rect = this._backgroundRectEl;
         rect.setAttribute('x', this._plotInset[3]);
         rect.setAttribute('y', this._plotInset[0]);
-        rect.setAttribute('width', this._boxWidth - this._plotInset[1] - this._plotInset[3]);
-        rect.setAttribute('width2', this._plotWidth);
+        rect.setAttribute('width', this._plotWidth);
         rect.setAttribute('height', this._plotHeight);
     }
 
