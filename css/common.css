@@ -109,6 +109,7 @@
         left: 0;
         transition: translate var(--tooltip-transition-duration) linear;
         translate: var(--x) var(--y);
+        --course-width: 10ch;
 
         &.sc-disable-animation {
             --tooltip-transition-duration: 0 !important;
@@ -182,7 +183,6 @@
         .sc-tooltip-positioner {
             opacity: 0;
             visibility: hidden;
-            pointer-events: none !important;
             transition: opacity 1s, visibility 1s;
         }
 
