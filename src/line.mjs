@@ -19,8 +19,7 @@ export class LineChart extends common.Chart {
         }
     }
 
-    setElement(el, options) {
-        super.setElement(el, options);
+    afterSetElement(el) {
         const defs = el.querySelector('svg.sc-root > defs');
         const pathClipId = `path-clip-${this.id}`;
         const pathMarkerId = `path-marker-${this.id}`;
@@ -62,8 +61,8 @@ export class LineChart extends common.Chart {
         this._pathAreaEl = defs.querySelector(`[data-sc-id="${this.id}"] path.sc-data.sc-area`);
     }
 
-    _adjustSize(...args) {
-        super._adjustSize(...args);
+    adjustSize(...args) {
+        super.adjustSize(...args);
         const rect = this._backgroundRectEl;
         rect.setAttribute('x', this._plotInset[3]);
         rect.setAttribute('y', this._plotInset[0]);
@@ -103,7 +102,7 @@ export class LineChart extends common.Chart {
         }
     }
 
-    doRender(manifest) {
+    doLayout(manifest) {
         const layouts = this._renderBeforeLayout(manifest);
         this._renderDoLayout(layouts);
         this._prevCoords = layouts.coords;

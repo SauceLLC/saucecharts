@@ -167,7 +167,7 @@ export class Chart {
             this.el.classList.add('sc-disable-animation');
         }
         try {
-            this._adjustSize(resize.contentRect.width, resize.contentRect.height);
+            this.adjustSize(resize.contentRect.width, resize.contentRect.height);
             this.render({disableAnimation: true});
         } finally {
             if (hasAnim) {
@@ -177,7 +177,7 @@ export class Chart {
         }
     }
 
-    _adjustSize(width, height) {
+    adjustSize(width, height) {
         this.devicePixelRatio = devicePixelRatio || 1;
         if (width === undefined) {
             ({width, height} = this._rootSvgEl.getBoundingClientRect());
@@ -292,6 +292,7 @@ export class Chart {
     }
 
     setElement(el, {merge}={}) {
+        this.beforeSetElement(el);
         const old = this.el;
         this.el = el;
         if (old) {
@@ -359,12 +360,14 @@ export class Chart {
         if (this.isParentChart() && !this.tooltip.disabled) {
             el.addEventListener('pointerenter', this._onPointerEnterBound);
         }
-        // Let subclass do work before/after this method but always before adjustSize..
-        queueMicrotask(() => {
-            this._adjustSize();
-            this.render();
-        });
+        this.afterSetElement(el);
+        this.adjustSize();
+        this.render();
     }
+
+    beforeSetElement() {}
+
+    afterSetElement() {}
 
     getColor() {
         if (!this._computedColor) {
@@ -752,7 +755,7 @@ export class Chart {
         options.disableAnimation = options.disableAnimation || this.disableAnimation;
         const manifest = this.beforeRender(options);
         this.adjustScale(manifest);
-        this.doRender(manifest, options);
+        this.doLayout(manifest, options);
         const axisSig = `${this._xMin}-${this._xMax}-${this._yMin}-${this._yMax}-` +
             `${this._plotWidth}-${this._plotHeight}`;
         if (this._lastAxisSig !== axisSig) {
@@ -803,7 +806,7 @@ export class Chart {
         }
     }
 
-    doRender(manifest, options) {
+    doLayout(manifest, options) {
         throw new Error("subclass impl required");
     }
 

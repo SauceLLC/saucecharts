@@ -12,8 +12,7 @@ export class BarChart extends common.Chart {
         this._barFills = new Map();
     }
 
-    setElement(el, options) {
-        super.setElement(el, options);
+    afterSetElement(el) {
         this._plotRegionEl.innerHTML = `<g class="sc-bars"></g>`;
         this._barsEl = this._plotRegionEl.querySelector(`g.sc-bars`);
     }
@@ -28,7 +27,7 @@ export class BarChart extends common.Chart {
         this._barFills.clear();
     }
 
-    doRender(manifest, options) {
+    doLayout(manifest, options) {
         this._renderDoLayout(this._renderBeforeLayout(manifest, options), options);
         this._schedGC();
     }
