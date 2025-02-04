@@ -144,7 +144,7 @@ export class Chart {
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
         this._merge = options.merge;
         if (options.el) {
-            this.setElement(options.el, {merge: options.merge});
+            this.setElement(options.el);
         }
         if (options.data) {
             this.setData(options.data);
@@ -330,6 +330,7 @@ export class Chart {
         if (old) {
             this._resizeObserver.disconnect();
             old.removeEventListener('pointerenter', this._onPointerEnterBound);
+            this.doReset();
             if (this._plotRegionEl) {
                 this._plotRegionEl.remove();
                 this._plotRegionEl = null;
@@ -340,9 +341,11 @@ export class Chart {
             }
             if (this._xAxisEl) {
                 this._xAxisEl.remove();
+                this._xAxisEl = null;
             }
             if (this._yAxisEl) {
                 this._yAxisEl.remove();
+                this._yAxisEl = null;
             }
         }
         if (!this._merge) {
@@ -929,10 +932,6 @@ export class Chart {
         }
         this._renderData = null;
         this._lastAxisSig = null;
-        for (const x of this._gradients) {
-            x.el.remove();
-        }
-        this._gradients.clear();
         this.doReset();
     }
 

@@ -31,7 +31,6 @@ export class LineChart extends common.Chart {
                 fill.adjustAlpha(-0.14),
             ]
         });
-
         const pathClipId = `path-clip-${this.id}`;
         const pathMarkerId = `path-marker-${this.id}`;
         const markerSize = this.hidePoints ? 0 : 20; // Abstract units based on 'markerUnits'
