@@ -1,5 +1,5 @@
 
-import {createSVGElement} from './common.mjs';
+import {createSVG} from './common.mjs';
 
 let gradientIdCounter = 0;
 
@@ -153,12 +153,16 @@ export class LinearGradient extends Gradient {
     constructor(options) {
         super(options);
         this.rotate = options.rotate;
-        this.el = createSVGElement('linearGradient');
-        this.el.id = this.id;
-        this.el.setAttribute('x1', 0);
-        this.el.setAttribute('y1', 1);
-        this.el.setAttribute('x2', 0);
-        this.el.setAttribute('y2', 0);
+        this.el = createSVG({
+            name: 'linearGradient',
+            id: this.id,
+            attrs: {
+                x1: 0,
+                y1: 1,
+                x2: 0,
+                y2: 0,
+            }
+        });
     }
 
     render() {
@@ -192,9 +196,15 @@ export class LinearGradient extends Gradient {
                 }
             }
             left = offset;
-            const stop = createSVGElement('stop');
-            stop.setAttribute('offset', `${offset * 100}%`);
-            stop.style.setProperty('stop-color', x.color);
+            const stop = createSVG({
+                name: 'stop',
+                attrs: {
+                    offset: `${offset * 100}%`,
+                },
+                style: {
+                    'stop-color': x.color,
+                }
+            });
             stops.push(stop);
         }
         this.el.replaceChildren(...stops);

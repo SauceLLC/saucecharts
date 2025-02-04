@@ -51,8 +51,8 @@
 
             let paused = false;
             const tests = [1, 2, 3];
-            let speed = 2000;
-            const maxSize = 14;
+            let speed = 20;
+            const maxSize = 104;
             let sinFactor = speed / Number(document.querySelector('#freq').value);
             const disableAnimation = false;
             const commonOptions = {
@@ -90,6 +90,7 @@
                     }
                     c1.setData(data);
                     c2.setData(data);
+                    c1.setElement(document.querySelector(".graph.i1"));
                     if (data.length % 100 === 0) {
                         console.log('c1', performance.now() / data.length, data.length);
                     }

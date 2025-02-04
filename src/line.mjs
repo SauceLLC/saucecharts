@@ -1,5 +1,5 @@
 import * as common from './common.mjs';
-import * as color from './color.mjs';
+import * as colorMod from './color.mjs';
 
 
 export class LineChart extends common.Chart {
@@ -20,34 +20,10 @@ export class LineChart extends common.Chart {
     }
 
     afterSetElement(el) {
-        const defs = el.querySelector('svg.sc-root > defs');
-        const pathClipId = `path-clip-${this.id}`;
-        const pathMarkerId = `path-marker-${this.id}`;
-        const maxMarkerSize = this.hidePoints ? 0 : 20; // Abstract units based on 'markerUnits'
-        defs.insertAdjacentHTML('beforeend', `
-            <clipPath data-sc-id="${this.id}" id="${pathClipId}">
-                <path class="sc-data sc-area"/>
-            </clipPath>
-            <marker class="sc-line-marker" id="${pathMarkerId}" markerUnits="userSpaceOnUse"
-                    refX="${maxMarkerSize / 2}" refY="${maxMarkerSize / 2}"
-                    markerHeight="${maxMarkerSize}" markerWidth="${maxMarkerSize}">
-                <circle class="sc-dot" cx="${maxMarkerSize / 2}" cy="${maxMarkerSize / 2}"/> 
-            </marker>
-        `);
-        this._plotRegionEl.innerHTML = `
-            <g clip-path="url(#${pathClipId})" class="sc-background">
-                <rect class="sc-visual-data-area"/>
-            </g>
-            <path class="sc-data sc-line sc-visual-data-line"
-                  marker-start="url(#${pathMarkerId})"
-                  marker-mid="url(#${pathMarkerId})"
-                  marker-end="url(#${pathMarkerId})"/>
-        `;
-        this._backgroundEl = this._plotRegionEl.querySelector('.sc-background');
         if (this._bgGradient) {
             this.removeGradient(this._bgGradient);
         }
-        const fill = color.parse(this.getColor());
+        const fill = colorMod.parse(this.getColor());
         this._bgGradient = this.addGradient({
             type: 'linear',
             colors: [
@@ -55,15 +31,70 @@ export class LineChart extends common.Chart {
                 fill.adjustAlpha(-0.14),
             ]
         });
-        this._backgroundRectEl = this._backgroundEl.querySelector('rect.sc-visual-data-area');
-        this._backgroundRectEl.setAttribute('fill', `url(#${this._bgGradient.id})`);
-        this._pathLineEl = this._plotRegionEl.querySelector(`path.sc-data.sc-line`);
-        this._pathAreaEl = defs.querySelector(`[data-sc-id="${this.id}"] path.sc-data.sc-area`);
+
+        const pathClipId = `path-clip-${this.id}`;
+        const pathMarkerId = `path-marker-${this.id}`;
+        const markerSize = this.hidePoints ? 0 : 20; // Abstract units based on 'markerUnits'
+        const defs = common.createSVG({
+            name: 'defs',
+            children: [{
+                name: 'clipPath',
+                id: pathClipId,
+                children: [{
+                    name: 'path',
+                    class: ['sc-data', 'sc-area']
+                }]
+            }, {
+                name: 'marker',
+                id: pathMarkerId,
+                class: 'sc-line-marker',
+                attrs: {
+                    markerUnits: 'userSpaceOnUse',
+                    refX: markerSize / 2,
+                    refY: markerSize / 2,
+                    markerHeight: markerSize,
+                    markerWidth: markerSize,
+                },
+                children: [{
+                    name: 'circle',
+                    class: 'sc-dot',
+                    attrs: {
+                        cx: markerSize / 2,
+                        cy: markerSize / 2,
+                    }
+                }]
+            }]
+        });
+        this._backgroundEl = common.createSVG({
+            name: 'g',
+            class: 'sc-background',
+            attrs: {
+                'clip-path': `url(#${pathClipId})`,
+            },
+            children: [{
+                name: 'rect',
+                class: 'sc-visual-data-area',
+                attrs: {
+                    fill: `url(#${this._bgGradient.id})`,
+                },
+            }]
+        });
+        this._pathLineEl = common.createSVG({
+            name: 'path',
+            class: ['sc-data', 'sc-line', 'sc-visual-data-line'],
+            attrs: {
+                'marker-start': `url(#${pathMarkerId})`,
+                'marker-mid': `url(#${pathMarkerId})`,
+                'marker-end': `url(#${pathMarkerId})`,
+            }
+        });
+        this._pathAreaEl = defs.querySelector('path.sc-area');
+        this._plotRegionEl.replaceChildren(defs, this._backgroundEl, this._pathLineEl);
     }
 
     adjustSize(...args) {
         super.adjustSize(...args);
-        const rect = this._backgroundRectEl;
+        const rect = this._backgroundEl.querySelector('rect.sc-visual-data-area');
         rect.setAttribute('x', this._plotInset[3]);
         rect.setAttribute('y', this._plotInset[0]);
         rect.setAttribute('width', this._plotWidth);
@@ -159,16 +190,16 @@ export class LineChart extends common.Chart {
                 this._plotHeight - (y - this._plotInset[0]);
             let el = this._segmentEls.get(s);
             if (!el) {
-                el = common.createSVGElement('rect');
-                el.classList.add('sc-visual-data-segment');
-                if (x + width / 2 > plotCenterX) {
-                    el.setAttribute('x', x + width);
-                } else {
-                    el.setAttribute('x', x);
-                }
-                el.setAttribute('y', y);
-                el.setAttribute('width', 0);
-                el.setAttribute('height', height);
+                el = common.createSVG({
+                    name: 'rect',
+                    class: ['sc-visual-data-segment'],
+                    attrs: {
+                        x: (x + width / 2 > plotCenterX) ? x + width : x,
+                        y,
+                        width: 0,
+                        height,
+                    }
+                });
                 this._segmentEls.set(s, el);
                 forceLayout = true;
                 segmentAdds.push({el});
@@ -178,8 +209,8 @@ export class LineChart extends common.Chart {
             let gradient;
             if (s.color) {
                 if (!this._segmentFills.has(s.color)) {
-                    const fill = color.parse(s.color);
-                    gradient = this.addGradient((fill instanceof color.Gradient) ? fill : {
+                    const fill = colorMod.parse(s.color);
+                    gradient = this.addGradient((fill instanceof colorMod.Gradient) ? fill : {
                         type: 'linear',
                         colors: [
                             fill.adjustAlpha(-0.7).adjustLight(-0.2),
@@ -235,23 +266,20 @@ export class LineChart extends common.Chart {
                 o.el.setAttribute('fill', `url(#${o.gradient.id})`);
             }
         }
-        const gc = [];
         if (segmentRemoves.length) {
             for (const {el, x} of segmentRemoves) {
                 el.setAttribute('x', x);
                 el.setAttribute('width', 0);
             }
-            gc.push(() => segmentRemoves.forEach(({el}) => el.remove()));
+            this._gcQueue.push(
+                [document.timeline.currentTime, () => segmentRemoves.forEach(({el}) => el.remove())]);
         }
         if (gradientRemoves.length) {
-            gc.push(() => gradientRemoves.forEach(x => this.removeGradient(x)));
+            this._gcQueue.push(
+                [document.timeline.currentTime, () => gradientRemoves.forEach(x => this.removeGradient(x))]);
         }
-        if (gc.length) {
-            const animDur = common.getStyleValue(this.el, '--transition-duration', 'time') || 0;
-            setTimeout(() => {
-                this._gcQueue.push(...gc);
-                this._schedGC();
-            }, animDur + 100);
+        if (this._gcQueue.length) {
+            this._schedGC();
         }
     }
 
@@ -259,20 +287,30 @@ export class LineChart extends common.Chart {
         if (this._gcTimeout) {
             return;
         }
-        this._gcTimeout = common.requestIdle(() => {
-            this._gcTimeout = null;
-            this._gc();
-        });
+        this._gcTimeout = setTimeout(() => {
+            common.requestIdle(() => {
+                this._gcTimeout = null;
+                this._gc();
+            });
+        }, 1100);
     }
 
     _gc() {
-        while (this._gcQueue.length) {
-            const cb = this._gcQueue.shift();
+        const animDur = common.getStyleValue(this.el, '--transition-duration', 'time') || 0;
+        const expiration = document.timeline.currentTime - animDur - 100;
+        for (const [ts, cb] of Array.from(this._gcQueue)) {
+            if (ts > expiration) {
+                break;
+            }
+            this._gcQueue.shift();
             try {
                 cb();
             } catch(e) {
                 console.error('Garbage collection error:', e);
             }
+        }
+        if (this._gcQueue.length) {
+            setTimeout(() => this._schedGC(), this._gcQueue[0][0] - expiration);
         }
     }
 }

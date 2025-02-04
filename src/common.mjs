@@ -3,8 +3,41 @@ import * as colorMod from './color.mjs';
 let globalIdCounter = 0;
 
 
-export function createSVGElement(tag) {
-    return document.createElementNS('http://www.w3.org/2000/svg', tag);
+export const createSVG = _createNodes.bind(
+    null, document.createElementNS.bind(document, 'http://www.w3.org/2000/svg'));
+
+export const createHTML = _createNodes.bind(
+    null, document.createElement.bind(document));
+
+
+function _createNodes(createFunction, options) {
+    const el = createFunction(options.name);
+    if (options) {
+        if (options.id) {
+            el.id = options.id;
+        }
+        if (options.class) {
+            const classes = Array.isArray(options.class) ? options.class : [options.class];
+            el.classList.add(...classes);
+        }
+        if (options.data) {
+            Object.assign(el.dataset, options.data);
+        }
+        if (options.attrs) {
+            for (const [k, v] of Object.entries(options.attrs)) {
+                el.setAttribute(k, v);
+            }
+        }
+        if (options.style) {
+            for (const [k, v] of Object.entries(options.style)) {
+                el.style.setProperty(k, v);
+            }
+        }
+        if (options.children) {
+            el.append(...options.children.map(x => _createNodes(createFunction, x)));
+        }
+    }
+    return el;
 }
 
 
@@ -109,6 +142,7 @@ export class Chart {
         this._gradients = new Set();
         this._onPointerEnterBound = this.onPointerEnter.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
+        this._merge = options.merge;
         if (options.el) {
             this.setElement(options.el, {merge: options.merge});
         }
@@ -263,8 +297,7 @@ export class Chart {
             }
             let tick = existingTicks[visualCount];
             if (!tick) {
-                tick = createSVGElement('line');
-                tick.classList.add('sc-tick');
+                tick = createSVG({name: 'line', class: 'sc-tick'});
                 el.append(tick);
             }
             tick.setAttribute('x1', x1);
@@ -273,8 +306,7 @@ export class Chart {
             tick.setAttribute('y2', y2);
             let label = existingLabels[visualCount];
             if (!label) {
-                label = createSVGElement('text');
-                label.classList.add('sc-label');
+                label = createSVG({name: 'text', class: 'sc-label'});
                 el.append(label);
             }
             label.setAttribute('x', x1);
@@ -291,15 +323,29 @@ export class Chart {
         }
     }
 
-    setElement(el, {merge}={}) {
+    setElement(el) {
         this.beforeSetElement(el);
         const old = this.el;
         this.el = el;
         if (old) {
             this._resizeObserver.disconnect();
             old.removeEventListener('pointerenter', this._onPointerEnterBound);
+            if (this._plotRegionEl) {
+                this._plotRegionEl.remove();
+                this._plotRegionEl = null;
+            }
+            if (this._titleEl) {
+                this._titleEl.remove();
+                this._titleEl = null;
+            }
+            if (this._xAxisEl) {
+                this._xAxisEl.remove();
+            }
+            if (this._yAxisEl) {
+                this._yAxisEl.remove();
+            }
         }
-        if (!merge) {
+        if (!this._merge) {
             el.classList.add('saucechart', 'sc-wrap');
             el.classList.toggle('sc-disable-animation', !!this.disableAnimation);
             let darkMode = this.darkMode;
@@ -308,51 +354,77 @@ export class Chart {
                 darkMode = c.l >= 0.5;
             }
             this.el.classList.toggle('sc-darkmode', darkMode);
-            el.innerHTML = `
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg"
-                     preserveAspectRatio="none" class="sc-root">
-                    <defs></defs>
-                    <g class="sc-plot-regions"></g>
-                    <g class="sc-tooltip"></g>
-                </svg>
-                <div class="sc-tooltip-positioner">
-                    <div class="sc-tooltip-box-wrap">
-                        <div class="sc-tooltip-box"></div>
-                    </div>
-                </div>`;
-
+            const svg = createSVG({
+                name: 'svg',
+                class: 'sc-root',
+                attrs: {
+                    version: '1.1',
+                    preserveAspectRatio: 'none',
+                },
+                children: [{
+                    name: 'defs'
+                }, {
+                    name: 'g',
+                    class: 'sc-plot-regions',
+                }, {
+                    name: 'g',
+                    class: 'sc-tooltip',
+                }]
+            });
+            const tooltip = createHTML({
+                name: 'div',
+                class: 'sc-tooltip-positioner',
+                children: [{
+                    name: 'div',
+                    class: 'sc-tooltip-box-wrap',
+                    children: [{
+                        name: 'div',
+                        class: 'sc-tooltip-box',
+                    }]
+                }]
+            });
+            el.replaceChildren(svg, tooltip);
             el.parentSauceChart = this;
             this.childCharts.length = 0;
         } else {
             el.parentSauceChart.addChart(this);
         }
         this._rootSvgEl = el.querySelector('svg.sc-root');
-        this._defsEl = this._rootSvgEl.querySelector('defs');
-        this._tooltipGroupEl = this._rootSvgEl.querySelector('.sc-tooltip');
-        this._tooltipPositionerEl = el.querySelector('.sc-tooltip-positioner'),
-        this._tooltipBoxEl = el.querySelector('.sc-tooltip-box');
-        this._plotRegionEl = createSVGElement('g');
-        this._plotRegionEl.classList.add('sc-plot-region');
-        this._plotRegionEl.dataset.id = this.id;
+        this._defsEl = this._rootSvgEl.querySelector(':scope > defs');
+        this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
+        this._tooltipPositionerEl = el.querySelector(':scope > .sc-tooltip-positioner'),
+        this._tooltipBoxEl = this._tooltipPositionerEl.querySelector('.sc-tooltip-box');
+        this._plotRegionEl = createSVG({name: 'g', class: 'sc-plot-region', data: {id: this.id}});
         if (this.color) {
             this._plotRegionEl.style.setProperty('--color', this.color);
             this._computedColor = null;
         }
         this._rootSvgEl.querySelector('.sc-plot-regions').append(this._plotRegionEl);
         if (this.title) {
-            el.insertAdjacentHTML('beforeend',
-                                  `<div data-sc-id="${this.id}" class="sc-title">${this.title}</div>`);
+            this._titleEl = createHTML({
+                name: 'div',
+                class: 'sc-title',
+                data: {
+                    scId: this.id,
+                }
+            });
+            this._titleEl.append(this.title);
+            el.append(this._titleEl);
         }
         if (!this.xAxis.disabled) {
-            this._xAxisEl = createSVGElement('g');
-            this._xAxisEl.classList.add('sc-axis', 'sc-x-axis');
-            this._xAxisEl.innerHTML = `<line class="sc-baseline"></line>`;
+            this._xAxisEl = createSVG({
+                name: 'g',
+                class: ['sc-axis', 'sc-x-axis'],
+                children: [{name: 'line', class: 'sc-baseline'}]
+            });
             this._rootSvgEl.append(this._xAxisEl);
         }
         if (!this.yAxis.disabled) {
-            this._yAxisEl = createSVGElement('g');
-            this._yAxisEl.classList.add('sc-axis', 'sc-y-axis');
-            this._yAxisEl.innerHTML = `<line class="sc-baseline"></line>`;
+            this._yAxisEl = createSVG({
+                name: 'g',
+                class: ['sc-axis', 'sc-y-axis'],
+                children: [{name: 'line', class: 'sc-baseline'}]
+            });
             this._rootSvgEl.append(this._yAxisEl);
         }
         this._resizeObserver.observe(this._tooltipBoxEl);
@@ -396,12 +468,18 @@ export class Chart {
         if (this.tooltip.format) {
             return this.tooltip.format.apply(this, arguments);
         } else {
-            return `
-                <div class="sc-tooltip-entry" data-chart-id="${this.id}"
-                     style="--color:${entry.color || chart.getColor()};">
-                    <key>${entry.index}:</key><value>${entry.y.toFixed(2)}</value>
-                </div>
-            `;
+            if (!this._ttEntry) {
+                this._ttEntry = document.createElement('div');
+                this._ttEntry.className = 'sc-tooltip-entry';
+                this._ttEntry.dataset.chartId = this.id;
+                this._ttKey = document.createElement('key');
+                this._ttValue = document.createElement('value');
+                this._ttEntry.append(this._ttKey, this._ttValue);
+            }
+            this._ttEntry.style.setProperty('--color', entry.color || chart.getColor());
+            this._ttKey.textContent = entry.index;
+            this._ttValue.textContent = entry.y.toFixed(2);
+            return this._ttEntry;
         }
     }
 
@@ -559,14 +637,14 @@ export class Chart {
             if (entry === undefined) {
                 continue;
             }
-            let html;
+            let contents;  // Can be text or Node
             if (entry.tooltip) {
-                html = entry.tooltip({entry, chart});
+                contents = entry.tooltip({entry, chart});
             } else if (chart.onTooltip) {
-                html = chart.onTooltip({entry, chart});
+                contents = chart.onTooltip({entry, chart});
             }
             const coordinates = [chart.getMidpointX(entry), chart.toY(entry.y)];
-            tooltips.push({chart, entry, coordinates, html});
+            tooltips.push({chart, entry, coordinates, contents});
             drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
         }
         if (drawSig !== state.lastDrawSig) {
@@ -590,9 +668,8 @@ export class Chart {
     }
 
     _drawTooltip(tooltips) {
-        const box = this._tooltipBoxEl;
         if (!tooltips.length) {
-            box.innerHTML = '';
+            this._tooltipBoxEl.replaceChildren();
             return;
         }
         const state = this._tooltipState;
@@ -604,8 +681,7 @@ export class Chart {
         const existingHLines = this._tooltipGroupEl.querySelectorAll('.sc-line.sc-horizontal');
         const existingDots = this._tooltipGroupEl.querySelectorAll('circle.sc-highlight-dot');
         if (!vertLine) {
-            vertLine = createSVGElement('path');
-            vertLine.classList.add('sc-line', 'sc-vertical');
+            vertLine = createSVG({name: 'path', class: ['sc-line', 'sc-vertical']});
             this._tooltipGroupEl.append(vertLine);
         }
         vertLine.setAttribute('d', `M ${centerX}, ${bottom} V ${top}`);
@@ -618,8 +694,7 @@ export class Chart {
             const [x, y] = tooltips[i].coordinates;
             let dot = existingDots[i];
             if (!dot) {
-                dot = createSVGElement('circle');
-                dot.classList.add('sc-highlight-dot');
+                dot = createSVG({name: 'circle', class: 'sc-highlight-dot'});
                 this._tooltipGroupEl.append(dot);
             }
             dot.setAttribute('cx', x);
@@ -639,8 +714,7 @@ export class Chart {
             if (Math.abs(x - centerX) > 1) {
                 let horizLine = existingHLines[i];
                 if (!horizLine) {
-                    horizLine = createSVGElement('path');
-                    horizLine.classList.add('sc-line', 'sc-horizontal');
+                    horizLine = createSVG({name: 'path', class: ['sc-line', 'sc-horizontal']});
                     this._tooltipGroupEl.prepend(horizLine);
                 }
                 horizLine.setAttribute(
@@ -670,7 +744,7 @@ export class Chart {
                 state.hAlign;
             vAlign = state.vAlign;
         }
-        box.innerHTML = tooltips.map(x => x.html).join('');
+        this._tooltipBoxEl.replaceChildren(...tooltips.map(x => x.contents));
         const posEl = this._tooltipPositionerEl;
         posEl.dataset.hAlign = hAlign;
         posEl.dataset.vAlign = vAlign;

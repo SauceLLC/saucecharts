@@ -13,12 +13,12 @@ export class BarChart extends common.Chart {
     }
 
     afterSetElement(el) {
-        this._plotRegionEl.innerHTML = `<g class="sc-bars"></g>`;
-        this._barsEl = this._plotRegionEl.querySelector(`g.sc-bars`);
+        this._barsEl = common.createSVG({name: 'g', class: 'sc-bars'});
+        this._plotRegionEl.replaceChildren(this._barsEl);
     }
 
     doReset() {
-        this._barsEl.innerHTML = '';
+        this._barsEl.replaceChildren();
         this._bars.clear();
         this._barsPendingRemoval.clear();
         for (const x of this._barFills.values()) {
@@ -188,8 +188,7 @@ export class BarChart extends common.Chart {
                     continue;
                 }
             }
-            bar.el = common.createSVGElement('path');
-            bar.el.classList.add('sc-bar', 'sc-visual-data-bar');
+            bar.el = common.createSVG({name: 'path', class: ['sc-bar', 'sc-visual-data-bar']});
             this._bars.set(ref, bar);
             layout.add.push(bar);
             layout.update.push(bar);
@@ -275,10 +274,12 @@ export class BarChart extends common.Chart {
         if (this._gcTimeout) {
             return;
         }
-        this._gcTimeout = common.requestIdle(() => {
-            this._gcTimeout = null;
-            this._gc();
-        });
+        this._gcTimeout = setTimeout(() => {
+            common.requestIdle(() => {
+                this._gcTimeout = null;
+                this._gc();
+            });
+        }, 1100);
     }
 
     _gc() {
