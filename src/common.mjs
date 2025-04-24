@@ -71,6 +71,11 @@ export function cancelIdle(id) {
 }
 
 
+export function lerp(n1, n2, t) {
+    return ((1 - t) * n1) + (t * n2);
+}
+
+
 // Ported from https://github.com/joshcarr/largest-triangle-three-buckets.js
 // See: https://github.com/sveinn-steinarsson/flot-downsample
 function largestTriangleThreeBuckets(inData, outLen) {

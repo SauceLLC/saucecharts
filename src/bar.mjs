@@ -225,11 +225,9 @@ export class BarChart extends common.Chart {
             }
             this._barsEl.append(el);
         }
-
         if ((!disableAnimation && layout.add.length) || disableAnimation) {
             this._rootSvgEl.clientWidth;
         }
-
         for (let i = 0; i < layout.update.length; i++) {
             const {el, attrs} = layout.update[i];
             const width = Math.max(0, attrs.width - this.barSpacing);
@@ -237,7 +235,6 @@ export class BarChart extends common.Chart {
             el.setAttribute('d', this._makeBarPath(x, attrs.y, width, attrs.height));
             el.setAttribute('fill', attrs.fill);
         }
-
         for (let i = 0; i < layout.remove.length; i++) {
             const {attrs, el} = layout.remove[i];
             if (!disableAnimation) {
@@ -254,7 +251,6 @@ export class BarChart extends common.Chart {
                 el.removeAttribute('d');
             }
         }
-
     }
 
     _makeBarPath(x, y, width, height) {
