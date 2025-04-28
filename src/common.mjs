@@ -222,10 +222,10 @@ export class Chart {
             ({width, height} = this._rootSvgEl.getBoundingClientRect());
         }
         if (!width || !height) {
-            this._boxWidth = null;
-            this._boxHeight = null;
-            this._plotWidth = null;
-            this._plotHeight = null;
+            this._boxWidth = 0;
+            this._boxHeight = 0;
+            this._plotWidth = 0;
+            this._plotHeight = 0;
             this._plotInset = [0, 0, 0, 0];
             return;
         }
