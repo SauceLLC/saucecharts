@@ -122,9 +122,10 @@ function largestTriangleThreeBuckets(inData, outLen) {
 const resample = largestTriangleThreeBuckets;
 
 
-export class Chart {
+export class Chart extends EventTarget {
 
     constructor(options={}) {
+        super();
         this.init(options);
         this.id = globalIdCounter++;
         this.yMin = options.yMin;
@@ -542,9 +543,9 @@ export class Chart {
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x}));
+            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x, internal: true}));
         }, {signal});
-        this._setTooltipPosition({x: ev.x, disableAnimation: true});
+        this._setTooltipPosition({x: ev.x, disableAnimation: true, internal: true});
         this.showTooltip();
     }
 
@@ -568,14 +569,11 @@ export class Chart {
         if (hasAnim) {
             posEl.classList.add('sc-disable-animation');
         }
-        try {
-            this.el.classList.add('sc-tooltip-active');
-            state.visible = true;
-        } finally {
-            if (hasAnim) {
-                posEl.offsetWidth;
-                posEl.classList.remove('sc-disable-animation');
-            }
+        this.el.classList.add('sc-tooltip-active');
+        state.visible = true;
+        if (hasAnim) {
+            posEl.offsetWidth;
+            posEl.classList.remove('sc-disable-animation');
         }
     }
 
@@ -620,9 +618,18 @@ export class Chart {
         return this._setTooltipPosition(options);
     }
 
-    _setTooltipPosition({x, y, index, disableAnimation}) {
+    _setTooltipPosition({x, y, index, disableAnimation, internal=false}) {
         Object.assign(this._tooltipState, {x, y, index});
         this._updateTooltip({disableAnimation});
+        this.dispatchEvent(new CustomEvent('tooltip', {
+            detail: {
+                x,
+                y,
+                index,
+                internal,
+                chart: this,
+            }
+        }));
     }
 
     updateVisibleTooltip(options) {

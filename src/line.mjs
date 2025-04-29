@@ -10,6 +10,8 @@ export class LineChart extends common.Chart {
         this._segmentEls = new Map();
         this._segmentFills = new Map();
         this._gcQueue = [];
+        this._brushState = {};
+        this._onPointerDownBound = this.onPointerDown.bind(this);
     }
 
     setSegments(segments, options={}) {
@@ -19,10 +21,18 @@ export class LineChart extends common.Chart {
         }
     }
 
+    beforeSetElement(el) {
+        const old = this.el;
+        if (old) {
+            old.removeEventListener('pointerdown', this._onPointerDownBound);
+        }
+    }
+
     afterSetElement(el) {
         if (this._bgGradient) {
             this.removeGradient(this._bgGradient);
         }
+        el.addEventListener('pointerdown', this._onPointerDownBound);
         const fill = colorMod.parse(this.getColor());
         this._bgGradient = this.addGradient({
             type: 'linear',
@@ -88,7 +98,12 @@ export class LineChart extends common.Chart {
             }
         });
         this._pathAreaEl = defs.querySelector('path.sc-area');
-        this._plotRegionEl.replaceChildren(defs, this._backgroundEl, this._pathLineEl);
+        this._brushEl = common.createSVG({
+            name: 'rect',
+            class: ['sc-brush']
+        });
+        this._plotRegionEl.replaceChildren(defs, this._backgroundEl, this._pathLineEl, this._brushEl);
+        this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
     }
 
     adjustSize(...args) {
@@ -280,6 +295,99 @@ export class LineChart extends common.Chart {
         if (this._gcQueue.length) {
             this._schedGC();
         }
+    }
+
+    showBrush() {
+        const state = this._brushState;
+        if (state.visible) {
+            return;
+        }
+        this.el.classList.add('sc-brush-active');
+        state.visible = true;
+    }
+
+    hideBrush() {
+        const state = this._brushState;
+        if (!state.visible) {
+            return;
+        }
+        this.el.classList.remove('sc-brush-active');
+        state.visible = false;
+    }
+
+    onPointerDown(ev) {
+        if (this._tooltipState.pointerActive) {
+            console.debug("pointer active: abort");
+            this._tooltipState.pointerAborter.abort();
+            this.hideTooltip();
+        } else {
+            console.debug("pointer inactive");
+        }
+        if (this._brushState.pointerActive || !this.data?.length) {
+            debugger; // XXX can happen?
+            return;
+        }
+        const state = this._establishBrushState();
+        const pointerId = ev.pointerId;
+        state.pointerActive = true;
+        state.pointerAborter = new AbortController();
+        state.pointerId = pointerId;
+        //const xSearch = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
+        //const entry = this.findNearestFromXCoord(xSearch);
+        state.x1 = state.x2 = ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0];
+        const onDone = () => {
+            state.pointerAborter.abort();
+            state.pointerActive = false;
+            if (state.pointerId === pointerId && state.x1 === state.x2) {
+                this.hideBrush();
+            }
+        };
+        const signal = state.pointerAborter.signal;
+        // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
+        addEventListener('pointercancel', onDone, {signal});
+        addEventListener('pointerup', onDone, {signal});
+        let af;
+        this.el.addEventListener('pointermove', ev => {
+            cancelAnimationFrame(af);
+            state.x2 = ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0];
+            af = requestAnimationFrame(() => this._updateBrush());
+        }, {signal});
+        this._updateBrush();
+        this.showBrush();
+    }
+
+    _updateBrush() {
+        const state = this._brushState;
+        const entry1 = this.findNearestFromXCoord(
+            (state.x1 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
+        const entry2 = this.findNearestFromXCoord(
+            (state.x2 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
+        let x1 = entry1.x;
+        let x2 = entry2.x;
+        if (x1 > x2) {
+            [x1, x2] = [x2, x1];
+        }
+        const snapX1 = this.toX(x1);
+        const snapX2 = this.toX(x2);
+        console.warn(state.x1, state.x2, {snapX1, snapX2, entry1, entry2});
+        const top = this.tooltipPadding[0] * this.devicePixelRatio;
+        const bottom = this._boxHeight - this.tooltipPadding[1] * this.devicePixelRatio;
+        const brushEl = this._brushEl;
+        brushEl.setAttribute('y', top);
+        brushEl.setAttribute('height', bottom - top);
+        brushEl.setAttribute('x', snapX1);
+        brushEl.setAttribute('width', snapX2 - snapX1);
+    }
+
+    _establishBrushState() {
+        const scrollOffsets = [scrollX, scrollY];
+        const plotRect = this.el.getBoundingClientRect();
+        Object.assign(this._brushState, {
+            scrollOffsets,
+            lastDrawSig: undefined, // XXX
+            chartPlotOffset: [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]]
+        });
+        return this._brushState;
     }
 
     _schedGC() {
