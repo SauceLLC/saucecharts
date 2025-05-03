@@ -243,6 +243,13 @@ export class Chart extends EventTarget {
         const vPad = this._plotInset[0] + this._plotInset[2];
         this._plotWidth = Math.max(0, this._boxWidth - hPad);
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
+        const plotStyle = this._plotRegionEl.style;
+        plotStyle.setProperty('--plot-inset-top', `${this._plotInset[0]}px`);
+        plotStyle.setProperty('--plot-inset-right', `${this._plotInset[1]}px`);
+        plotStyle.setProperty('--plot-inset-bottom', `${this._plotInset[2]}px`);
+        plotStyle.setProperty('--plot-inset-left', `${this._plotInset[3]}px`);
+        plotStyle.setProperty('--plot-width', `${this._plotWidth}px`);
+        plotStyle.setProperty('--plot-height', `${this._plotHeight}px`);
         if (this.isParentChart()) {
             this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
             this.el.style.setProperty('--dpr', this.devicePixelRatio);
@@ -516,7 +523,7 @@ export class Chart extends EventTarget {
     }
 
     onPointerEnter(ev) {
-        if (this._tooltipState.pointerActive || !this.data?.length) {
+        if (this._tooltipState.pointerActive || !this._renderData || !this._renderData.length) {
             return;
         }
         const state = this._establishTooltipState();
@@ -957,8 +964,7 @@ export class Chart extends EventTarget {
             `M ${coords[0][0]},${this._plotHeight + this._plotInset[0]} V ${coords[0][1]}` :
             `M ${coords[0][0]},${coords[0][1]}`;
         for (let i = 1; i < coords.length; i++) {
-            const [x, y] = coords[i];
-            path += ` L ${x},${y}`;
+            path += ` L ${coords[i][0]},${coords[i][1]}`;
         }
         if (closed) {
             path += ` V ${this._plotHeight + this._plotInset[0]} Z`;

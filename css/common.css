@@ -1,6 +1,6 @@
 .saucechart {
     --transition-duration: 400ms;
-    --tooltip-transition-duration: 200ms;
+    --tooltip-transition-duration: 100ms;
     --axis-padding: 0.3em;
     touch-action: none;
     -webkit-touch-callout: none;

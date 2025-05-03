@@ -6,6 +6,7 @@ export class LineChart extends common.Chart {
 
     init(options={}) {
         this.hidePoints = options.hidePoints;
+        this.brush = options.brush || {};
         this.segments = [];
         this._segmentEls = new Map();
         this._segmentFills = new Map();
@@ -26,6 +27,7 @@ export class LineChart extends common.Chart {
         if (old) {
             old.removeEventListener('pointerdown', this._onPointerDownBound);
         }
+        el.classList.add('sc-linechart');
     }
 
     afterSetElement(el) {
@@ -41,21 +43,37 @@ export class LineChart extends common.Chart {
                 fill.adjustAlpha(-0.14),
             ]
         });
-        const pathClipId = `path-clip-${this.id}`;
-        const pathMarkerId = `path-marker-${this.id}`;
-        const markerSize = this.hidePoints ? 0 : 20; // Abstract units based on 'markerUnits'
+        const areaClipId = `clip-${this.id}`;
+        const lineClipId = `line-clip-${this.id}`;
+        const markerLineClipId = `marker-line-clip-${this.id}`;
+        const markerId = `marker-${this.id}`;
+        const markerSize = 40; // Abstract units
         const defs = common.createSVG({
             name: 'defs',
             children: [{
                 name: 'clipPath',
-                id: pathClipId,
+                id: lineClipId,
+                children: [{
+                    name: 'rect',
+                    class: ['sc-line-clip']
+                }]
+            }, {
+                name: 'clipPath',
+                id: markerLineClipId,
+                children: [{
+                    name: 'rect',
+                    class: ['sc-marker-line-clip']
+                }]
+            }, {
+                name: 'clipPath',
+                id: areaClipId,
                 children: [{
                     name: 'path',
                     class: ['sc-data', 'sc-area']
                 }]
-            }, {
+            }, this.hidePoints ? undefined : {
                 name: 'marker',
-                id: pathMarkerId,
+                id: markerId,
                 class: 'sc-line-marker',
                 attrs: {
                     markerUnits: 'userSpaceOnUse',
@@ -72,13 +90,13 @@ export class LineChart extends common.Chart {
                         cy: markerSize / 2,
                     }
                 }]
-            }]
+            }].filter(x => x)
         });
         this._backgroundEl = common.createSVG({
             name: 'g',
             class: 'sc-background',
             attrs: {
-                'clip-path': `url(#${pathClipId})`,
+                'clip-path': `url(#${areaClipId})`,
             },
             children: [{
                 name: 'rect',
@@ -88,36 +106,51 @@ export class LineChart extends common.Chart {
                 },
             }]
         });
-        this._pathLineEl = common.createSVG({
+        this._lineEl = common.createSVG({
             name: 'path',
             class: ['sc-data', 'sc-line', 'sc-visual-data-line'],
             attrs: {
-                'marker-start': `url(#${pathMarkerId})`,
-                'marker-mid': `url(#${pathMarkerId})`,
-                'marker-end': `url(#${pathMarkerId})`,
+                'clip-path': `url(#${lineClipId})`,
             }
         });
-        this._pathAreaEl = defs.querySelector('path.sc-area');
-        this._brushEl = common.createSVG({
-            name: 'rect',
-            class: ['sc-brush']
+        this._markerLineEl = this.hidePoints ? undefined : common.createSVG({
+            name: 'path',
+            class: ['sc-data', 'sc-line', 'sc-visual-data-line-markers'],
+            attrs: {
+                'clip-path': `url(#${markerLineClipId})`,
+                'marker-start': `url(#${markerId})`,
+                'marker-mid': `url(#${markerId})`,
+                'marker-end': `url(#${markerId})`,
+            }
         });
-        this._plotRegionEl.replaceChildren(defs, this._backgroundEl, this._pathLineEl, this._brushEl);
+        this._areaEl = defs.querySelector('path.sc-area');
+        this._plotRegionEl.replaceChildren(defs, this._backgroundEl, this._lineEl, this._markerLineEl);
+        if (!this.brush.disabled) {
+            const groupEl = common.createSVG({name: 'g', class: ['sc-brush']});
+            this._brushMaskEl = common.createSVG({
+                name: 'rect',
+                class: ['sc-brush-mask']
+            });
+            this._brushHandleLeftEl = common.createSVG({
+                name: 'line',
+                class: ['sc-brush-line', 'sc-left']
+            });
+            this._brushHandleRightEl = common.createSVG({
+                name: 'line',
+                class: ['sc-brush-line', 'sc-right']
+            });
+            groupEl.append(this._brushMaskEl, this._brushHandleLeftEl, this._brushHandleRightEl);
+            this._plotRegionEl.append(groupEl);
+        }
         this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
     }
 
-    adjustSize(...args) {
-        super.adjustSize(...args);
-        const rect = this._backgroundEl.querySelector('rect.sc-visual-data-area');
-        rect.setAttribute('x', this._plotInset[3]);
-        rect.setAttribute('y', this._plotInset[0]);
-        rect.setAttribute('width', this._plotWidth);
-        rect.setAttribute('height', this._plotHeight);
-    }
-
     doReset() {
-        this._pathLineEl.removeAttribute('d');
-        this._pathAreaEl.removeAttribute('d');
+        this._lineEl.removeAttribute('d');
+        if (this._markerLineEl) {
+            this._markerLineEl.removeAttribute('d');
+        }
+        this._areaEl.removeAttribute('d');
         this._prevCoords = null;
         this._prevData = null;
         this.segments.length = 0;
@@ -182,8 +215,12 @@ export class LineChart extends common.Chart {
                         prev.unshift(prev[0]);
                     }
                 }
-                this._pathLineEl.setAttribute('d', this.makePath(prev));
-                this._pathAreaEl.setAttribute('d', this.makePath(prev, {closed: true}));
+                const pathLine = this.makePath(prev);
+                this._lineEl.setAttribute('d', pathLine);
+                if (this._markerLineEl) {
+                    this._markerLineEl.setAttribute('d', pathLine);
+                }
+                this._areaEl.setAttribute('d', this.makePath(prev, {closed: true}));
                 forceLayout = true;
             }
         }
@@ -268,8 +305,12 @@ export class LineChart extends common.Chart {
         if (forceLayout) {
             this._plotRegionEl.clientWidth;
         }
-        this._pathLineEl.setAttribute('d', this.makePath(coords));
-        this._pathAreaEl.setAttribute('d', this.makePath(coords, {closed: true}));
+        const linePath = this.makePath(coords);
+        this._lineEl.setAttribute('d', linePath);
+        if (this._markerLineEl) {
+            this._markerLineEl.setAttribute('d', linePath);
+        }
+        this._areaEl.setAttribute('d', this.makePath(coords, {closed: true}));
         for (let i = 0; i < segmentUpdates.length; i++) {
             const o = segmentUpdates[i];
             o.el.setAttribute('x', o.x);
@@ -323,7 +364,7 @@ export class LineChart extends common.Chart {
         } else {
             console.debug("pointer inactive");
         }
-        if (this._brushState.pointerActive || !this.data?.length) {
+        if (this._brushState.pointerActive || !this._renderData || !this._renderData.length) {
             debugger; // XXX can happen?
             return;
         }
@@ -347,7 +388,7 @@ export class LineChart extends common.Chart {
         addEventListener('pointercancel', onDone, {signal});
         addEventListener('pointerup', onDone, {signal});
         let af;
-        this.el.addEventListener('pointermove', ev => {
+        document.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
             state.x2 = ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0];
             af = requestAnimationFrame(() => this._updateBrush());
@@ -358,25 +399,37 @@ export class LineChart extends common.Chart {
 
     _updateBrush() {
         const state = this._brushState;
-        const entry1 = this.findNearestFromXCoord(
-            (state.x1 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
-        const entry2 = this.findNearestFromXCoord(
-            (state.x2 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
-        let x1 = entry1.x;
-        let x2 = entry2.x;
+        let x1, x2;
+        if (this.brush.snap) {
+            const entry1 = this.findNearestFromXCoord(
+                (state.x1 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
+            const entry2 = this.findNearestFromXCoord(
+                (state.x2 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
+            x1 = entry1.x;
+            x2 = entry2.x;
+        } else {
+            x1 = state.x1 - state.chartPlotOffset[0] + state.scrollOffsets[0] * this.devicePixelRatio;
+            x2 = state.x2 - state.chartPlotOffset[0] + state.scrollOffsets[0] * this.devicePixelRatio;
+        }
         if (x1 > x2) {
             [x1, x2] = [x2, x1];
         }
-        const snapX1 = this.toX(x1);
-        const snapX2 = this.toX(x2);
-        console.warn(state.x1, state.x2, {snapX1, snapX2, entry1, entry2});
+        //const snapX1 = this.toX(x1);
+        //const snapX2 = this.toX(x2);
         const top = this.tooltipPadding[0] * this.devicePixelRatio;
         const bottom = this._boxHeight - this.tooltipPadding[1] * this.devicePixelRatio;
-        const brushEl = this._brushEl;
-        brushEl.setAttribute('y', top);
-        brushEl.setAttribute('height', bottom - top);
-        brushEl.setAttribute('x', snapX1);
-        brushEl.setAttribute('width', snapX2 - snapX1);
+        this._brushMaskEl.setAttribute('y', top);
+        this._brushMaskEl.setAttribute('height', bottom - top);
+        this._brushMaskEl.setAttribute('x', x1);
+        this._brushMaskEl.setAttribute('width', x2 - x1);
+        this._brushHandleLeftEl.setAttribute('y1', top);
+        this._brushHandleLeftEl.setAttribute('y2', bottom);
+        this._brushHandleLeftEl.setAttribute('x1', x1);
+        this._brushHandleLeftEl.setAttribute('x2', x1);
+        this._brushHandleRightEl.setAttribute('y1', top);
+        this._brushHandleRightEl.setAttribute('y2', bottom);
+        this._brushHandleRightEl.setAttribute('x1', x2);
+        this._brushHandleRightEl.setAttribute('x2', x2);
     }
 
     _establishBrushState() {
@@ -388,6 +441,13 @@ export class LineChart extends common.Chart {
             chartPlotOffset: [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]]
         });
         return this._brushState;
+    }
+
+    afterRender(...args) {
+        super.afterRender(...args);
+        if (this._brushState.visible) {
+            this._updateBrush();
+        }
     }
 
     _schedGC() {
