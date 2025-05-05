@@ -1,10 +1,22 @@
 @import 'common.css';
 
-.saucechart > svg.sc-root {
-    .sc-visual-data-bar {
-        transition-property: d;
-        transition-timing-function: linear;
-        transition-duration: var(--transition-duration);
-        stroke: hsl(from var(--fg-color) h s l / 0.7);
+.saucechart.sc-barchart {
+    --bar-stroke-width: 0.08em;
+
+    > svg.sc-root {
+        .sc-bars-clip {
+            x: var(--plot-inset-left);
+            y: calc(var(--plot-inset-top) - (var(--bar-stroke-width) / 2));
+            width: var(--plot-width);
+            height: calc(var(--plot-height) + (var(--bar-stroke-width) / 2));
+        }
+
+        .sc-visual-data-bar {
+            transition-property: d;
+            transition-timing-function: linear;
+            transition-duration: var(--transition-duration);
+            stroke: hsl(from var(--fg-color) h s l / 0.7);
+            stroke-width: var(--bar-stroke-width);
+        }
     }
 }

@@ -566,7 +566,7 @@ export class Chart extends EventTarget {
     }
 
     showTooltip({x, y, index}={}) {
-        const state = this._tooltipState;
+        const state = this._establishTooltipState();
         if (state.visible) {
             return;
         }
@@ -650,13 +650,18 @@ export class Chart extends EventTarget {
         const tooltips = [];
         const state = this._tooltipState;
         let drawSig = state.scrollOffsets.join();
-        const xRef = state.index != null ? this.toX(this.normalizedData[state.index].x) : state.x;
         for (let i = 0; i < state.charts.length; i++) {
             const chart = state.charts[i];
-            const xSearch = (xRef - state.chartPlotOffsets[i][0] + state.scrollOffsets[0]) *
-                this.devicePixelRatio;
-            const entry = chart.findNearestFromXCoord(xSearch);
-            if (entry === undefined) {
+            let xRef = state.index != null ?
+                chart.toX(chart.normalizedData[state.index].x) :
+                (state.x - state.chartPlotOffsets[i][0] + state.scrollOffsets[0]) * this.devicePixelRatio;
+            if (xRef >= chart._plotWidth + chart._plotInset[3]) {
+                xRef = chart._plotWidth + chart._plotInset[3] - 1e-6;
+            } else if (xRef <= chart._plotInset[3]) {
+                xRef = chart._plotInset[3] + 1e-6;
+            }
+            const entry = chart.findNearestFromXCoord(xRef);
+            if (entry === undefined || entry.x < chart._xMin || entry.x > chart._xMax) {
                 continue;
             }
             let contents;  // Can be text or Node
@@ -777,8 +782,8 @@ export class Chart extends EventTarget {
         posEl.style.setProperty('--x-right', `${maxX * f + offtX}px`);
         posEl.style.setProperty('--x-center', `${centerX * f + offtX}px`);
         posEl.style.setProperty('--y-center', `${centerY * f + offtY}px`);
-        posEl.style.setProperty('--y-top', `${Math.min(minY, top) * f + offtY}px`);
-        posEl.style.setProperty('--y-bottom', `${Math.max(maxY, bottom) * f + offtY}px`);
+        posEl.style.setProperty('--y-top', `${top * f + offtY}px`);
+        posEl.style.setProperty('--y-bottom', `${bottom * f + offtY}px`);
         state.hasDrawn = true;
     }
 
@@ -852,8 +857,14 @@ export class Chart extends EventTarget {
         const manifest = this.beforeRender(options);
         this.adjustScale(manifest);
         this.doLayout(manifest, options);
-        const axisSig = `${this._xMin}-${this._xMax}-${this._yMin}-${this._yMax}-` +
-            `${this._plotWidth}-${this._plotHeight}`;
+        const axisSig = [
+            this._xMin,
+            this._xMax,
+            this._yMin,
+            this._yMax,
+            this._plotWidth,
+            this._plotHeight
+        ].join('-');
         if (this._lastAxisSig !== axisSig) {
             this._lastAxisSig = axisSig;
             if (this._xAxisEl) {

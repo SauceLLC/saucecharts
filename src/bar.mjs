@@ -12,9 +12,31 @@ export class BarChart extends common.Chart {
         this._barFills = new Map();
     }
 
+    beforeSetElement(el) {
+        el.classList.add('sc-barchart');
+    }
+
     afterSetElement(el) {
-        this._barsEl = common.createSVG({name: 'g', class: 'sc-bars'});
-        this._plotRegionEl.replaceChildren(this._barsEl);
+        const barsClipId = `bars-clip-${this.id}`;
+        const defs = common.createSVG({
+            name: 'defs',
+            children: [{
+                name: 'clipPath',
+                id: barsClipId,
+                children: [{
+                    name: 'rect',
+                    class: ['sc-bars-clip']
+                }]
+            }]
+        });
+        this._barsEl = common.createSVG({
+            name: 'g',
+            class: 'sc-bars',
+            attrs: {
+                'clip-path': `url(#${barsClipId})`,
+            }
+        });
+        this._plotRegionEl.replaceChildren(defs, this._barsEl);
     }
 
     doReset() {
@@ -41,44 +63,32 @@ export class BarChart extends common.Chart {
         if (Array.isArray(data[0])) {
             // [[width, y], [width, y], ...]
             const width = data[0][0] || 0;
-            norm[0] = {index: 0, width, x: width / 2, y: data[0][1] || 0};
+            norm[0] = {index: 0, width, x: width / 2, y: data[0][1] || 0, ref: data[0]};
             let offt = width;
             for (let i = 1; i < data.length; i++) {
                 const o = data[i];
                 const width = o[0] || 0;
                 offt += width;
-                norm[i] = {index: i, width, x: offt - (width / 2), y: o[1] || 0};
+                norm[i] = {index: i, width, x: offt - (width / 2), y: o[1] || 0, ref: o};
             }
         } else if (typeof data[0] === 'object') {
             // [{width, y, ...}, {width, y, ...}, ...]
             const width = data[0].width || 0;
-            norm[0] = {...data[0], index: 0, width, x: width / 2, y: data[0].y || 0};
+            norm[0] = {...data[0], index: 0, width, x: width / 2, y: data[0].y || 0, ref: data[0]};
             let offt = width;
             for (let i = 1; i < data.length; i++) {
                 const o = data[i];
                 const width = o.width || 0;
                 offt += width;
-                norm[i] = {...o, index: i, width, x: offt - (width / 2), y: o.y || 0};
+                norm[i] = {...o, index: i, width, x: offt - (width / 2), y: o.y || 0, ref: o};
             }
         } else {
             // [y, y1, ...]
             for (let i = 0; i < data.length; i++) {
-                norm[i] = {index: i, width: 1, x: i + 0.5, y: data[i] || 0};
+                norm[i] = {index: i, width: 1, x: i + 0.5, y: data[i] || 0, ref: data[i]};
             }
         }
         return norm;
-    }
-
-    getMidpointX(entry) {
-        const key = this.data[entry.index];
-        if (key === undefined) {
-            throw new Error("unexpected");
-        }
-        const bar = this._bars.get(key);
-        if (!bar) {
-            throw new Error("unexpected");
-        }
-        return bar.attrs.x + bar.attrs.width / 2;
     }
 
     adjustScale(manifest) {
@@ -102,12 +112,11 @@ export class BarChart extends common.Chart {
             update: [],
         };
         const yMinCoord = this.toY(Math.max(0, this._yMin));
-        let xOfft = this._xMin;
         const adding = [];
         for (let index = 0; index < data.length; index++) {
             const entry = data[index];
-            const x1 = this.toX(xOfft);
-            const x2 = this.toX(xOfft += entry.width);
+            const x1 = this.toX(entry.x - entry.width / 2);
+            const x2 = this.toX(entry.x + entry.width / 2);
             const y = this.toY(entry.y);
             const height = yMinCoord - y;
             const color = entry.color || this.getColor();
@@ -132,24 +141,21 @@ export class BarChart extends common.Chart {
                 y,
                 fill: `url(#${barFill.gradient.id})`,
             };
-            // Important: ref must be from this.data so in-place array mutations
-            // like appending new records to the existing array can be handled
-            // as individual updates.  Also, getMidpointX now depends on this.
-            const ref = this.data[entry.index];
-            let bar = this._bars.get(ref);
+            let bar = this._bars.get(entry.ref);
             if (!bar) {
-                bar = this._barsPendingRemoval.get(ref);
+                bar = this._barsPendingRemoval.get(entry.ref);
                 if (bar) {
+                    debugger; // verify we didn't regress with entry.ref change
                     bar.sig = null;
-                    this._barsPendingRemoval.delete(ref);
-                    this._bars.set(ref, bar);
+                    this._barsPendingRemoval.delete(entry.ref);
+                    this._bars.set(entry.ref, bar);
                 }
             } else {
-                unclaimed.delete(ref);
+                unclaimed.delete(entry.ref);
             }
             if (!bar) {
                 bar = {};
-                adding.push({bar, ref});
+                adding.push({bar, ref: entry.ref});
             }
             const sig = `${attrs.width} ${attrs.height} ${attrs.x} ${attrs.y} ${attrs.fill}`;
             if (bar.sig !== sig) {
@@ -180,6 +186,7 @@ export class BarChart extends common.Chart {
                     }
                 }
                 if (this._barsPendingRemoval.size) {
+                    debugger; // verify we didn't regress with entry.ref change
                     const [oldKey, replace] = this._barsPendingRemoval.entries().next().value;
                     this._barsPendingRemoval.delete(oldKey);
                     Object.assign(replace, bar);
@@ -210,18 +217,15 @@ export class BarChart extends common.Chart {
 
     _renderDoLayout(layout, {disableAnimation}={}) {
         const plotQuarterX = this._plotWidth / 4 + this._plotInset[3];
+        const baselineY = this.toY(Math.max(0, this._yMin));
+        const leftX = this.toX(this._xMin);
+        const rightX = this.toX(this._xMax);
         for (let i = 0; i < layout.add.length; i++) {
             const {el, attrs} = layout.add[i];
             if (!disableAnimation) {
                 const centerX = attrs.x + attrs.width / 2;
-                const bottom = this.toY(Math.max(0, this._yMin));
-                let x = centerX;
-                if (centerX < plotQuarterX) {
-                    x = this.toX(this._xMin);
-                } else if (centerX > plotQuarterX * 3) {
-                    x = this.toX(this._xMax);
-                }
-                el.setAttribute('d', this._makeBarPath(x, bottom, 0, 0));
+                const x = centerX < plotQuarterX ? leftX : centerX > plotQuarterX * 3 ? rightX : centerX;
+                el.setAttribute('d', this._makeBarPath(x, baselineY, 0, 0));
             }
             this._barsEl.append(el);
         }
@@ -239,14 +243,8 @@ export class BarChart extends common.Chart {
             const {attrs, el} = layout.remove[i];
             if (!disableAnimation) {
                 const centerX = attrs.x + attrs.width / 2;
-                const bottom = this.toY(Math.max(0, this._yMin));
-                let x = centerX;
-                if (centerX < plotQuarterX) {
-                    x = this.toX(this._xMin);
-                } else if (centerX > plotQuarterX * 3) {
-                    x = this.toX(this._xMax);
-                }
-                el.setAttribute('d', this._makeBarPath(x, bottom, 0, 0));
+                const x = centerX < plotQuarterX ? leftX : centerX > plotQuarterX * 3 ? rightX : centerX;
+                el.setAttribute('d', this._makeBarPath(x, baselineY, 0, 0));
             } else {
                 el.removeAttribute('d');
             }

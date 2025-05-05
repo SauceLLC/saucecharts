@@ -69,6 +69,8 @@
                     el: document.querySelector(".graph.i1"),
                     onTooltip: ({entry}) => `${entry.x},${entry.y.toFixed(6)}`,
                     title: 'ltr',
+                    xMin: ts() + 4000,
+                    xMax: ts() + 8000,
                 });
                 setInterval(() => {
                     if (paused) return;
@@ -86,6 +88,8 @@
                     ...commonOptions,
                     el: document.querySelector(".graph.i2"),
                     title: 'ltr, 3 points per interval',
+                    yMin: 0.5,
+                    yMax: 0.75,
                 });
                 setInterval(async () => {
                     if (paused) return;
