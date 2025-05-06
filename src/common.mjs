@@ -228,6 +228,7 @@ export class Chart extends EventTarget {
             this._plotWidth = 0;
             this._plotHeight = 0;
             this._plotInset = [0, 0, 0, 0];
+            this._plotBox = [0, 0, 0, 0];
             return;
         }
         const ar = width / height;
@@ -243,6 +244,12 @@ export class Chart extends EventTarget {
         const vPad = this._plotInset[0] + this._plotInset[2];
         this._plotWidth = Math.max(0, this._boxWidth - hPad);
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
+        this._plotBox = [
+            this._plotInset[0],
+            this._plotWidth + this._plotInset[3],
+            this._plotHeight + this._plotInset[0],
+            this._plotInset[3]
+        ];
         const plotStyle = this._plotRegionEl.style;
         plotStyle.setProperty('--plot-inset-top', `${this._plotInset[0]}px`);
         plotStyle.setProperty('--plot-inset-right', `${this._plotInset[1]}px`);
@@ -270,10 +277,7 @@ export class Chart extends EventTarget {
     _drawAxis(orientation, el, options) {
         const vert = orientation === 'vertical';
         const baseline = el.querySelector('line.sc-baseline');
-        const top = this._plotInset[0];
-        const left = this._plotInset[3];
-        const right = left + this._plotWidth;
-        const bottom = top + this._plotHeight;
+        const [top, right, bottom, left] = this._plotBox;
         if (vert) {
             el.classList.toggle('sc-right', !!options.right);
             baseline.setAttribute('x1', options.align === 'right' ? right : left);
@@ -528,11 +532,11 @@ export class Chart extends EventTarget {
         }
         const state = this._establishTooltipState();
         const pointerId = ev.pointerId;
+        state.pointerId = pointerId;
         state.pointerActive = true;
         state.pointerAborter = new AbortController();
-        state.pointerId = pointerId;
-        const onDone = () => {
-            state.pointerAborter.abort();
+        const signal = state.pointerAborter.signal;
+        signal.addEventListener('abort', () => {
             state.pointerActive = false;
             if (state.pointerId === pointerId) {
                 setTimeout(() => {
@@ -541,12 +545,12 @@ export class Chart extends EventTarget {
                     }
                 }, this.tooltipLinger);
             }
-        };
-        const signal = state.pointerAborter.signal;
+        });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
-        addEventListener('pointercancel', onDone, {signal});
-        addEventListener('pointerout', ev => !this.el.contains(ev.target) && onDone(), {signal});
-        this.el.addEventListener('pointerleave', onDone, {signal});
+        addEventListener('pointercancel', () => state.pointerAborter.abort(), {signal});
+        addEventListener('pointerout', ev => !this.el.contains(ev.target) && state.pointerAborter.abort(),
+                         {signal});
+        this.el.addEventListener('pointerleave', () => state.pointerAborter.abort(), {signal});
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
@@ -655,10 +659,10 @@ export class Chart extends EventTarget {
             let xRef = state.index != null ?
                 chart.toX(chart.normalizedData[state.index].x) :
                 (state.x - state.chartPlotOffsets[i][0] + state.scrollOffsets[0]) * this.devicePixelRatio;
-            if (xRef >= chart._plotWidth + chart._plotInset[3]) {
-                xRef = chart._plotWidth + chart._plotInset[3] - 1e-6;
-            } else if (xRef <= chart._plotInset[3]) {
-                xRef = chart._plotInset[3] + 1e-6;
+            if (xRef >= chart._plotBox[1]) {
+                xRef = chart._plotBox[1] - 1e-6;
+            } else if (xRef <= chart._plotBox[3]) {
+                xRef = chart._plotBox[3] + 1e-6;
             }
             const entry = chart.findNearestFromXCoord(xRef);
             if (entry === undefined || entry.x < chart._xMin || entry.x > chart._xMax) {
@@ -924,7 +928,7 @@ export class Chart extends EventTarget {
     toX(value) {
         return (value - this._xMin) *
             (this._plotWidth / (this._xMax - this._xMin)) +
-            this._plotInset[3];
+            this._plotBox[3];
     }
 
     toScaleX(value) {
@@ -932,7 +936,7 @@ export class Chart extends EventTarget {
     }
 
     toY(value) {
-        return this._plotHeight + this._plotInset[0] -
+        return this._plotBox[2] -
             ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
     }
 
@@ -941,13 +945,13 @@ export class Chart extends EventTarget {
     }
 
     fromX(value) {
-        return (value - this._plotInset[3]) /
+        return (value - this._plotBox[3]) /
             (this._plotWidth / (this._xMax - this._xMin)) +
             this._xMin;
     }
 
     fromY(value) {
-        return (this._plotHeight - value + this._plotInset[0]) /
+        return (this._plotBox[2] - value) /
             (this._plotHeight / (this._yMax - this._yMin)) +
             this._yMin;
     }
@@ -972,13 +976,13 @@ export class Chart extends EventTarget {
             return '';
         }
         let path = closed ?
-            `M ${coords[0][0]},${this._plotHeight + this._plotInset[0]} V ${coords[0][1]}` :
+            `M ${coords[0][0]},${this._plotBox[2]} V ${coords[0][1]}` :
             `M ${coords[0][0]},${coords[0][1]}`;
         for (let i = 1; i < coords.length; i++) {
             path += ` L ${coords[i][0]},${coords[i][1]}`;
         }
         if (closed) {
-            path += ` V ${this._plotHeight + this._plotInset[0]} Z`;
+            path += ` V ${this._plotBox[2]} Z`;
         }
         return css ? `path('${path}')` : path;
     }

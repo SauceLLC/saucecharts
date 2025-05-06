@@ -358,39 +358,44 @@ export class LineChart extends common.Chart {
 
     onPointerDown(ev) {
         if (this._tooltipState.pointerActive) {
-            console.debug("pointer active: abort");
-            this._tooltipState.pointerAborter.abort();
-            this.hideTooltip();
-        } else {
-            console.debug("pointer inactive");
+            //console.debug("pointer active: abort");
+            //this._tooltipState.pointerAborter.abort();
+            //this.hideTooltip();
         }
-        if (this._brushState.pointerActive || !this._renderData || !this._renderData.length) {
+        const state = this._establishBrushState();
+        if (state.pointerActive || !this._renderData || !this._renderData.length) {
             debugger; // XXX can happen?
             return;
         }
-        const state = this._establishBrushState();
+        const x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
+        const y = (ev.y - state.chartPlotOffset[1] + state.scrollOffsets[1]) * this.devicePixelRatio;
+        if (x < this._plotBox[3] || x > this._plotBox[1] || y < this._plotBox[0] || y > this._plotBox[2]) {
+            console.warn("NO", x, y, this._plotBox);
+            if (state.visible) {
+                this.hideBrush();
+            }
+            return;
+        }
         const pointerId = ev.pointerId;
+        state.pointerId = pointerId;
+        state.x1 = state.x2 = x;
         state.pointerActive = true;
         state.pointerAborter = new AbortController();
-        state.pointerId = pointerId;
-        //const xSearch = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
-        //const entry = this.findNearestFromXCoord(xSearch);
-        state.x1 = state.x2 = ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0];
-        const onDone = () => {
-            state.pointerAborter.abort();
+        const signal = state.pointerAborter.signal;
+        signal.addEventListener('abort', () => {
+            console.warn("canc brush");
             state.pointerActive = false;
             if (state.pointerId === pointerId && state.x1 === state.x2) {
                 this.hideBrush();
             }
-        };
-        const signal = state.pointerAborter.signal;
+        });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
-        addEventListener('pointercancel', onDone, {signal});
-        addEventListener('pointerup', onDone, {signal});
+        addEventListener('pointercancel', () => state.pointerAborter.abort(), {signal});
+        addEventListener('pointerup', () => state.pointerAborter.abort(), {signal});
         let af;
         document.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            state.x2 = ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0];
+            state.x2 = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
             af = requestAnimationFrame(() => this._updateBrush());
         }, {signal});
         this._updateBrush();
@@ -399,25 +404,26 @@ export class LineChart extends common.Chart {
 
     _updateBrush() {
         const state = this._brushState;
-        let x1, x2;
+        let {x1, x2} = state;
         if (this.brush.snap) {
-            const entry1 = this.findNearestFromXCoord(
-                (state.x1 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
-            const entry2 = this.findNearestFromXCoord(
-                (state.x2 - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio);
-            x1 = entry1.x;
-            x2 = entry2.x;
-        } else {
-            x1 = state.x1 - state.chartPlotOffset[0] + state.scrollOffsets[0] * this.devicePixelRatio;
-            x2 = state.x2 - state.chartPlotOffset[0] + state.scrollOffsets[0] * this.devicePixelRatio;
+            x1 = this.findNearestFromXCoord(x1)?.x;
+            x2 = this.findNearestFromXCoord(x2)?.x;
+        }
+        if (x1 == null || x2 == null) {
+            console.log("NOPE");
+            return;
         }
         if (x1 > x2) {
             [x1, x2] = [x2, x1];
         }
-        //const snapX1 = this.toX(x1);
-        //const snapX2 = this.toX(x2);
-        const top = this.tooltipPadding[0] * this.devicePixelRatio;
-        const bottom = this._boxHeight - this.tooltipPadding[1] * this.devicePixelRatio;
+        if (x1 < this._plotBox[3]) {
+            x1 = this._plotBox[3];
+        }
+        if (x2 > this._plotBox[1]) {
+            x2 = this._plotBox[1];
+        }
+        const top = this._plotInset[0];
+        const bottom = this._boxHeight - this._plotInset[2];
         this._brushMaskEl.setAttribute('y', top);
         this._brushMaskEl.setAttribute('height', bottom - top);
         this._brushMaskEl.setAttribute('x', x1);
