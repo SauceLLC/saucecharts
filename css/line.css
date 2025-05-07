@@ -66,16 +66,28 @@
 
         .sc-brush {
             .sc-brush-mask {
+                cursor: grab;
                 stroke-width: 0.04em;
-                stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
-                fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.2);
+                stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.5);
+                fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.4);
+                transition: fill 150ms;
+
+                &:hover {
+                    fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.7);
+                }
             }
 
             .sc-brush-handle {
-                stroke-width: 0.2em;
-                stroke-linecap: round;
-                stroke-dasharray: 0.4em;
-                stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
+                cursor: col-resize;
+                stroke-width: 0.12em;
+                stroke: hsl(from var(--fg-color) h s calc(l + (8 * var(--shade-dir))) / 0.6);
+                transition: stroke 150ms, stroke-width 150ms, strok-dasharray 150ms;
+
+                &:hover {
+                    stroke: hsl(from var(--fg-color) h s calc(l + (-5 * var(--shade-dir))) / 0.8);
+                    stroke-width: 0.3em;
+                    stroke-dasharray: 0;
+                }
             }
         }
     }

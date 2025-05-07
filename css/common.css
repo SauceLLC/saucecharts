@@ -198,21 +198,22 @@
         font-size: calc(1em * var(--dpr, 1));
 
         .sc-tooltip {
+            pointer-events: none;
+
             .sc-line {
                 stroke: hsl(from var(--fg-color) h s l / 0.7);
-                stroke-width: 0.14em;
-                stroke-dasharray: 0.25em;
-                stroke-linecap: round;
+                stroke-width: 0.10em;
+                stroke-dasharray: 0.15em;
 
                 &.sc-horizontal {
                     stroke-width: 0.10em;
-                    stroke-dasharray: 0.20em;
+                    stroke-dasharray: 0.15em;
                 }
             }
 
             circle.sc-highlight-dot {
-                r: 0.30em;
-                stroke-width: 0.10em;
+                r: 0.22em;
+                stroke-width: 0.08em;
                 stroke: hsl(from var(--fg-color) h s calc(l + 10 * var(--shade-dir)) / 0.8);
                 fill: hsl(from var(--fg-color) h s calc(l + 80 * var(--shade-dir)) / 0.9);
             }
@@ -231,12 +232,12 @@
         margin: 6px 12px;
         pointer-events: all;
         font-size: 0.9em;
-        border-radius: 0.28em;
-        background-color: color-mix(in srgb, var(--bg-color), #d76b1380 10%);
+        border-radius: 0.12em;
+        background-color: color-mix(in srgb, var(--bg-color), #d76b1380 20%);
         padding: 0.1em 0.3em;
         display: flex;
         flex-direction: column;
-        border: 0.08em solid color-mix(in srgb, var(--fg-color), #7772 50%);
+        border: 0.08em solid color-mix(in srgb, var(--fg-color), #5556 50%);
         box-shadow: 0.08em 0.08em 0.3em 0 #0005;
         width: max-content;
         max-width: 22ch;

@@ -133,11 +133,11 @@ export class LineChart extends common.Chart {
             });
             this._brushHandleLeftEl = common.createSVG({
                 name: 'line',
-                class: ['sc-brush-line', 'sc-left']
+                class: ['sc-brush-handle', 'sc-left']
             });
             this._brushHandleRightEl = common.createSVG({
                 name: 'line',
-                class: ['sc-brush-line', 'sc-right']
+                class: ['sc-brush-handle', 'sc-right']
             });
             groupEl.append(this._brushMaskEl, this._brushHandleLeftEl, this._brushHandleRightEl);
             this._plotRegionEl.append(groupEl);

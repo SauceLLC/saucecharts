@@ -6,7 +6,7 @@ export class BarChart extends common.Chart {
 
     init(options={}) {
         this.barSpacing = options.barSpacing ?? 6;
-        this.barRadius = options.barRadius ?? 6;
+        this.barRadius = options.barRadius ?? 4;
         this._bars = new Map();
         this._barsPendingRemoval = new Map();
         this._barFills = new Map();
