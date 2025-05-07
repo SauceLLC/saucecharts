@@ -54,6 +54,7 @@
             const commonOptions = {
                 hidePoints: false,
                 padding: [20, 5, 20, 40],
+                brush: {hideTooltip: true},
             };
 
             document.querySelector('#freq').addEventListener('input', ev => {
@@ -110,7 +111,8 @@
                 const sl = new sc.LineChart({
                     ...commonOptions,
                     el: document.querySelector(".graph.i3"),
-                    title: 'rtl',
+                    title: 'rtl (snap brush)',
+                    brush: {hideTooltip: true, snap: true},
                 });
                 setInterval(() => {
                     if (paused) return;

@@ -5,8 +5,8 @@
 
     > svg.sc-root {
         .sc-bars-clip {
-            x: var(--plot-inset-left);
-            y: calc(var(--plot-inset-top) - (var(--bar-stroke-width) / 2));
+            x: var(--plot-box-left);
+            y: calc(var(--plot-box-top) - (var(--bar-stroke-width) / 2));
             width: var(--plot-width);
             height: calc(var(--plot-height) + (var(--bar-stroke-width) / 2));
         }

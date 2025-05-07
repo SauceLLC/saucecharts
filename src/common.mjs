@@ -227,7 +227,6 @@ export class Chart extends EventTarget {
             this._boxHeight = 0;
             this._plotWidth = 0;
             this._plotHeight = 0;
-            this._plotInset = [0, 0, 0, 0];
             this._plotBox = [0, 0, 0, 0];
             return;
         }
@@ -239,22 +238,22 @@ export class Chart extends EventTarget {
             this._boxHeight = Math.round(height * this.devicePixelRatio);
             this._boxWidth = Math.round(this._boxHeight * ar);
         }
-        this._plotInset = this.padding.map(x => x * this.devicePixelRatio);
-        const hPad = this._plotInset[1] + this._plotInset[3];
-        const vPad = this._plotInset[0] + this._plotInset[2];
+        const inset = this.padding.map(x => x * this.devicePixelRatio);
+        const hPad = inset[1] + inset[3];
+        const vPad = inset[0] + inset[2];
         this._plotWidth = Math.max(0, this._boxWidth - hPad);
         this._plotHeight = Math.max(0, this._boxHeight - vPad);
         this._plotBox = [
-            this._plotInset[0],
-            this._plotWidth + this._plotInset[3],
-            this._plotHeight + this._plotInset[0],
-            this._plotInset[3]
+            inset[0],
+            this._plotWidth + inset[3],
+            this._plotHeight + inset[0],
+            inset[3]
         ];
         const plotStyle = this._plotRegionEl.style;
-        plotStyle.setProperty('--plot-inset-top', `${this._plotInset[0]}px`);
-        plotStyle.setProperty('--plot-inset-right', `${this._plotInset[1]}px`);
-        plotStyle.setProperty('--plot-inset-bottom', `${this._plotInset[2]}px`);
-        plotStyle.setProperty('--plot-inset-left', `${this._plotInset[3]}px`);
+        plotStyle.setProperty('--plot-box-top', `${this._plotBox[0]}px`);
+        plotStyle.setProperty('--plot-box-right', `${this._plotBox[1]}px`);
+        plotStyle.setProperty('--plot-box-bottom', `${this._plotBox[2]}px`);
+        plotStyle.setProperty('--plot-box-left', `${this._plotBox[3]}px`);
         plotStyle.setProperty('--plot-width', `${this._plotWidth}px`);
         plotStyle.setProperty('--plot-height', `${this._plotHeight}px`);
         if (this.isParentChart()) {
@@ -527,7 +526,9 @@ export class Chart extends EventTarget {
     }
 
     onPointerEnter(ev) {
-        if (this._tooltipState.pointerActive || !this._renderData || !this._renderData.length) {
+        if (this.tooltip.disabled || this._tooltipState.pointerActive ||
+            !this._renderData || !this._renderData.length) {
+            console.debug("ignore pointer enter tooltip");
             return;
         }
         const state = this._establishTooltipState();
@@ -657,14 +658,16 @@ export class Chart extends EventTarget {
         for (let i = 0; i < state.charts.length; i++) {
             const chart = state.charts[i];
             let xRef = state.index != null ?
-                chart.toX(chart.normalizedData[state.index].x) :
+                chart.xValueToCoord(chart.normalizedData[state.index].x) :
                 (state.x - state.chartPlotOffsets[i][0] + state.scrollOffsets[0]) * this.devicePixelRatio;
             if (xRef >= chart._plotBox[1]) {
                 xRef = chart._plotBox[1] - 1e-6;
             } else if (xRef <= chart._plotBox[3]) {
                 xRef = chart._plotBox[3] + 1e-6;
             }
+            console.log(xRef);
             const entry = chart.findNearestFromXCoord(xRef);
+            console.log(entry, chart._xMin, chart._xMax);
             if (entry === undefined || entry.x < chart._xMin || entry.x > chart._xMax) {
                 continue;
             }
@@ -674,7 +677,7 @@ export class Chart extends EventTarget {
             } else if (chart.onTooltip) {
                 contents = chart.onTooltip({entry, chart});
             }
-            const coordinates = [chart.getMidpointX(entry), chart.toY(entry.y)];
+            const coordinates = [chart.getMidpointX(entry), chart.yValueToCoord(entry.y)];
             tooltips.push({chart, entry, coordinates, contents});
             drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
         }
@@ -925,39 +928,39 @@ export class Chart extends EventTarget {
         this.updateVisibleTooltip();
     }
 
-    toX(value) {
+    xValueScale(value) {
+        return value * (this._plotWidth / (this._xMax - this._xMin));
+    }
+
+    yValueScale(value) {
+        return value * (this._plotHeight / (this._yMax - this._yMin));
+    }
+
+    xValueToCoord(value) {
         return (value - this._xMin) *
             (this._plotWidth / (this._xMax - this._xMin)) +
             this._plotBox[3];
     }
 
-    toScaleX(value) {
-        return value * (this._plotWidth / (this._xMax - this._xMin));
-    }
-
-    toY(value) {
+    yValueToCoord(value) {
         return this._plotBox[2] -
             ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
     }
 
-    toScaleY(value) {
-        return value * (this._plotHeight / (this._yMax - this._yMin));
-    }
-
-    fromX(value) {
-        return (value - this._plotBox[3]) /
+    xCoordToValue(coord) {
+        return (coord - this._plotBox[3]) /
             (this._plotWidth / (this._xMax - this._xMin)) +
             this._xMin;
     }
 
-    fromY(value) {
-        return (this._plotBox[2] - value) /
+    yCoordToValue(coord) {
+        return (this._plotBox[2] - coord) /
             (this._plotHeight / (this._yMax - this._yMin)) +
             this._yMin;
     }
 
     getMidpointX(entry) {
-        return this.toX(entry.x);
+        return this.xValueToCoord(entry.x);
     }
 
     reset() {

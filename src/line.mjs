@@ -6,7 +6,7 @@ export class LineChart extends common.Chart {
 
     init(options={}) {
         this.hidePoints = options.hidePoints;
-        this.brush = options.brush || {};
+        this.brush = options.brush || {disabled: true};
         this.segments = [];
         this._segmentEls = new Map();
         this._segmentFills = new Map();
@@ -34,7 +34,6 @@ export class LineChart extends common.Chart {
         if (this._bgGradient) {
             this.removeGradient(this._bgGradient);
         }
-        el.addEventListener('pointerdown', this._onPointerDownBound);
         const fill = colorMod.parse(this.getColor());
         this._bgGradient = this.addGradient({
             type: 'linear',
@@ -141,6 +140,7 @@ export class LineChart extends common.Chart {
             });
             groupEl.append(this._brushMaskEl, this._brushHandleLeftEl, this._brushHandleRightEl);
             this._plotRegionEl.append(groupEl);
+            el.addEventListener('pointerdown', this._onPointerDownBound);
         }
         this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
     }
@@ -188,7 +188,7 @@ export class LineChart extends common.Chart {
     }
 
     _renderBeforeLayout({data, disableAnimation}) {
-        const coords = data.map(o => [this.toX(o.x), this.toY(o.y)]);
+        const coords = data.map(o => [this.xValueToCoord(o.x), this.yValueToCoord(o.y)]);
         let forceLayout = false;
         if (!disableAnimation && this._prevCoords) {
             // We can use CSS to animate the transition but we have to use a little hack
@@ -224,21 +224,21 @@ export class LineChart extends common.Chart {
                 forceLayout = true;
             }
         }
-        const plotCenterX = this._plotWidth / 2 + this._plotInset[3];
+        const plotCenterX = this._plotWidth / 2 + this._plotBox[3];
         const unclaimedSegmentEls = new Map(this._segmentEls);
         const unclaimedFills = new Map(this._segmentFills);
         const segmentAdds = [];
         const segmentUpdates = [];
         for (let i = 0; i < this.segments.length; i++) {
             const s = this.segments[i];
-            const x = s.x != null ? this.toX(s.x) : this._plotInset[3];
-            const y = s.y != null ? this.toY(s.y) : this._plotInset[0];
+            const x = s.x != null ? this.xValueToCoord(s.x) : this._plotBox[3];
+            const y = s.y != null ? this.yValueToCoord(s.y) : this._plotBox[0];
             const width = s.width != null ?
-                this.toScaleX(s.width) :
-                this._plotWidth - (x - this._plotInset[3]);
+                this.xValueScale(s.width) :
+                this._plotWidth - (x - this._plotBox[3]);
             const height = s.height != null ?
-                this.toScaleY(s.height) :
-                this._plotHeight - (y - this._plotInset[0]);
+                this.yValueScale(s.height) :
+                this._plotHeight - (y - this._plotBox[0]);
             let el = this._segmentEls.get(s);
             if (!el) {
                 el = common.createSVG({
@@ -357,36 +357,54 @@ export class LineChart extends common.Chart {
     }
 
     onPointerDown(ev) {
-        if (this._tooltipState.pointerActive) {
-            //console.debug("pointer active: abort");
-            //this._tooltipState.pointerAborter.abort();
-            //this.hideTooltip();
+        let restoreTooltip;
+        if (this.brush.hideTooltip) {
+            if (this._tooltipState.pointerActive) {
+                this._tooltipState.pointerAborter.abort();
+                this.hideTooltip();
+            }
+            if (!this.tooltip.disabled) {
+                restoreTooltip = true;
+                this.tooltip.disabled = '__HIDDEN_BY_BRUSH__';
+            }
         }
         const state = this._establishBrushState();
-        if (state.pointerActive || !this._renderData || !this._renderData.length) {
-            debugger; // XXX can happen?
-            return;
-        }
         const x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
         const y = (ev.y - state.chartPlotOffset[1] + state.scrollOffsets[1]) * this.devicePixelRatio;
-        if (x < this._plotBox[3] || x > this._plotBox[1] || y < this._plotBox[0] || y > this._plotBox[2]) {
-            console.warn("NO", x, y, this._plotBox);
-            if (state.visible) {
-                this.hideBrush();
+        if (ev.target === this._brushHandleLeftEl) {
+            state.handle = state.x1 <= state.x2 ? 'x1' : 'x2';
+            state.xAnchor = x;
+        } else if (ev.target === this._brushMaskEl) {
+            state.handle = '*';
+            state.xAnchor = x;
+        } else if (ev.target === this._brushHandleRightEl) {
+            state.handle = state.x2 >= state.x1 ? 'x2' : 'x1';
+            state.xAnchor = x;
+        } else {
+            if (x < this._plotBox[3] || x > this._plotBox[1] || y < this._plotBox[0] || y > this._plotBox[2]) {
+                console.debug("outside plot range, cancel brush", x, y, this._plotBox);
+                if (state.visible) {
+                    this.hideBrush();
+                }
+                return;
             }
-            return;
+            state.handle = null;
+            state.x1 = state.x2 = x;
         }
         const pointerId = ev.pointerId;
         state.pointerId = pointerId;
-        state.x1 = state.x2 = x;
         state.pointerActive = true;
         state.pointerAborter = new AbortController();
         const signal = state.pointerAborter.signal;
         signal.addEventListener('abort', () => {
-            console.warn("canc brush");
+            console.warn("cancel brushish");
             state.pointerActive = false;
             if (state.pointerId === pointerId && state.x1 === state.x2) {
+                console.debug("hide brush (same x1,x2)");
                 this.hideBrush();
+            }
+            if (restoreTooltip && this.tooltip.disabled === '__HIDDEN_BY_BRUSH__') {
+                this.tooltip.disabled = false;
             }
         });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
@@ -395,7 +413,30 @@ export class LineChart extends common.Chart {
         let af;
         document.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            state.x2 = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
+            let x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
+            if (x > this._plotBox[1]) {
+                x = this._plotBox[1];
+            } else if (x < this._plotBox[3]) {
+                x = this._plotBox[3];
+            }
+            if (state.handle == null) {
+                state.x2 = x;
+            } else {
+                const d = x - state.xAnchor;
+                console.log({d}, state.handle);
+                if (state.handle === 'x1') {
+                    state.x1 += d;
+                } else if (state.handle === 'x2') {
+                    state.x2 += d;
+                } else if (state.handle === '*') {
+                    const d = x - state.xAnchor;
+                    state.x1 += d;
+                    state.x2 += d;
+                } else {
+                    state.x2 = x;
+                }
+                state.xAnchor = x;
+            }
             af = requestAnimationFrame(() => this._updateBrush());
         }, {signal});
         this._updateBrush();
@@ -406,8 +447,8 @@ export class LineChart extends common.Chart {
         const state = this._brushState;
         let {x1, x2} = state;
         if (this.brush.snap) {
-            x1 = this.findNearestFromXCoord(x1)?.x;
-            x2 = this.findNearestFromXCoord(x2)?.x;
+            x1 = this.xValueToCoord(this.findNearestFromXCoord(x1)?.x);
+            x2 = this.xValueToCoord(this.findNearestFromXCoord(x2)?.x);
         }
         if (x1 == null || x2 == null) {
             console.log("NOPE");
@@ -422,8 +463,8 @@ export class LineChart extends common.Chart {
         if (x2 > this._plotBox[1]) {
             x2 = this._plotBox[1];
         }
-        const top = this._plotInset[0];
-        const bottom = this._boxHeight - this._plotInset[2];
+        const top = this._plotBox[0];
+        const bottom = this._plotBox[2];
         this._brushMaskEl.setAttribute('y', top);
         this._brushMaskEl.setAttribute('height', bottom - top);
         this._brushMaskEl.setAttribute('x', x1);

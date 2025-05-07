@@ -36,15 +36,15 @@
 
         .sc-visual-data-area,
         .sc-line-clip {
-            x: var(--plot-inset-left);
-            y: calc(var(--plot-inset-top) - (var(--line-stroke-width) / 2));
+            x: var(--plot-box-left);
+            y: calc(var(--plot-box-top) - (var(--line-stroke-width) / 2));
             width: var(--plot-width);
             height: calc(var(--plot-height) + (var(--line-stroke-width) / 2));
         }
 
         .sc-marker-line-clip {
-            x: var(--plot-inset-left);
-            y: calc(var(--plot-inset-top) - var(--marker-radius) - var(--marker-stroke-width) / 2);
+            x: var(--plot-box-left);
+            y: calc(var(--plot-box-top) - var(--marker-radius) - var(--marker-stroke-width) / 2);
             width: var(--plot-width);
             height: calc(var(--plot-height) + var(--marker-radius) + var(--marker-stroke-width) / 2);
         }

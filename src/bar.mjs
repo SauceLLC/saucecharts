@@ -111,13 +111,13 @@ export class BarChart extends common.Chart {
             remove: [],
             update: [],
         };
-        const yMinCoord = this.toY(Math.max(0, this._yMin));
+        const yMinCoord = this.yValueToCoord(Math.max(0, this._yMin));
         const adding = [];
         for (let index = 0; index < data.length; index++) {
             const entry = data[index];
-            const x1 = this.toX(entry.x - entry.width / 2);
-            const x2 = this.toX(entry.x + entry.width / 2);
-            const y = this.toY(entry.y);
+            const x1 = this.xValueToCoord(entry.x - entry.width / 2);
+            const x2 = this.xValueToCoord(entry.x + entry.width / 2);
+            const y = this.yValueToCoord(entry.y);
             const height = yMinCoord - y;
             const color = entry.color || this.getColor();
             const fillKey = `${color}-${height < 0 ? 'down' : 'up'}`;
@@ -216,10 +216,10 @@ export class BarChart extends common.Chart {
     }
 
     _renderDoLayout(layout, {disableAnimation}={}) {
-        const plotQuarterX = this._plotWidth / 4 + this._plotInset[3];
-        const baselineY = this.toY(Math.max(0, this._yMin));
-        const leftX = this.toX(this._xMin);
-        const rightX = this.toX(this._xMax);
+        const plotQuarterX = this._plotWidth / 4 + this._plotBox[3];
+        const baselineY = this.yValueToCoord(Math.max(0, this._yMin));
+        const leftX = this.xValueToCoord(this._xMin);
+        const rightX = this.xValueToCoord(this._xMax);
         for (let i = 0; i < layout.add.length; i++) {
             const {el, attrs} = layout.add[i];
             if (!disableAnimation) {
