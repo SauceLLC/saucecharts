@@ -131,11 +131,11 @@ export class LineChart extends common.Chart {
                 class: ['sc-brush-mask']
             });
             this._brushHandleLeftEl = common.createSVG({
-                name: 'line',
+                name: 'rect',
                 class: ['sc-brush-handle', 'sc-left']
             });
             this._brushHandleRightEl = common.createSVG({
-                name: 'line',
+                name: 'rect',
                 class: ['sc-brush-handle', 'sc-right']
             });
             groupEl.append(this._brushMaskEl, this._brushHandleLeftEl, this._brushHandleRightEl);
@@ -357,15 +357,14 @@ export class LineChart extends common.Chart {
     }
 
     onPointerDown(ev) {
-        let restoreTooltip;
+        const tooltipDisabledSetinel = new Boolean(true);
         if (this.brush.hideTooltip) {
             if (this._tooltipState.pointerActive) {
                 this._tooltipState.pointerAborter.abort();
                 this.hideTooltip();
             }
             if (!this.tooltip.disabled) {
-                restoreTooltip = true;
-                this.tooltip.disabled = '__HIDDEN_BY_BRUSH__';
+                this.tooltip.disabled = tooltipDisabledSetinel;
             }
         }
         const state = this._establishBrushState();
@@ -381,8 +380,8 @@ export class LineChart extends common.Chart {
             state.handle = state.x2 >= state.x1 ? 'x2' : 'x1';
             state.xAnchor = x;
         } else {
-            if (x < this._plotBox[3] || x > this._plotBox[1] || y < this._plotBox[0] || y > this._plotBox[2]) {
-                console.debug("outside plot range, cancel brush", x, y, this._plotBox);
+            if (x < this._plotBox[3] || x > this._plotBox[1] ||
+                y < this._plotBox[0] || y > this._plotBox[2]) {
                 if (state.visible) {
                     this.hideBrush();
                 }
@@ -396,14 +395,14 @@ export class LineChart extends common.Chart {
         state.pointerActive = true;
         state.pointerAborter = new AbortController();
         const signal = state.pointerAborter.signal;
+        this.el.classList.add('sc-brushing');
         signal.addEventListener('abort', () => {
-            console.warn("cancel brushish");
+            this.el.classList.remove('sc-brushing');
             state.pointerActive = false;
             if (state.pointerId === pointerId && state.x1 === state.x2) {
-                console.debug("hide brush (same x1,x2)");
                 this.hideBrush();
             }
-            if (restoreTooltip && this.tooltip.disabled === '__HIDDEN_BY_BRUSH__') {
+            if (Object.is(this.tooltip.disabled, tooltipDisabledSetinel)) {
                 this.tooltip.disabled = false;
             }
         });
@@ -423,17 +422,16 @@ export class LineChart extends common.Chart {
                 state.x2 = x;
             } else {
                 const d = x - state.xAnchor;
-                console.log({d}, state.handle);
                 if (state.handle === 'x1') {
                     state.x1 += d;
                 } else if (state.handle === 'x2') {
                     state.x2 += d;
                 } else if (state.handle === '*') {
-                    const d = x - state.xAnchor;
-                    state.x1 += d;
-                    state.x2 += d;
-                } else {
-                    state.x2 = x;
+                    if ((d < 0 && Math.min(state.x1, state.x2) > this._plotBox[3]) ||
+                        (d > 0 && Math.max(state.x1, state.x2) < this._plotBox[1])) {
+                        state.x1 += d;
+                        state.x2 += d;
+                    }
                 }
                 state.xAnchor = x;
             }
@@ -465,18 +463,20 @@ export class LineChart extends common.Chart {
         }
         const top = this._plotBox[0];
         const bottom = this._plotBox[2];
+        const height = bottom - top;
+        const handleWidth = Math.max(1, Math.min(5, x2 - x1));
         this._brushMaskEl.setAttribute('y', top);
-        this._brushMaskEl.setAttribute('height', bottom - top);
+        this._brushMaskEl.setAttribute('height', height);
         this._brushMaskEl.setAttribute('x', x1);
         this._brushMaskEl.setAttribute('width', x2 - x1);
-        this._brushHandleLeftEl.setAttribute('y1', top);
-        this._brushHandleLeftEl.setAttribute('y2', bottom);
-        this._brushHandleLeftEl.setAttribute('x1', x1);
-        this._brushHandleLeftEl.setAttribute('x2', x1);
-        this._brushHandleRightEl.setAttribute('y1', top);
-        this._brushHandleRightEl.setAttribute('y2', bottom);
-        this._brushHandleRightEl.setAttribute('x1', x2);
-        this._brushHandleRightEl.setAttribute('x2', x2);
+        this._brushHandleLeftEl.setAttribute('y', top);
+        this._brushHandleLeftEl.setAttribute('height', height);
+        this._brushHandleLeftEl.setAttribute('x', x1);
+        this._brushHandleLeftEl.setAttribute('width', handleWidth);
+        this._brushHandleRightEl.setAttribute('y', top);
+        this._brushHandleRightEl.setAttribute('height', height);
+        this._brushHandleRightEl.setAttribute('x', x2 - handleWidth);
+        this._brushHandleRightEl.setAttribute('width', handleWidth);
     }
 
     _establishBrushState() {

@@ -528,7 +528,6 @@ export class Chart extends EventTarget {
     onPointerEnter(ev) {
         if (this.tooltip.disabled || this._tooltipState.pointerActive ||
             !this._renderData || !this._renderData.length) {
-            console.debug("ignore pointer enter tooltip");
             return;
         }
         const state = this._establishTooltipState();
@@ -665,9 +664,7 @@ export class Chart extends EventTarget {
             } else if (xRef <= chart._plotBox[3]) {
                 xRef = chart._plotBox[3] + 1e-6;
             }
-            console.log(xRef);
             const entry = chart.findNearestFromXCoord(xRef);
-            console.log(entry, chart._xMin, chart._xMax);
             if (entry === undefined || entry.x < chart._xMin || entry.x > chart._xMax) {
                 continue;
             }
@@ -677,7 +674,7 @@ export class Chart extends EventTarget {
             } else if (chart.onTooltip) {
                 contents = chart.onTooltip({entry, chart});
             }
-            const coordinates = [chart.getMidpointX(entry), chart.yValueToCoord(entry.y)];
+            const coordinates = [chart.xValueToCoord(entry.x), chart.yValueToCoord(entry.y)];
             tooltips.push({chart, entry, coordinates, contents});
             drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
         }
@@ -798,22 +795,22 @@ export class Chart extends EventTarget {
         if (!this._renderData || !this._renderData.length) {
             return;
         }
+        const targetX = this.xCoordToValue(searchX);
         const len = this._renderData.length;
         let left = 0;
         let right = len - 1;
         for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
-            const entry = this._renderData[i];
-            const x = this.getMidpointX(entry);
-            if (x > searchX) {
+            const x = this._renderData[i].x;
+            if (x > targetX) {
                 right = i;
-            } else if (x < searchX) {
+            } else if (x < targetX) {
                 left = i;
             } else {
                 return this._renderData[i];
             }
             if (right - left <= 1) {
-                const lDist = searchX - this.getMidpointX(this._renderData[left]);
-                const rDist = this.getMidpointX(this._renderData[right]) - searchX;
+                const lDist = targetX - this._renderData[left].x;
+                const rDist = this._renderData[right].x - targetX;
                 return this._renderData[lDist < rDist ? left : right];
             }
         }
@@ -957,10 +954,6 @@ export class Chart extends EventTarget {
         return (this._plotBox[2] - coord) /
             (this._plotHeight / (this._yMax - this._yMin)) +
             this._yMin;
-    }
-
-    getMidpointX(entry) {
-        return this.xValueToCoord(entry.x);
     }
 
     reset() {

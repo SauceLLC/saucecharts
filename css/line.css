@@ -10,6 +10,22 @@
         display: none;
     }
 
+    &.sc-brushing {
+        cursor: grabbing;
+
+        > svg.sc-root .sc-brush {
+            .sc-brush-mask {
+                fill: var(--emphasis-fill);
+                cursor: grabbing;
+            }
+            .sc-brush-handle {
+                fill: var(--emphasis-fill);
+                /*stroke: var(--emphasis-stroke);
+                stroke-width: var(--emphasis-stroke-width);*/
+            }
+        }
+    }
+
     > svg.sc-root {
         .sc-data {
             transition-property: d;
@@ -66,6 +82,7 @@
 
         .sc-brush {
             .sc-brush-mask {
+                --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.7);
                 cursor: grab;
                 stroke-width: 0.04em;
                 stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.5);
@@ -73,20 +90,27 @@
                 transition: fill 150ms;
 
                 &:hover {
-                    fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.7);
+                    fill: var(--emphasis-fill);
                 }
             }
 
             .sc-brush-handle {
+                --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (-5 * var(--shade-dir))) / 0.8);
+                --emphasis-stroke: hsl(from var(--fg-color) h s calc(l + (-5 * var(--shade-dir))) / 0.8);
+                --emphasis-stroke-width: 0.2em;
                 cursor: col-resize;
-                stroke-width: 0.12em;
+                /*stroke-width: 0.12em;
                 stroke: hsl(from var(--fg-color) h s calc(l + (8 * var(--shade-dir))) / 0.6);
-                transition: stroke 150ms, stroke-width 150ms, strok-dasharray 150ms;
+                stroke-dasharray: 0.05em;*/
+                fill: hsl(from var(--fg-color) h s calc(l + (8 * var(--shade-dir))) / 0.6);
+                transition-property: fill, stroke, stroke-width;
+                transition-duration: 150ms;
 
                 &:hover {
-                    stroke: hsl(from var(--fg-color) h s calc(l + (-5 * var(--shade-dir))) / 0.8);
-                    stroke-width: 0.3em;
-                    stroke-dasharray: 0;
+                    fill: var(--emphasis-fill);
+                    /*
+                    stroke: var(--emphasis-stroke);
+                    stroke-width: var(--emphasis-stroke-width);*/
                 }
             }
         }
