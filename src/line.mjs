@@ -126,21 +126,31 @@ export class LineChart extends common.Chart {
         this._plotRegionEl.replaceChildren(defs, this._backgroundEl, this._lineEl, this._markerLineEl);
         if (!this.brush.disabled) {
             const groupEl = common.createSVG({name: 'g', class: ['sc-brush']});
+            const maskAttrs = {};
+            if (this.brush.clipMask) {
+                maskAttrs['clip-path'] = `url(#${areaClipId})`;
+            }
             this._brushMaskEl = common.createSVG({
                 name: 'rect',
-                class: ['sc-brush-mask']
+                class: ['sc-brush-mask'],
+                attrs: maskAttrs,
             });
-            this._brushHandleLeftEl = common.createSVG({
-                name: 'rect',
-                class: ['sc-brush-handle', 'sc-left']
-            });
-            this._brushHandleRightEl = common.createSVG({
-                name: 'rect',
-                class: ['sc-brush-handle', 'sc-right']
-            });
-            groupEl.append(this._brushMaskEl, this._brushHandleLeftEl, this._brushHandleRightEl);
+            groupEl.append(this._brushMaskEl);
+            if (!this.brush.passive) {
+                this._brushHandleLeftEl = common.createSVG({
+                    name: 'rect',
+                    class: ['sc-brush-handle', 'sc-left']
+                });
+                this._brushHandleRightEl = common.createSVG({
+                    name: 'rect',
+                    class: ['sc-brush-handle', 'sc-right']
+                });
+                groupEl.append(this._brushHandleLeftEl, this._brushHandleRightEl);
+                el.addEventListener('pointerdown', this._onPointerDownBound);
+            } else {
+                groupEl.classList.add('sc-passive');
+            }
             this._plotRegionEl.append(groupEl);
-            el.addEventListener('pointerdown', this._onPointerDownBound);
         }
         this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
     }
@@ -356,6 +366,27 @@ export class LineChart extends common.Chart {
         state.visible = false;
     }
 
+    setBrush(options) {
+        this._establishBrushState();
+        return this._setBrush(options);
+    }
+
+    _setBrush(state, internal=false) {
+        if (state) {
+            Object.assign(this._brushState, state);
+        }
+        this._updateBrush();
+        this.showBrush();
+        this.dispatchEvent(new CustomEvent('brush', {
+            detail: {
+                x1: this._brushState.x1,
+                x2: this._brushState.x2,
+                internal,
+                chart: this,
+            }
+        }));
+    }
+
     onPointerDown(ev) {
         const tooltipDisabledSetinel = new Boolean(true);
         if (this.brush.hideTooltip) {
@@ -435,10 +466,9 @@ export class LineChart extends common.Chart {
                 }
                 state.xAnchor = x;
             }
-            af = requestAnimationFrame(() => this._updateBrush());
+            af = requestAnimationFrame(() => this._setBrush(null, /*internal*/ true));
         }, {signal});
-        this._updateBrush();
-        this.showBrush();
+        this._setBrush(null, /*internal*/ true);
     }
 
     _updateBrush() {
@@ -449,7 +479,6 @@ export class LineChart extends common.Chart {
             x2 = this.xValueToCoord(this.findNearestFromXCoord(x2)?.x);
         }
         if (x1 == null || x2 == null) {
-            console.log("NOPE");
             return;
         }
         if (x1 > x2) {
@@ -464,19 +493,21 @@ export class LineChart extends common.Chart {
         const top = this._plotBox[0];
         const bottom = this._plotBox[2];
         const height = bottom - top;
-        const handleWidth = Math.max(1, Math.min(5, x2 - x1));
+        const handleWidth = Math.max(1, Math.min(this.brush.handleWidth ?? 4, x2 - x1));
         this._brushMaskEl.setAttribute('y', top);
         this._brushMaskEl.setAttribute('height', height);
         this._brushMaskEl.setAttribute('x', x1);
         this._brushMaskEl.setAttribute('width', x2 - x1);
-        this._brushHandleLeftEl.setAttribute('y', top);
-        this._brushHandleLeftEl.setAttribute('height', height);
-        this._brushHandleLeftEl.setAttribute('x', x1);
-        this._brushHandleLeftEl.setAttribute('width', handleWidth);
-        this._brushHandleRightEl.setAttribute('y', top);
-        this._brushHandleRightEl.setAttribute('height', height);
-        this._brushHandleRightEl.setAttribute('x', x2 - handleWidth);
-        this._brushHandleRightEl.setAttribute('width', handleWidth);
+        if (!this.brush.passive) {
+            this._brushHandleLeftEl.setAttribute('y', top);
+            this._brushHandleLeftEl.setAttribute('height', height);
+            this._brushHandleLeftEl.setAttribute('x', x1);
+            this._brushHandleLeftEl.setAttribute('width', handleWidth);
+            this._brushHandleRightEl.setAttribute('y', top);
+            this._brushHandleRightEl.setAttribute('height', height);
+            this._brushHandleRightEl.setAttribute('x', x2 - handleWidth);
+            this._brushHandleRightEl.setAttribute('width', handleWidth);
+        }
     }
 
     _establishBrushState() {
