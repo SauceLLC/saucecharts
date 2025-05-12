@@ -11,17 +11,29 @@
     }
 
     &.sc-brushing {
-        cursor: grabbing;
+        &.sc-sizing * {
+            cursor: col-resize !important;
+        }
+
+        &.sc-moving * {
+            cursor: grabbing !important;
+        }
 
         > svg.sc-root .sc-brush {
-            .sc-brush-mask {
-                fill: var(--emphasis-fill);
-                cursor: grabbing;
-            }
-
+            .sc-brush-mask,
             .sc-brush-handle {
                 fill: var(--emphasis-fill);
+                transition: fill 150ms;
             }
+        }
+    }
+
+    &:not(.sc-brushing) {
+        .sc-brush-mask,
+        .sc-brush-handle {
+            transition-property: x, width;
+            transition-timing-function: linear;
+            transition-duration: var(--transition-duration);
         }
     }
 
@@ -94,18 +106,16 @@
             .sc-brush-mask {
                 --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (35 * var(--shade-dir))) / 0.6);
                 cursor: grab;
+                mix-blend-mode: plus-lighter;
                 stroke-width: 0.04em;
                 stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.5);
                 fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.5);
-                transition: fill 150ms;
-                mix-blend-mode: plus-lighter;
             }
 
             .sc-brush-handle {
                 --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (25 * var(--shade-dir))) / 0.7);
                 cursor: col-resize;
                 fill: hsl(from var(--fg-color) h s calc(l + (20 * var(--shade-dir))) / 0.3);
-                transition: fill 150ms;
             }
         }
     }

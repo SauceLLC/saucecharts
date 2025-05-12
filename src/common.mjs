@@ -944,6 +944,14 @@ export class Chart extends EventTarget {
             ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
     }
 
+    xCoordScale(coord) {
+        return coord / (this._plotWidth / (this._xMax - this._xMin));
+    }
+
+    yCoordScale(coord) {
+        return coord / (this._plotHeight / (this._yMax - this._yMin));
+    }
+
     xCoordToValue(coord) {
         return (coord - this._plotBox[3]) /
             (this._plotWidth / (this._xMax - this._xMin)) +

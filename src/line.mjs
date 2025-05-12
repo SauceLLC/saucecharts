@@ -381,6 +381,7 @@ export class LineChart extends common.Chart {
             detail: {
                 x1: this._brushState.x1,
                 x2: this._brushState.x2,
+                selectionType: this._brushState.selectionType,
                 internal,
                 chart: this,
             }
@@ -404,22 +405,22 @@ export class LineChart extends common.Chart {
         if (ev.target === this._brushHandleLeftEl) {
             state.handle = state.x1 <= state.x2 ? 'x1' : 'x2';
             state.xAnchor = x;
+            this.el.classList.add('sc-sizing');
         } else if (ev.target === this._brushMaskEl) {
             state.handle = '*';
             state.xAnchor = x;
+            this.el.classList.add('sc-moving');
         } else if (ev.target === this._brushHandleRightEl) {
             state.handle = state.x2 >= state.x1 ? 'x2' : 'x1';
             state.xAnchor = x;
+            this.el.classList.add('sc-sizing');
         } else {
             if (x < this._plotBox[3] || x > this._plotBox[1] ||
                 y < this._plotBox[0] || y > this._plotBox[2]) {
-                if (state.visible) {
-                    this.hideBrush();
-                }
                 return;
             }
             state.handle = null;
-            state.x1 = state.x2 = x;
+            state.x1 = state.x2 = state.selectionType === 'data' ? this.xCoordToValue(x) : x;
         }
         const pointerId = ev.pointerId;
         state.pointerId = pointerId;
@@ -428,7 +429,7 @@ export class LineChart extends common.Chart {
         const signal = state.pointerAborter.signal;
         this.el.classList.add('sc-brushing');
         signal.addEventListener('abort', () => {
-            this.el.classList.remove('sc-brushing');
+            this.el.classList.remove('sc-brushing', 'sc-sizing', 'sc-moving');
             state.pointerActive = false;
             if (state.pointerId === pointerId && state.x1 === state.x2) {
                 this.hideBrush();
@@ -450,16 +451,27 @@ export class LineChart extends common.Chart {
                 x = this._plotBox[3];
             }
             if (state.handle == null) {
-                state.x2 = x;
+                state.x2 = this.xCoordToValue(x);
             } else {
-                const d = x - state.xAnchor;
+                let d = x - state.xAnchor;
+                if (state.selectionType === 'data') {
+                    d = this.xCoordScale(d);
+                }
                 if (state.handle === 'x1') {
                     state.x1 += d;
                 } else if (state.handle === 'x2') {
                     state.x2 += d;
                 } else if (state.handle === '*') {
-                    if ((d < 0 && Math.min(state.x1, state.x2) > this._plotBox[3]) ||
-                        (d > 0 && Math.max(state.x1, state.x2) < this._plotBox[1])) {
+                    let min, max;
+                    if (state.selectionType === 'data') {
+                        min = this._xMin;
+                        max = this._xMax;
+                    } else {
+                        min = this._plotBox[3];
+                        max = this._plotBox[1];
+                    }
+                    if ((d < 0 && Math.min(state.x1, state.x2) > min) ||
+                        (d > 0 && Math.max(state.x1, state.x2) < max)) {
                         state.x1 += d;
                         state.x2 += d;
                     }
@@ -474,11 +486,15 @@ export class LineChart extends common.Chart {
     _updateBrush() {
         const state = this._brushState;
         let {x1, x2} = state;
+        if (state.selectionType === 'data') {
+            x1 = this.xValueToCoord(x1);
+            x2 = this.xValueToCoord(x2);
+        }
         if (this.brush.snap) {
             x1 = this.xValueToCoord(this.findNearestFromXCoord(x1)?.x);
             x2 = this.xValueToCoord(this.findNearestFromXCoord(x2)?.x);
         }
-        if (x1 == null || x2 == null) {
+        if (x1 === null || x2 === null || isNaN(x1) || isNaN(x2)) {
             return;
         }
         if (x1 > x2) {
@@ -486,9 +502,13 @@ export class LineChart extends common.Chart {
         }
         if (x1 < this._plotBox[3]) {
             x1 = this._plotBox[3];
+        } else if (x1 > this._plotBox[1]) {
+            x1 = this._plotBox[1];
         }
         if (x2 > this._plotBox[1]) {
             x2 = this._plotBox[1];
+        } else if (x2 < this._plotBox[3]) {
+            x2 = this._plotBox[3];
         }
         const top = this._plotBox[0];
         const bottom = this._plotBox[2];
@@ -516,13 +536,21 @@ export class LineChart extends common.Chart {
         Object.assign(this._brushState, {
             scrollOffsets,
             lastDrawSig: undefined, // XXX
-            chartPlotOffset: [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]]
+            chartPlotOffset: [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]],
+            selectionType: this.brush.selectionType || 'data',  // data, visual
         });
         return this._brushState;
     }
 
     afterRender(...args) {
         super.afterRender(...args);
+        if (this._brushState.visible) {
+            this._updateBrush();
+        }
+    }
+
+    adjustSize(...args) {
+        super.adjustSize(...args);
         if (this._brushState.visible) {
             this._updateBrush();
         }

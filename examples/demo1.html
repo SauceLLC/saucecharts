@@ -251,7 +251,7 @@
                     hidePoints: true,
                     el: document.querySelector(".graph.i8"),
                     title: 'large-data',
-                    brush: {clipMask: false, passive: true},
+                    brush: {clipMask: true, passive: true},
                 });
                 setInterval(() => {
                     if (paused) return;
@@ -262,7 +262,7 @@
                     }
                     sl.setData(data);
                 }, speed);
-                sl.setBrush({x1: 100, x2: 400});
+                sl.setBrush({x1: 100, x2: 800});
             }
 
             document.querySelector('#playpause').addEventListener('click', () => {
