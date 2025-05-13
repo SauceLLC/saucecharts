@@ -1,16 +1,120 @@
 @import 'common.css';
 
-
 .saucechart.sc-linechart {
     --line-stroke-width: 0.1em;
     --marker-radius: 0.14em;
     --marker-stroke-width: 0.04em;
+
+    .sc-data {
+        transition-property: d;
+        transition-timing-function: linear;
+        transition-duration: var(--transition-duration);
+    }
+
+    .sc-visual-data-line {
+        stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .sc-visual-data-line-markers {
+        fill: none;
+    }
+
+    .sc-visual-data-line,
+    .sc-visual-data-line-markers {
+        font-size: 1em !important;  /* clip calcs depend on em being consistent with parent svg */
+        stroke-width: var(--line-stroke-width);
+    }
+
+    .sc-visual-data-area,
+    .sc-line-clip {
+        x: var(--plot-box-left);
+        y: calc(var(--plot-box-top) - (var(--line-stroke-width) / 2));
+        width: var(--plot-width);
+        height: calc(var(--plot-height) + (var(--line-stroke-width) / 2));
+    }
+
+    .sc-marker-line-clip {
+        x: var(--plot-box-left);
+        y: calc(var(--plot-box-top) - var(--marker-radius) - var(--marker-stroke-width) / 2);
+        width: var(--plot-width);
+        height: calc(var(--plot-height) + var(--marker-radius) + var(--marker-stroke-width) / 2);
+    }
+
+    .sc-visual-data-segment {
+        transition-property: x, y, width, height;
+        transition-timing-function: linear;
+        transition-duration: var(--transition-duration);
+    }
+
+    .sc-line-marker {
+        circle.sc-dot {
+            r: var(--marker-radius);
+            stroke-width: var(--marker-stroke-width);
+            stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
+            fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.8);
+        }
+    }
+
+    .sc-brush {
+        --brush-fade-delay: 200ms;  /* reduce flickering */
+
+        &.sc-passive {
+            pointer-events: none;
+
+            .sc-brush-mask {
+                --fill: color-mix(in srgb, hsl(from var(--fg-color) h s calc(l + (10 * var(--shade-dir))) / 0.5), var(--color) 20%);
+            }
+        }
+
+        &:hover {
+            --brush-fade-delay: 0s;
+
+            .sc-brush-mask,
+            .sc-brush-handle {
+                fill: var(--emphasis-fill);
+                stroke: var(--emphasis-stroke);
+            }
+        }
+
+        .sc-brush-mask,
+        .sc-brush-handle {
+            transition:
+                fill 200ms var(--brush-fade-delay),
+                stroke 200ms var(--brush-fade-delay),
+                x linear var(--transition-duration),
+                width linear var(--transition-duration);
+        }
+
+        .sc-brush-mask {
+            --fill: color-mix(in srgb, hsl(from var(--fg-color) h s calc(l + (10 * var(--shade-dir))) / 0.25), var(--color) 8%);
+            --emphasis-fill: color-mix(in srgb, hsl(from var(--fg-color) h s calc(l + (30 * var(--shade-dir))) / 0.5), var(--color) 12%);
+            --emphasis-stroke: hsl(from var(--fg-color) h s calc(l + (0 * var(--shade-dir))) / 0.8);
+
+            cursor: grab;
+            stroke-width: 0.04em;
+            stroke: hsl(from var(--fg-color) h s calc(l + (10 * var(--shade-dir))) / 0.4);
+            fill: var(--fill);
+        }
+
+        .sc-brush-handle {
+            --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (10 * var(--shade-dir))) / 0.7);
+            --emphasis-stroke: none;
+
+            cursor: col-resize;
+            fill: hsl(from var(--fg-color) h s calc(l + (0 * var(--shade-dir))) / 0);
+        }
+    }
 
     &:not(.sc-brush-active) .sc-brush {
         display: none;
     }
 
     &.sc-brushing {
+        --transition-duration: 0;
+
         &.sc-sizing * {
             cursor: col-resize !important;
         }
@@ -19,131 +123,12 @@
             cursor: grabbing !important;
         }
 
-        > svg.sc-root .sc-brush {
+        .sc-brush {
             .sc-brush-mask,
             .sc-brush-handle {
                 fill: var(--emphasis-fill);
-                transition: fill 150ms;
+                stroke: var(--emphasis-stroke);
             }
         }
-    }
-
-    &:not(.sc-brushing) {
-        .sc-brush-mask,
-        .sc-brush-handle {
-            transition-property: x, width;
-            transition-timing-function: linear;
-            transition-duration: var(--transition-duration);
-        }
-    }
-
-    > svg.sc-root {
-        .sc-data {
-            transition-property: d;
-            transition-timing-function: linear;
-            transition-duration: var(--transition-duration);
-        }
-
-        .sc-visual-data-line {
-            stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .sc-visual-data-line-markers {
-            fill: none;
-        }
-
-        .sc-visual-data-line,
-        .sc-visual-data-line-markers {
-            font-size: 1em !important;  /* clip calcs depend on em being consistent with parent svg */
-            stroke-width: var(--line-stroke-width);
-        }
-
-        .sc-visual-data-area,
-        .sc-line-clip {
-            x: var(--plot-box-left);
-            y: calc(var(--plot-box-top) - (var(--line-stroke-width) / 2));
-            width: var(--plot-width);
-            height: calc(var(--plot-height) + (var(--line-stroke-width) / 2));
-        }
-
-        .sc-marker-line-clip {
-            x: var(--plot-box-left);
-            y: calc(var(--plot-box-top) - var(--marker-radius) - var(--marker-stroke-width) / 2);
-            width: var(--plot-width);
-            height: calc(var(--plot-height) + var(--marker-radius) + var(--marker-stroke-width) / 2);
-        }
-
-        .sc-visual-data-segment {
-            transition-property: x, y, width, height;
-            transition-timing-function: linear;
-            transition-duration: var(--transition-duration);
-        }
-
-        .sc-line-marker {
-            circle.sc-dot {
-                r: var(--marker-radius);
-                stroke-width: var(--marker-stroke-width);
-                stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.8);
-                fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.8);
-            }
-        }
-
-        .sc-brush {
-            &.sc-passive {
-                pointer-events: none;
-            }
-
-            &:hover {
-                .sc-brush-mask,
-                .sc-brush-handle {
-                    fill: var(--emphasis-fill);
-                }
-            }
-
-            .sc-brush-mask {
-                --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (35 * var(--shade-dir))) / 0.6);
-                cursor: grab;
-                mix-blend-mode: plus-lighter;
-                stroke-width: 0.04em;
-                stroke: hsl(from var(--fg-color) h s calc(l + (15 * var(--shade-dir))) / 0.5);
-                fill: hsl(from var(--fg-color) h s calc(l + (50 * var(--shade-dir))) / 0.5);
-            }
-
-            .sc-brush-handle {
-                --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (25 * var(--shade-dir))) / 0.7);
-                cursor: col-resize;
-                fill: hsl(from var(--fg-color) h s calc(l + (20 * var(--shade-dir))) / 0.3);
-            }
-        }
-    }
-}
-
-.sc-plot-region {
-    &:nth-of-type(1) {
-        --color: red;
-    }
-    &:nth-of-type(2) {
-        --color: gold;
-    }
-    &:nth-of-type(3) {
-        --color: #2c2; /* green */
-    }
-    &:nth-of-type(4) {
-        --color: #22b; /* blue */
-    }
-    &:nth-of-type(5) {
-        --color: cyan;
-    }
-    &:nth-of-type(6) {
-        --color: magenta;
-    }
-    &:nth-of-type(7) {
-        --color: chartreuse;
-    }
-    &:nth-of-type(7) {
-        --color: coral;
     }
 }

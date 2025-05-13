@@ -420,7 +420,7 @@ export class LineChart extends common.Chart {
                 return;
             }
             state.handle = null;
-            state.x1 = state.x2 = state.selectionType === 'data' ? this.xCoordToValue(x) : x;
+            state.x1 = state.x2 = (state.selectionType === 'data' ? this.xCoordToValue(x) : x);
         }
         const pointerId = ev.pointerId;
         state.pointerId = pointerId;
@@ -451,7 +451,7 @@ export class LineChart extends common.Chart {
                 x = this._plotBox[3];
             }
             if (state.handle == null) {
-                state.x2 = this.xCoordToValue(x);
+                state.x2 = state.selectionType === 'data' ? this.xCoordToValue(x) : x;
             } else {
                 let d = x - state.xAnchor;
                 if (state.selectionType === 'data') {
@@ -535,7 +535,6 @@ export class LineChart extends common.Chart {
         const plotRect = this.el.getBoundingClientRect();
         Object.assign(this._brushState, {
             scrollOffsets,
-            lastDrawSig: undefined, // XXX
             chartPlotOffset: [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]],
             selectionType: this.brush.selectionType || 'data',  // data, visual
         });

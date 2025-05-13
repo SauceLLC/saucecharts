@@ -8,21 +8,27 @@
     user-select: none;
     position: relative;
 
-    &:not(.sc-darkmode) {
-        --fg-color: black;
-        --bg-color: white;
-        --shade-dir: 1;
-    }
     &.sc-darkmode {
         --fg-color: white;
         --bg-color: black;
         --shade-dir: -1;
     }
-
+    &:not(.sc-darkmode) {
+        --fg-color: black;
+        --bg-color: white;
+        --shade-dir: 1;
+    }
 
     &.sc-disable-animation {
         --transition-duration: 0 !important;
         --tooltip-transition-duration: 0 !important;
+    }
+
+    .sc-root {
+        width: 100%;
+        height: 100%;
+        stroke-width: 0.1em;
+        font-size: calc(1em * var(--dpr, 1));
     }
 
     .sc-title {
@@ -102,6 +108,8 @@
 
     .sc-tooltip-positioner {
         --viewport-margin: 2ch;
+        --course-width: 10ch;
+
         pointer-events: none;
         position: fixed;
         z-index: 10;
@@ -109,7 +117,6 @@
         left: 0;
         transition: translate var(--tooltip-transition-duration) linear;
         translate: var(--x) var(--y);
-        --course-width: 10ch;
 
         &.sc-disable-animation {
             --tooltip-transition-duration: 0 !important;
@@ -138,7 +145,6 @@
                 left: -50%;
             }
         }
-
         &[data-v-align="above"] {
             --y: var(--y-top);
 
@@ -179,44 +185,25 @@
         }
     }
 
-    &:not(.sc-tooltip-active) {
-        .sc-tooltip-positioner {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s, visibility 1s;
-        }
+    .sc-tooltip {
+        pointer-events: none;
 
-        .sc-tooltip {
-            display: none;
-        }
-    }
+        .sc-line {
+            stroke: hsl(from var(--fg-color) h s l / 0.7);
+            stroke-width: 0.10em;
+            stroke-dasharray: 0.15em;
 
-    > svg.sc-root {
-        width: 100%;
-        height: 100%;
-        stroke-width: 0.1em;
-        font-size: calc(1em * var(--dpr, 1));
-
-        .sc-tooltip {
-            pointer-events: none;
-
-            .sc-line {
-                stroke: hsl(from var(--fg-color) h s l / 0.7);
+            &.sc-horizontal {
                 stroke-width: 0.10em;
                 stroke-dasharray: 0.15em;
-
-                &.sc-horizontal {
-                    stroke-width: 0.10em;
-                    stroke-dasharray: 0.15em;
-                }
             }
+        }
 
-            circle.sc-highlight-dot {
-                r: 0.22em;
-                stroke-width: 0.08em;
-                stroke: hsl(from var(--fg-color) h s calc(l + 10 * var(--shade-dir)) / 0.8);
-                fill: hsl(from var(--fg-color) h s calc(l + 80 * var(--shade-dir)) / 0.9);
-            }
+        circle.sc-highlight-dot {
+            r: 0.22em;
+            stroke-width: 0.08em;
+            stroke: hsl(from var(--fg-color) h s calc(l + 10 * var(--shade-dir)) / 0.8);
+            fill: hsl(from var(--fg-color) h s calc(l + 80 * var(--shade-dir)) / 0.9);
         }
     }
 
@@ -278,7 +265,20 @@
             }
         }
     }
+
+    &:not(.sc-tooltip-active) {
+        .sc-tooltip-positioner {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s, visibility 1s;
+        }
+
+        .sc-tooltip {
+            display: none;
+        }
+    }
 }
+
 
 .sc-plot-region {
     &:nth-of-type(1) {

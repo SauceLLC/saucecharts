@@ -129,7 +129,8 @@
                 const sl = new sc.LineChart({
                     ...commonOptions,
                     el: document.querySelector(".graph.i4"),
-                    title: 'rtl, 2 points per interval',
+                    title: 'rtl, 2 points per interval (visual brush)',
+                    brush: {hideTooltip: true, selectionType: 'visual'},
                 });
                 setInterval(async () => {
                     if (paused) return;
