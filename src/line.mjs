@@ -389,19 +389,25 @@ export class LineChart extends common.Chart {
     }
 
     onPointerDown(ev) {
-        const tooltipDisabledSetinel = new Boolean(true);
-        if (this.brush.hideTooltip) {
-            if (this._tooltipState.pointerActive) {
-                this._tooltipState.pointerAborter.abort();
-                this.hideTooltip();
-            }
-            if (!this.tooltip.disabled) {
-                this.tooltip.disabled = tooltipDisabledSetinel;
-            }
-        }
         const state = this._establishBrushState();
         const x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
         const y = (ev.y - state.chartPlotOffset[1] + state.scrollOffsets[1]) * this.devicePixelRatio;
+        if (x < this._plotBox[3] || x > this._plotBox[1] ||
+            y < this._plotBox[0] || y > this._plotBox[2]) {
+            console.log('out of bounds', this.id);
+            return;
+        }
+        const charts = this.brush.shared ? this.getAllCharts().filter(x => x.brush.shared) : [this];
+        if (this.brush.shared) {
+            ev.stopImmediatePropagation();
+        }
+        for (const x of charts) {
+            x._establishBrushState();
+        }
+        console.log("down", this.id, charts);
+        if (this.brush.hideTooltip) {
+            (this.parentChart || this).suspendTooltip();
+        }
         if (ev.target === this._brushHandleLeftEl) {
             state.handle = state.x1 <= state.x2 ? 'x1' : 'x2';
             state.xAnchor = x;
@@ -415,41 +421,30 @@ export class LineChart extends common.Chart {
             state.xAnchor = x;
             this.el.classList.add('sc-sizing');
         } else {
-            if (x < this._plotBox[3] || x > this._plotBox[1] ||
-                y < this._plotBox[0] || y > this._plotBox[2]) {
-                return;
-            }
             state.handle = null;
             state.x1 = state.x2 = (state.selectionType === 'data' ? this.xCoordToValue(x) : x);
         }
-        const pointerId = ev.pointerId;
-        state.pointerId = pointerId;
-        state.pointerActive = true;
-        state.pointerAborter = new AbortController();
-        const signal = state.pointerAborter.signal;
+        const pointerId = state.pointerId = ev.pointerId;
+        const pointerAborter = state.pointerAborter = new AbortController();
+        const signal = pointerAborter.signal;
         this.el.classList.add('sc-brushing');
         signal.addEventListener('abort', () => {
+            console.log('abort', this.id);
             this.el.classList.remove('sc-brushing', 'sc-sizing', 'sc-moving');
-            state.pointerActive = false;
             if (state.pointerId === pointerId && state.x1 === state.x2) {
                 this.hideBrush();
             }
-            if (Object.is(this.tooltip.disabled, tooltipDisabledSetinel)) {
-                this.tooltip.disabled = false;
+            if (this.brush.hideTooltip) {
+                (this.parentChart || this).resumeTooltip();
             }
         });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
-        addEventListener('pointercancel', () => state.pointerAborter.abort(), {signal});
-        addEventListener('pointerup', () => state.pointerAborter.abort(), {signal});
+        addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
+        addEventListener('pointerup', () => pointerAborter.abort(), {signal});
         let af;
         document.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            let x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
-            if (x > this._plotBox[1]) {
-                x = this._plotBox[1];
-            } else if (x < this._plotBox[3]) {
-                x = this._plotBox[3];
-            }
+            const x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
             if (state.handle == null) {
                 state.x2 = state.selectionType === 'data' ? this.xCoordToValue(x) : x;
             } else {
@@ -478,9 +473,35 @@ export class LineChart extends common.Chart {
                 }
                 state.xAnchor = x;
             }
-            af = requestAnimationFrame(() => this._setBrush(null, /*internal*/ true));
+            af = requestAnimationFrame(() => {
+                this._setBrush(null, /*internal*/ true);
+                if (this.brush.shared) {
+                    for (const x of charts) {
+                        if (x !== this) {
+                            x._setBrush({
+                                x1: state.x1,
+                                x2: state.x2,
+                                selectionType: state.selectionType
+                            }, /*internal*/ true);
+                            console.log('set', x._brushState);
+                        }
+                    }
+                }
+            });
         }, {signal});
         this._setBrush(null, /*internal*/ true);
+        if (this.brush.shared) {
+            for (const x of charts) {
+                if (x !== this) {
+                    x._setBrush({
+                        x1: state.x1,
+                        x2: state.x2,
+                        selectionType: state.selectionType
+                    }, /*internal*/ true);
+                    console.log('set', x.id, x._brushState);
+                }
+            }
+        }
     }
 
     _updateBrush() {

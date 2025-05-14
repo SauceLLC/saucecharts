@@ -46,7 +46,7 @@
             }
 
             let paused = false;
-            const tests = [1, 2, 3, 4, 5, 6, 7, 8];
+            const tests = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             const speed = 1000;
             const maxSize = 40;
             let sinFactor = speed / Number(document.querySelector('#freq').value);
@@ -188,7 +188,14 @@
                 const data2 = [];
                 const data3 = [];
                 const data4 = [];
-                const shared = {...commonOptions, xAxis: {disabled: true}, yAxis: {disabled: true}};
+                const shared = {
+                    ...commonOptions,
+                    xAxis: {disabled: true},
+                    yAxis: {disabled: true},
+                    brush: {
+                        shared: true,
+                    },
+                };
 
                 const sl1 = new sc.LineChart({
                     ...shared,
@@ -244,13 +251,86 @@
             }
 
             if (tests.includes(8)) {
+                const data1 = [];
+                const data2 = [];
+                const data3 = [];
+                const data4 = [];
+                const shared = {
+                    ...commonOptions,
+                    xAxis: {disabled: true},
+                    yAxis: {disabled: true},
+                    brush: {
+                        shared: true,
+                        selectionType: 'visual',
+                    },
+                };
+                const height = 50;
+                const sl1 = new sc.LineChart({
+                    ...shared,
+                    el: document.querySelector(".graph.i8"),
+                    padding: [0, 0, 0, 0],
+                    title: 'Multiple graphs, stacked',
+                    padding: [10, 0, 0, 0],
+                    height,
+                });
+                const sl2 = new sc.LineChart({
+                    ...shared,
+                    el: sl1.el,
+                    merge: true,
+                    padding: [height + 20, 0, 0, 0],
+                    height,
+                });
+                const sl3 = new sc.LineChart({
+                    ...shared,
+                    el: sl1.el,
+                    merge: true,
+                    padding: [height * 2 + 30, 0, 0, 0],
+                    height,
+                });
+                const sl4 = new sc.LineChart({
+                    ...shared,
+                    el: sl1.el,
+                    merge: true,
+                    padding: [height * 3 + 40, 0, 0, 0],
+                    height,
+                });
+
+                setInterval(() => {
+                    if (paused) return;
+                    data1.push([ts(), Math.sin(ts() / sinFactor)]);
+                    while (data1.length > maxSize) {
+                        data1.shift();
+                    }
+                    sl1.setData(data1);
+
+                    data2.unshift([-ts(), Math.sin(ts() / sinFactor)]);
+                    while (data2.length > maxSize) {
+                        data2.pop();
+                    }
+                    sl2.setData(data2);
+
+                    data3.push([ts(), Math.cos(ts() / sinFactor)]);
+                    while (data3.length > maxSize) {
+                        data3.shift();
+                    }
+                    sl3.setData(data3);
+
+                    data4.unshift([-ts(), Math.cos(ts() / sinFactor)]);
+                    while (data4.length > maxSize) {
+                        data4.pop();
+                    }
+                    sl4.setData(data4);
+                }, speed);
+            }
+
+            if (tests.includes(9)) {
                 const size = 10000;
                 let i = size;
                 const data = Array.from(new Array(size)).map((x, i) => Math.sin(i / 50));
                 const sl = new sc.LineChart({
                     ...commonOptions,
                     hidePoints: true,
-                    el: document.querySelector(".graph.i8"),
+                    el: document.querySelector(".graph.i9"),
                     title: 'large-data',
                     brush: {clipMask: true, passive: true},
                 });
@@ -284,6 +364,7 @@
         <div class="graph i5"></div>
         <div class="graph i6"></div>
         <div class="graph i7" style="height: 150px"></div>
-        <div class="graph i8"></div>
+        <div class="graph i8" style="height: 240px"></div>
+        <div class="graph i9"></div>
     </body>
 </html>

@@ -139,12 +139,14 @@ export class Chart extends EventTarget {
         this.xAxis = options.xAxis || {};
         this.yAxis = options.yAxis || {};
         this.padding = options.padding || [0, 0, 0, 0];
+        this.width = options.width;
+        this.height = options.height;
         this.tooltipPadding = options.tooltipPadding || [this.padding[0], this.padding[2]];
         this.tooltipPosition = options.tooltipPosition || 'leftright';
         this.disableAnimation = options.disableAnimation;
         this.darkMode = options.darkMode;
         this.tooltipLinger = options.tooltipLinger ?? 800;
-        this._tooltipState = {};
+        this._tooltipState = {suspendRefCnt: 0};
         this._gradients = new Set();
         this._onPointerEnterBound = this.onPointerEnter.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
@@ -230,19 +232,15 @@ export class Chart extends EventTarget {
             this._plotBox = [0, 0, 0, 0];
             return;
         }
-        const ar = width / height;
-        if (ar > 1) {
-            this._boxWidth = Math.round(width * this.devicePixelRatio);
-            this._boxHeight = Math.round(this._boxWidth / ar);
-        } else {
-            this._boxHeight = Math.round(height * this.devicePixelRatio);
-            this._boxWidth = Math.round(this._boxHeight * ar);
-        }
+        this._boxWidth = Math.round(width * this.devicePixelRatio);
+        this._boxHeight = Math.round(height * this.devicePixelRatio);
         const inset = this.padding.map(x => x * this.devicePixelRatio);
-        const hPad = inset[1] + inset[3];
-        const vPad = inset[0] + inset[2];
-        this._plotWidth = Math.max(0, this._boxWidth - hPad);
-        this._plotHeight = Math.max(0, this._boxHeight - vPad);
+        this._plotWidth = Math.max(0, this.width ?
+            Math.round(this.width * this.devicePixelRatio) :
+            this._boxWidth - inset[3] - inset[1]);
+        this._plotHeight = Math.max(0, this.height ?
+            Math.round(this.height * this.devicePixelRatio) :
+            this._boxHeight - inset[0] - inset[2]);
         this._plotBox = [
             inset[0],
             this._plotWidth + inset[3],
@@ -473,7 +471,7 @@ export class Chart extends EventTarget {
 
     addChart(chart) {
         if (!this.isParentChart()) {
-            throw new TypeError("Improper use of addChart");
+            throw new TypeError("only valid on parent");
         }
         this.childCharts.push(chart);
         chart.parentChart = this;
@@ -481,6 +479,11 @@ export class Chart extends EventTarget {
             x._computedColor = null;
         }
         this._computedColor = null;
+    }
+
+    getAllCharts() {
+        const root = this.isParentChart() ? this : this.parentChart;
+        return [root, ...root.childCharts];
     }
 
     onTooltip({entry, chart}) {
@@ -526,31 +529,28 @@ export class Chart extends EventTarget {
     }
 
     onPointerEnter(ev) {
-        if (this.tooltip.disabled || this._tooltipState.pointerActive ||
+        if (!this.isTooltipAvailable() || this.isTooltipPointing() ||
             !this._renderData || !this._renderData.length) {
             return;
         }
         const state = this._establishTooltipState();
-        const pointerId = ev.pointerId;
-        state.pointerId = pointerId;
-        state.pointerActive = true;
-        state.pointerAborter = new AbortController();
-        const signal = state.pointerAborter.signal;
+        const pointerId = state.pointerId = ev.pointerId;
+        const pointerAborter = state.pointerAborter = new AbortController();
+        const signal = pointerAborter.signal;
         signal.addEventListener('abort', () => {
-            state.pointerActive = false;
             if (state.pointerId === pointerId) {
                 setTimeout(() => {
-                    if (!this._tooltipState.pointerActive) {
+                    if (this._tooltipState.pointerAborter === pointerAborter) {
                         this.hideTooltip();
                     }
                 }, this.tooltipLinger);
             }
         });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
-        addEventListener('pointercancel', () => state.pointerAborter.abort(), {signal});
-        addEventListener('pointerout', ev => !this.el.contains(ev.target) && state.pointerAborter.abort(),
+        addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
+        addEventListener('pointerout', ev => !this.el.contains(ev.target) && pointerAborter.abort(),
                          {signal});
-        this.el.addEventListener('pointerleave', () => state.pointerAborter.abort(), {signal});
+        this.el.addEventListener('pointerleave', () => pointerAborter.abort(), {signal});
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
@@ -562,6 +562,9 @@ export class Chart extends EventTarget {
 
     hideTooltip({x, y, index}={}) {
         const state = this._tooltipState;
+        if (this.isTooltipPointing()) {
+            state.pointerAborter.abort();
+        }
         if (!state.visible) {
             return;
         }
@@ -570,10 +573,10 @@ export class Chart extends EventTarget {
     }
 
     showTooltip({x, y, index}={}) {
-        const state = this._establishTooltipState();
-        if (state.visible) {
+        if (!this.isTooltipAvailable() || this._tooltipState.visible) {
             return;
         }
+        const state = this._establishTooltipState();
         const posEl = this._tooltipPositionerEl;
         const hasAnim = !posEl.classList.contains('sc-disable-animation') &&
             !this.el.classList.contains('sc-disable-animation');
@@ -588,8 +591,32 @@ export class Chart extends EventTarget {
         }
     }
 
+    suspendTooltip() {
+        this._tooltipState.suspendRefCnt++;
+        if (this._tooltipState.visible) {
+            this.hideTooltip();
+        }
+    }
+
+    resumeTooltip() {
+        if (this._tooltipState.suspendRefCnt === 0) {
+            throw new Error("not suspended");
+        }
+        this._tooltipState.suspendRefCnt--;
+    }
+
+    isTooltipAvailable() {
+        return !this.tooltip.disabled && this._tooltipState.suspendRefCnt === 0;
+    }
+
+    isTooltipPointing() {
+        // i.e. Are we actively using pointer events to place the tooltip..
+        const aborter = this._tooltipState.pointerAborter;
+        return !!aborter && !aborter.signal.aborted;
+    }
+
     _establishTooltipState() {
-        const charts = [this, ...this.childCharts];
+        const charts = this.getAllCharts();
         const scrollOffsets = [scrollX, scrollY];
         let positionCallback, hAlign, vAlign;
         if (typeof this.tooltipPosition === 'function') {
@@ -644,9 +671,9 @@ export class Chart extends EventTarget {
     }
 
     updateVisibleTooltip(options) {
-        const chart = this.isParentChart() ? this : this.parentChart;
-        if (chart && chart._tooltipState.visible) {
-            chart._updateTooltip(options);
+        const root = this.isParentChart() ? this : this.parentChart;
+        if (root && root._tooltipState.visible && root.isTooltipAvailable()) {
+            root._updateTooltip(options);
         }
     }
 
