@@ -394,7 +394,6 @@ export class LineChart extends common.Chart {
         const y = (ev.y - state.chartPlotOffset[1] + state.scrollOffsets[1]) * this.devicePixelRatio;
         if (x < this._plotBox[3] || x > this._plotBox[1] ||
             y < this._plotBox[0] || y > this._plotBox[2]) {
-            console.log('out of bounds', this.id);
             return;
         }
         const charts = this.brush.shared ? this.getAllCharts().filter(x => x.brush.shared) : [this];
@@ -404,7 +403,6 @@ export class LineChart extends common.Chart {
         for (const x of charts) {
             x._establishBrushState();
         }
-        console.log("down", this.id, charts);
         if (this.brush.hideTooltip) {
             (this.parentChart || this).suspendTooltip();
         }
@@ -429,7 +427,6 @@ export class LineChart extends common.Chart {
         const signal = pointerAborter.signal;
         this.el.classList.add('sc-brushing');
         signal.addEventListener('abort', () => {
-            console.log('abort', this.id);
             this.el.classList.remove('sc-brushing', 'sc-sizing', 'sc-moving');
             if (state.pointerId === pointerId && state.x1 === state.x2) {
                 this.hideBrush();
@@ -483,7 +480,6 @@ export class LineChart extends common.Chart {
                                 x2: state.x2,
                                 selectionType: state.selectionType
                             }, /*internal*/ true);
-                            console.log('set', x._brushState);
                         }
                     }
                 }
@@ -498,7 +494,6 @@ export class LineChart extends common.Chart {
                         x2: state.x2,
                         selectionType: state.selectionType
                     }, /*internal*/ true);
-                    console.log('set', x.id, x._brushState);
                 }
             }
         }
