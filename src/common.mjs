@@ -157,13 +157,10 @@ export class Chart extends EventTarget {
         if (options.data) {
             this.setData(options.data);
         }
-        window.addEventListener('scroll', ev => {
+        addEventListener('scroll', ev => {
             if (!this._tooltipState.visible) {
                 return;
             }
-            const offsets = this._tooltipState.scrollOffsets;
-            offsets[0] = scrollX;
-            offsets[1] = scrollY;
             this._updateTooltip({disableAnimation: true});
         }, {passive: true});
     }
@@ -554,9 +551,11 @@ export class Chart extends EventTarget {
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            af = requestAnimationFrame(() => this._setTooltipPosition({x: ev.x, internal: true}));
+            const x = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+            af = requestAnimationFrame(() => this._setTooltipPosition({x, internal: true}));
         }, {signal});
-        this._setTooltipPosition({x: ev.x, disableAnimation: true, internal: true});
+        const x = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+        this._setTooltipPosition({x, disableAnimation: true, internal: true});
         this.showTooltip();
     }
 
@@ -617,7 +616,7 @@ export class Chart extends EventTarget {
 
     _establishTooltipState() {
         const charts = this.getAllCharts();
-        const scrollOffsets = [scrollX, scrollY];
+        const chartRect = this.el.getBoundingClientRect();
         let positionCallback, hAlign, vAlign;
         if (typeof this.tooltipPosition === 'function') {
             positionCallback = this.tooltipPosition;
@@ -637,16 +636,12 @@ export class Chart extends EventTarget {
         }
         Object.assign(this._tooltipState, {
             charts,
-            scrollOffsets,
+            chartOffsets: [chartRect.x + scrollX, chartRect.y + scrollY],
             positionCallback,
             hAlign,
             vAlign,
             lastDrawSig: undefined,
             hasDrawn: false,
-            chartPlotOffsets: charts.map(x => {
-                const plotRect = x.el.getBoundingClientRect();
-                return [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]];
-            })
         });
         return this._tooltipState;
     }
@@ -659,7 +654,7 @@ export class Chart extends EventTarget {
     _setTooltipPosition({x, y, index, disableAnimation, internal=false}) {
         Object.assign(this._tooltipState, {x, y, index});
         this._updateTooltip({disableAnimation});
-        this.dispatchEvent(new CustomEvent('tooltip', {
+        queueMicrotask(() => this.dispatchEvent(new CustomEvent('tooltip', {
             detail: {
                 x,
                 y,
@@ -667,7 +662,7 @@ export class Chart extends EventTarget {
                 internal,
                 chart: this,
             }
-        }));
+        })));
     }
 
     updateVisibleTooltip(options) {
@@ -680,12 +675,12 @@ export class Chart extends EventTarget {
     _updateTooltip(options={}) {
         const tooltips = [];
         const state = this._tooltipState;
-        let drawSig = state.scrollOffsets.join();
+        let drawSig = `${scrollX},${scrollY}`;
         for (let i = 0; i < state.charts.length; i++) {
             const chart = state.charts[i];
             let xRef = state.index != null ?
-                chart.xValueToCoord(chart.normalizedData[state.index].x) :
-                (state.x - state.chartPlotOffsets[i][0] + state.scrollOffsets[0]) * this.devicePixelRatio;
+                chart.xValueToCoord(chart.normalizedData[state.index]?.x) :
+                state.x;
             if (xRef >= chart._plotBox[1]) {
                 xRef = chart._plotBox[1] - 1e-6;
             } else if (xRef <= chart._plotBox[3]) {
@@ -807,8 +802,9 @@ export class Chart extends EventTarget {
         posEl.dataset.hAlign = hAlign;
         posEl.dataset.vAlign = vAlign;
         const f = 1 / this.devicePixelRatio;
-        const offtX = state.chartPlotOffsets[0][0] - state.scrollOffsets[0];
-        const offtY = state.chartPlotOffsets[0][1] - state.scrollOffsets[1];
+        // The positioner element uses fixed position, so remove scroll offsets...
+        const offtX = state.chartOffsets[0] - scrollX;
+        const offtY = state.chartOffsets[1] - scrollY;
         posEl.style.setProperty('--x-left', `${minX * f + offtX}px`);
         posEl.style.setProperty('--x-right', `${maxX * f + offtX}px`);
         posEl.style.setProperty('--x-center', `${centerX * f + offtX}px`);
@@ -819,7 +815,7 @@ export class Chart extends EventTarget {
     }
 
     findNearestFromXCoord(searchX) {
-        if (!this._renderData || !this._renderData.length) {
+        if (isNaN(searchX) || !this._renderData || !this._renderData.length) {
             return;
         }
         const targetX = this.xCoordToValue(searchX);
