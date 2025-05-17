@@ -35,7 +35,7 @@
                     --transition-duration: 2s;
                     resize: both;
                     width: 1000px;
-                    max-width: 100%;
+                    /*max-width: 100%;*/
                     height: 100px;
                     overflow: hidden;
                     border: 1px solid #f22a;
@@ -304,15 +304,16 @@
                         data.shift();
                     }
                     sl.setData(data);
-                    if (Math.random() > 0.80) {
-                        sl.setTooltipPosition({index: Math.random() * size | 0});
+                    if (Math.random() > 0.0080) {
+                        //sl.setTooltipPosition({index: Math.random() * size | 0});
+                        sl.setTooltipPosition({index: 100});
                         if (!showingTooltip) {
                             sl.showTooltip();
                             showingTooltip = true;
                         }
                     }
                     if (Math.random() > 0.95) {
-                        console.log("hide");
+                        console.log("hide tt");
                         sl.hideTooltip();
                         showingTooltip = false;
                     }
