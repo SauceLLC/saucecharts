@@ -103,12 +103,12 @@
             --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (10 * var(--shade-dir))) / 0.7);
             --emphasis-stroke: none;
 
-            cursor: col-resize;
+            cursor: ew-resize;
             fill: hsl(from var(--fg-color) h s calc(l + (0 * var(--shade-dir))) / 0);
         }
     }
 
-    &:not(.sc-brush-active) .sc-brush {
+    .sc-plot-region:not(.sc-brush-visible) .sc-brush {
         display: none;
     }
 
@@ -116,7 +116,7 @@
         --transition-duration: 0;
 
         &.sc-sizing * {
-            cursor: col-resize !important;
+            cursor: ew-resize !important;
         }
 
         &.sc-moving * {

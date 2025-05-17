@@ -7,6 +7,9 @@ export class LineChart extends common.Chart {
     init(options={}) {
         this.hidePoints = options.hidePoints;
         this.brush = options.brush || {disabled: true};
+        if (!this.brush.type) {
+            this.brush.type = 'data';
+        }
         this.segments = [];
         this._segmentEls = new Map();
         this._segmentFills = new Map();
@@ -137,15 +140,15 @@ export class LineChart extends common.Chart {
             });
             groupEl.append(this._brushMaskEl);
             if (!this.brush.passive) {
-                this._brushHandleLeftEl = common.createSVG({
+                this._brushHandleStartEl = common.createSVG({
                     name: 'rect',
-                    class: ['sc-brush-handle', 'sc-left']
+                    class: ['sc-brush-handle', 'sc-brush-start']
                 });
-                this._brushHandleRightEl = common.createSVG({
+                this._brushHandleEndEl = common.createSVG({
                     name: 'rect',
-                    class: ['sc-brush-handle', 'sc-right']
+                    class: ['sc-brush-handle', 'sc-brush-end']
                 });
-                groupEl.append(this._brushHandleLeftEl, this._brushHandleRightEl);
+                groupEl.append(this._brushHandleStartEl, this._brushHandleEndEl);
                 el.addEventListener('pointerdown', this._onPointerDownBound);
             } else {
                 groupEl.classList.add('sc-passive');
@@ -353,109 +356,58 @@ export class LineChart extends common.Chart {
         if (state.visible) {
             return;
         }
-        this.el.classList.add('sc-brush-active');
+        this._plotRegionEl.classList.add('sc-brush-visible');
         state.visible = true;
     }
 
     hideBrush() {
         const state = this._brushState;
+        if (state.pointerAborter && !state.pointerAborter.signal.aborted) {
+            state.pointerAborter.abort();
+        }
         if (!state.visible) {
             return;
         }
-        this.el.classList.remove('sc-brush-active');
+        this._plotRegionEl.classList.remove('sc-brush-visible');
         state.visible = false;
     }
 
     setBrush(options) {
         this._establishBrushState();
-        return this._setBrush(options);
-    }
-
-    _setBrush(state, internal=false) {
-        if (state) {
-            Object.assign(this._brushState, state);
-        }
-        this._updateBrush();
+        this._setBrush(options);
         this.showBrush();
-        this.dispatchEvent(new CustomEvent('brush', {
-            detail: {
-                x1: this._brushState.x1,
-                x2: this._brushState.x2,
-                selectionType: this._brushState.selectionType,
-                internal,
-                chart: this,
-            }
-        }));
     }
 
-    onPointerDown(ev) {
-        const state = this._establishBrushState();
-        const x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
-        const y = (ev.y - state.chartPlotOffset[1] + state.scrollOffsets[1]) * this.devicePixelRatio;
-        if (x < this._plotBox[3] || x > this._plotBox[1] ||
-            y < this._plotBox[0] || y > this._plotBox[2]) {
-            return;
-        }
-        const charts = this.brush.shared ? this.getAllCharts().filter(x => x.brush.shared) : [this];
-        if (this.brush.shared) {
-            ev.stopImmediatePropagation();
-        }
-        for (const x of charts) {
-            x._establishBrushState();
-        }
-        if (this.brush.hideTooltip) {
-            (this.parentChart || this).suspendTooltip();
-        }
-        if (ev.target === this._brushHandleLeftEl) {
-            state.handle = state.x1 <= state.x2 ? 'x1' : 'x2';
-            state.xAnchor = x;
-            this.el.classList.add('sc-sizing');
-        } else if (ev.target === this._brushMaskEl) {
-            state.handle = '*';
-            state.xAnchor = x;
-            this.el.classList.add('sc-moving');
-        } else if (ev.target === this._brushHandleRightEl) {
-            state.handle = state.x2 >= state.x1 ? 'x2' : 'x1';
-            state.xAnchor = x;
-            this.el.classList.add('sc-sizing');
-        } else {
-            state.handle = null;
-            state.x1 = state.x2 = (state.selectionType === 'data' ? this.xCoordToValue(x) : x);
-        }
-        const pointerId = state.pointerId = ev.pointerId;
-        const pointerAborter = state.pointerAborter = new AbortController();
-        const signal = pointerAborter.signal;
-        this.el.classList.add('sc-brushing');
-        signal.addEventListener('abort', () => {
-            this.el.classList.remove('sc-brushing', 'sc-sizing', 'sc-moving');
-            if (state.pointerId === pointerId && state.x1 === state.x2) {
-                this.hideBrush();
-            }
-            if (this.brush.hideTooltip) {
-                (this.parentChart || this).resumeTooltip();
-            }
-        });
-        // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
-        addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
-        addEventListener('pointerup', () => pointerAborter.abort(), {signal});
-        let af;
-        document.addEventListener('pointermove', ev => {
-            cancelAnimationFrame(af);
-            const x = (ev.x - state.chartPlotOffset[0] + state.scrollOffsets[0]) * this.devicePixelRatio;
-            if (state.handle == null) {
-                state.x2 = state.selectionType === 'data' ? this.xCoordToValue(x) : x;
-            } else {
-                let d = x - state.xAnchor;
-                if (state.selectionType === 'data') {
-                    d = this.xCoordScale(d);
+    _setBrush({x1, x2, type=this.brush.type, _internal=false}) {
+        const state = this._brushState;
+        if (type !== this.brush.type) {
+            if (type === 'data') {
+                if (x1 != null) {
+                    state.x1 = this.xValueToCoord(x1);
                 }
-                if (state.handle === 'x1') {
-                    state.x1 += d;
-                } else if (state.handle === 'x2') {
-                    state.x2 += d;
-                } else if (state.handle === '*') {
+                if (x2 != null) {
+                    state.x2 = this.xValueToCoord(x2);
+                }
+            } else {
+                if (x1 != null) {
+                    state.x1 = this.xCoordToValue(x1);
+                }
+                if (x2 != null) {
+                    state.x2 = this.xCoordToValue(x2);
+                }
+            }
+        } else {
+            if (x1 != null) {
+                state.x1 = x1;
+            }
+            if (x2 != null) {
+                state.x2 = x2;
+            }
+        }
+        // XXX setlimits...
+        /*
                     let min, max;
-                    if (state.selectionType === 'data') {
+                    if (this.brush.type === 'data') {
                         min = this._xMin;
                         max = this._xMax;
                     } else {
@@ -466,43 +418,131 @@ export class LineChart extends common.Chart {
                         (d > 0 && Math.max(state.x1, state.x2) < max)) {
                         state.x1 += d;
                         state.x2 += d;
-                    }
-                }
-                state.xAnchor = x;
+        */
+        this._updateBrush();
+        queueMicrotask(() => this.dispatchEvent(new CustomEvent('brush', {
+            detail: {
+                x1: state.x1,
+                x2: state.x2,
+                type: this.brush.type,
+                internal: _internal,
+                chart: this,
             }
+        })));
+    }
+
+    onPointerDown(ev) {
+        const state = this._establishBrushState();
+        if (state.active) {
+            return;
+        }
+        const xCoord = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+        const yCoord = (ev.pageY - state.chartOffsets[1]) * this.devicePixelRatio;
+        if (xCoord < this._plotBox[3] || xCoord > this._plotBox[1] ||
+            yCoord < this._plotBox[0] || yCoord > this._plotBox[2]) {
+            return;
+        }
+        const charts = this.brush.shared ? this.getAllCharts()
+            .filter(x => x.brush && x.brush.shared) : [this];
+        for (const x of charts) {
+            x._establishBrushState({active: true});
+        }
+        if (this.brush.hideTooltip) {
+            (this.parentChart || this).suspendTooltip();
+        }
+        this.el.classList.add('sc-brushing');
+        let handle;
+        let isNew;
+        if (ev.target.classList.contains('sc-brush-mask')) {
+            this.el.classList.add('sc-moving');
+            handle = '*';
+        } else {
+            this.el.classList.add('sc-sizing');
+            if (ev.target.classList.contains('sc-brush-start')) {
+                handle = 'start';
+            } else {
+                handle = 'end';
+                isNew = ev.target !== this._brushHandleEndEl;
+            }
+        }
+        for (const chart of charts) {
+            const s = chart._brushState;
+            s.handle = handle;
+            if (isNew) {
+                s.x1 = s.x2 = (chart.brush.type === 'data' ? chart.xCoordToValue(xCoord) : xCoord);
+            }
+            s.xAnchor = xCoord;
+            if (this.brush.type === 'data') {
+                s.activeX1Coord = chart.xValueToCoord(s.x1);
+                s.activeX2Coord = chart.xValueToCoord(s.x2);
+            } else {
+                s.activeX1Coord = s.x1;
+                s.activeX2Coord = s.x2;
+            }
+        }
+        const pointerAborter = state.pointerAborter = new AbortController();
+        const signal = pointerAborter.signal;
+        signal.addEventListener('abort', () => {
+            this.el.classList.remove('sc-brushing', 'sc-sizing', 'sc-moving');
+            const hide = state.x1 === state.x2;
+            for (const chart of charts) {
+                if (hide) {
+                    chart.hideBrush();
+                }
+                chart._brushState.active = false;
+            }
+            if (this.brush.hideTooltip) {
+                (this.parentChart || this).resumeTooltip();
+            }
+        });
+        // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
+        addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
+        addEventListener('pointerup', () => pointerAborter.abort(), {signal});
+        let af;
+        addEventListener('pointermove', ev => {
+            const xCoord = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+            for (const chart of charts) {
+                const s = chart._brushState;
+                if (s.handle === 'start') {
+                    s.activeX1Coord = xCoord;
+                } else if (s.handle === 'end') {
+                    s.activeX2Coord = xCoord;
+                } else {
+                    const d = xCoord - s.xAnchor;
+                    s.activeX1Coord += d;
+                    s.activeX2Coord += d;
+                    s.xAnchor = xCoord;
+                }
+            }
+            cancelAnimationFrame(af);
             af = requestAnimationFrame(() => {
-                this._setBrush(null, /*internal*/ true);
-                if (this.brush.shared) {
-                    for (const x of charts) {
-                        if (x !== this) {
-                            x._setBrush({
-                                x1: state.x1,
-                                x2: state.x2,
-                                selectionType: state.selectionType
-                            }, /*internal*/ true);
-                        }
-                    }
+                for (const chart of charts) {
+                    const s = chart._brushState;
+                    chart._setBrush({
+                        x1: s.handle !== 'end' ? s.activeX1Coord : null,
+                        x2: s.handle !== 'start' ? s.activeX2Coord : null,
+                        type: 'visual',
+                        _internal: true
+                    });
                 }
             });
         }, {signal});
-        this._setBrush(null, /*internal*/ true);
-        if (this.brush.shared) {
-            for (const x of charts) {
-                if (x !== this) {
-                    x._setBrush({
-                        x1: state.x1,
-                        x2: state.x2,
-                        selectionType: state.selectionType
-                    }, /*internal*/ true);
-                }
-            }
+        for (const chart of charts) {
+            const s = chart._brushState;
+            chart._setBrush({
+                x1: s.activeX1Coord,
+                x2: s.activeX2Coord,
+                type: 'visual',
+                _internal: true
+            });
+            chart.showBrush();
         }
     }
 
     _updateBrush() {
         const state = this._brushState;
         let {x1, x2} = state;
-        if (state.selectionType === 'data') {
+        if (this.brush.type === 'data') {
             x1 = this.xValueToCoord(x1);
             x2 = this.xValueToCoord(x2);
         }
@@ -513,7 +553,8 @@ export class LineChart extends common.Chart {
         if (x1 === null || x2 === null || isNaN(x1) || isNaN(x2)) {
             return;
         }
-        if (x1 > x2) {
+        const reversed = x1 > x2;
+        if (reversed) {
             [x1, x2] = [x2, x1];
         }
         if (x1 < this._plotBox[3]) {
@@ -527,39 +568,42 @@ export class LineChart extends common.Chart {
             x2 = this._plotBox[3];
         }
         const top = this._plotBox[0];
-        const bottom = this._plotBox[2];
-        const height = bottom - top;
+        const height = this._plotBox[2] - top;
         const handleWidth = Math.max(1, Math.min(this.brush.handleWidth ?? 4, x2 - x1));
-        this._brushMaskEl.setAttribute('y', top);
         this._brushMaskEl.setAttribute('height', height);
-        this._brushMaskEl.setAttribute('x', x1);
         this._brushMaskEl.setAttribute('width', x2 - x1);
+        this._brushMaskEl.setAttribute('y', top);
+        this._brushMaskEl.setAttribute('x', x1);
         if (!this.brush.passive) {
-            this._brushHandleLeftEl.setAttribute('y', top);
-            this._brushHandleLeftEl.setAttribute('height', height);
-            this._brushHandleLeftEl.setAttribute('x', x1);
-            this._brushHandleLeftEl.setAttribute('width', handleWidth);
-            this._brushHandleRightEl.setAttribute('y', top);
-            this._brushHandleRightEl.setAttribute('height', height);
-            this._brushHandleRightEl.setAttribute('x', x2 - handleWidth);
-            this._brushHandleRightEl.setAttribute('width', handleWidth);
+            this._brushHandleStartEl.setAttribute('height', height);
+            this._brushHandleEndEl.setAttribute('height', height);
+            this._brushHandleStartEl.setAttribute('width', handleWidth);
+            this._brushHandleEndEl.setAttribute('width', handleWidth);
+            this._brushHandleStartEl.setAttribute('y', top);
+            this._brushHandleEndEl.setAttribute('y', top);
+            this._brushHandleStartEl.setAttribute('x', !reversed ? x1 : x2 - handleWidth);
+            this._brushHandleEndEl.setAttribute('x', !reversed ? x2 - handleWidth : x1);
         }
     }
 
-    _establishBrushState() {
-        const scrollOffsets = [scrollX, scrollY];
-        const plotRect = this.el.getBoundingClientRect();
+    _establishBrushState(extra) {
+        const chartRect = this.el.getBoundingClientRect();
         Object.assign(this._brushState, {
-            scrollOffsets,
-            chartPlotOffset: [plotRect.x + scrollOffsets[0], plotRect.y + scrollOffsets[1]],
-            selectionType: this.brush.selectionType || 'data',  // data, visual
-        });
+            chartOffsets: [chartRect.x + scrollX, chartRect.y + scrollY],
+        }, extra);
         return this._brushState;
     }
 
     afterRender(...args) {
         super.afterRender(...args);
-        if (this._brushState.visible) {
+        if (this._brushState.active) {
+            this._setBrush({
+                x1: this._brushState.handle !== 'end' ? this._brushState.activeX1Coord : null,
+                x2: this._brushState.handle !== 'start' ? this._brushState.activeX2Coord : null,
+                type: 'visual',
+                _internal: true
+            });
+        } else if (this._brushState.visible) {
             this._updateBrush();
         }
     }
