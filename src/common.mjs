@@ -531,17 +531,14 @@ export class Chart extends EventTarget {
             return;
         }
         const state = this._establishTooltipState();
-        const pointerId = state.pointerId = ev.pointerId;
         const pointerAborter = state.pointerAborter = new AbortController();
         const signal = pointerAborter.signal;
         signal.addEventListener('abort', () => {
-            if (state.pointerId === pointerId) {
-                setTimeout(() => {
-                    if (this._tooltipState.pointerAborter === pointerAborter) {
-                        this.hideTooltip();
-                    }
-                }, this.tooltipLinger);
-            }
+            setTimeout(() => {
+                if (this._tooltipState.pointerAborter === pointerAborter) {
+                    this.hideTooltip();
+                }
+            }, this.tooltipLinger);
         });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
         addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
@@ -561,7 +558,7 @@ export class Chart extends EventTarget {
 
     hideTooltip({x, y, index}={}) {
         const state = this._tooltipState;
-        if (this.isTooltipPointing()) {
+        if (state.pointerAborter && !state.pointerAborter.signal.aborted) {
             state.pointerAborter.abort();
         }
         if (!state.visible) {
@@ -610,8 +607,11 @@ export class Chart extends EventTarget {
 
     isTooltipPointing() {
         // i.e. Are we actively using pointer events to place the tooltip..
-        const aborter = this._tooltipState.pointerAborter;
-        return !!aborter && !aborter.signal.aborted;
+        return !!(
+            this._tooltipState.visible &&
+            this._tooltipState.pointerAborter &&
+            !this._tooltipState.pointerAborter.signal.aborted
+        );
     }
 
     _establishTooltipState() {
