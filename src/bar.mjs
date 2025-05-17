@@ -145,7 +145,6 @@ export class BarChart extends common.Chart {
             if (!bar) {
                 bar = this._barsPendingRemoval.get(entry.ref);
                 if (bar) {
-                    debugger; // verify we didn't regress with entry.ref change
                     bar.sig = null;
                     this._barsPendingRemoval.delete(entry.ref);
                     this._bars.set(entry.ref, bar);
