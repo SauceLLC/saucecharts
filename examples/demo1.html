@@ -49,6 +49,7 @@
             const tests = [1, 2, 3, 4, 5, 6, 7, 8, 9];
             const speed = 1000;
             const maxSize = 40;
+            const maxIterations = 100;
             let sinFactor = speed / Number(document.querySelector('#freq').value);
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             const commonOptions = {
@@ -73,8 +74,10 @@
                     xMin: ts() + 4000,
                     xMax: ts() + 8000,
                 });
+                let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     data.push([ts(), Math.sin(ts() / sinFactor)]);
                     while (data.length > maxSize) {
                         data.shift();
@@ -92,8 +95,10 @@
                     yMin: 0.5,
                     yMax: 0.75,
                 });
+                let iterations = 0;
                 setInterval(async () => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     data.push([ts(), Math.sin(ts() / sinFactor)]);
                     await sleep(speed / 3);
                     data.push([ts(), Math.sin(ts() / sinFactor)]);
@@ -114,8 +119,10 @@
                     title: 'rtl (snap brush)',
                     brush: {hideTooltip: true, snap: true},
                 });
+                let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     data.unshift([-ts(), Math.sin(ts() / sinFactor)]);
                     while (data.length > maxSize) {
                         data.pop();
@@ -132,8 +139,10 @@
                     title: 'rtl, 2 points per interval (visual brush)',
                     brush: {hideTooltip: true, type: 'visual'},
                 });
+                let iterations = 0;
                 setInterval(async () => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     data.unshift([-ts(), Math.sin(ts() / sinFactor)]);
                     await sleep(speed / 2);
                     data.unshift([-ts(), Math.sin(ts() / sinFactor)]);
@@ -157,8 +166,10 @@
                     yMin: -100,
                     yMax: 100,
                 });
+                let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     for (let i = 0; i < data.length; i++) {
                         data[i] = Math.random();
                     }
@@ -173,8 +184,10 @@
                     el: document.querySelector(".graph.i6"),
                     title: 'random, random size',
                 });
+                let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     data.length = Math.random() * maxSize * 2 | 0;
                     for (let i = 0; i < data.length; i++) {
                         data[i] = Math.random();
@@ -224,8 +237,10 @@
                     padding: [sl3.padding[0] + 30, 0, 0, 0],
                 });
 
+                let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     data1.push([ts(), Math.sin(ts() / sinFactor)]);
                     while (data1.length > maxSize) {
                         data1.shift();
@@ -310,8 +325,10 @@
                     }
                 });
 
+                let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     data1.push([ts(), Math.sin(ts() / sinFactor)]);
                     while (data1.length > maxSize) {
                         data1.shift();
@@ -349,8 +366,10 @@
                     title: 'large-data',
                     brush: {clipMask: true, passive: true},
                 });
+                let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
+                    if (iterations++ > maxIterations) return;
                     i++;
                     data.push(Math.sin(i / 50));
                     while (data.length > size) {
