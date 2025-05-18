@@ -71,7 +71,7 @@ export class BarChart extends common.Chart {
                 offt += width;
                 norm[i] = {index: i, width, x: offt - (width / 2), y: o[1] || 0, ref: o};
             }
-        } else if (typeof data[0] === 'object') {
+        } else if (typeof data[0] === 'object' && Object.getPrototypeOf(data[0]) === Object.prototype) {
             // [{width, y, ...}, {width, y, ...}, ...]
             const width = data[0].width || 0;
             norm[0] = {...data[0], index: 0, width, x: width / 2, y: data[0].y || 0, ref: data[0]};
@@ -84,8 +84,23 @@ export class BarChart extends common.Chart {
             }
         } else {
             // [y, y1, ...]
+            let convWarn = 0;
             for (let i = 0; i < data.length; i++) {
-                norm[i] = {index: i, width: 1, x: i + 0.5, y: data[i] || 0, ref: data[i]};
+                // Importantly, we need unique objects for the data ref and not primatives..
+                // Option 1: do not allow this, throw TypeError
+                // Option 2: alter the users data (they did give it to us)
+                let y;
+                if (typeof data[i] === 'number') {
+                    convWarn++;
+                    y = data[i];
+                    data[i] = new Number(y);
+                } else {
+                    y = +data[i];
+                }
+                norm[i] = {index: i, width: 1, x: i + 0.5, y: y || 0, ref: data[i]};
+            }
+            if (convWarn) {
+                console.warn(`Converted ${convWarn} primative numbers to unique objects.`);
             }
         }
         return norm;
@@ -185,7 +200,6 @@ export class BarChart extends common.Chart {
                     }
                 }
                 if (this._barsPendingRemoval.size) {
-                    debugger; // verify we didn't regress with entry.ref change
                     const [oldKey, replace] = this._barsPendingRemoval.entries().next().value;
                     this._barsPendingRemoval.delete(oldKey);
                     Object.assign(replace, bar);
