@@ -380,45 +380,18 @@ export class LineChart extends common.Chart {
 
     _setBrush({x1, x2, type=this.brush.type, _internal=false}) {
         const state = this._brushState;
-        if (type !== this.brush.type) {
-            if (type === 'data') {
-                if (x1 != null) {
-                    state.x1 = this.xValueToCoord(x1);
-                }
-                if (x2 != null) {
-                    state.x2 = this.xValueToCoord(x2);
-                }
-            } else {
-                if (x1 != null) {
-                    state.x1 = this.xCoordToValue(x1);
-                }
-                if (x2 != null) {
-                    state.x2 = this.xCoordToValue(x2);
-                }
-            }
-        } else {
-            if (x1 != null) {
-                state.x1 = x1;
-            }
-            if (x2 != null) {
-                state.x2 = x2;
-            }
+        if (x1 != null) {
+            state.x1 = type === this.brush.type ? x1 :
+                type === 'data' ?
+                    this.xValueToCoord(x1) :
+                    this.xCoordToValue(x1);
         }
-        // XXX setlimits...
-        /*
-                    let min, max;
-                    if (this.brush.type === 'data') {
-                        min = this._xMin;
-                        max = this._xMax;
-                    } else {
-                        min = this._plotBox[3];
-                        max = this._plotBox[1];
-                    }
-                    if ((d < 0 && Math.min(state.x1, state.x2) > min) ||
-                        (d > 0 && Math.max(state.x1, state.x2) < max)) {
-                        state.x1 += d;
-                        state.x2 += d;
-        */
+        if (x2 != null) {
+            state.x2 = type === this.brush.type ? x2 :
+                type === 'data' ?
+                    this.xValueToCoord(x2) :
+                    this.xCoordToValue(x2);
+        }
         this._updateBrush();
         queueMicrotask(() => this.dispatchEvent(new CustomEvent('brush', {
             detail: {
@@ -462,22 +435,29 @@ export class LineChart extends common.Chart {
                 handle = 'start';
             } else {
                 handle = 'end';
-                isNew = ev.target !== this._brushHandleEndEl;
+                isNew = !ev.target.classList.contains('sc-brush-end');
             }
         }
         for (const chart of charts) {
             const s = chart._brushState;
             s.handle = handle;
+            s.xAnchor = xCoord;
             if (isNew) {
+                // Reset brush to 0 width on our pointer position
                 s.x1 = s.x2 = (chart.brush.type === 'data' ? chart.xCoordToValue(xCoord) : xCoord);
             }
-            s.xAnchor = xCoord;
-            if (this.brush.type === 'data') {
-                s.activeX1Coord = chart.xValueToCoord(s.x1);
-                s.activeX2Coord = chart.xValueToCoord(s.x2);
+            // While brushing with an active pointer our brush is always visual...
+            if (chart.brush.type === 'data') {
+                s.pointerX1 = chart.xValueToCoord(s.x1);
+                s.pointerX2 = chart.xValueToCoord(s.x2);
             } else {
-                s.activeX1Coord = s.x1;
-                s.activeX2Coord = s.x2;
+                s.pointerX1 = s.x1;
+                s.pointerX2 = s.x2;
+            }
+            if (handle === 'start') {
+                s.pointerX1 = xCoord;
+            } else if (handle === 'end') {
+                s.pointerX2 = xCoord;
             }
         }
         const pointerAborter = state.pointerAborter = new AbortController();
@@ -503,15 +483,27 @@ export class LineChart extends common.Chart {
             const xCoord = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
             for (const chart of charts) {
                 const s = chart._brushState;
-                if (s.handle === 'start') {
-                    s.activeX1Coord = xCoord;
-                } else if (s.handle === 'end') {
-                    s.activeX2Coord = xCoord;
+                if (s.handle === '*') {
+                    const minX = Math.min(s.pointerX1, s.pointerX2);
+                    const maxX = Math.max(s.pointerX1, s.pointerX2);
+                    let d = xCoord - s.xAnchor;
+                    if (d < 0) {
+                        if (minX + d < chart._plotBox[3]) {
+                            d = chart._plotBox[3] - minX;
+                        }
+                    } else if (maxX + d > chart._plotBox[1]) {
+                        d = chart._plotBox[1] - maxX;
+                    }
+                    s.pointerX1 += d;
+                    s.pointerX2 += d;
+                    s.xAnchor += d;
                 } else {
-                    const d = xCoord - s.xAnchor;
-                    s.activeX1Coord += d;
-                    s.activeX2Coord += d;
-                    s.xAnchor = xCoord;
+                    const boundXCoord = Math.max(chart._plotBox[3], Math.min(chart._plotBox[1], xCoord));
+                    if (s.handle === 'start') {
+                        s.pointerX1 = boundXCoord;
+                    } else {
+                        s.pointerX2 = boundXCoord;
+                    }
                 }
             }
             cancelAnimationFrame(af);
@@ -519,8 +511,8 @@ export class LineChart extends common.Chart {
                 for (const chart of charts) {
                     const s = chart._brushState;
                     chart._setBrush({
-                        x1: s.handle !== 'end' ? s.activeX1Coord : null,
-                        x2: s.handle !== 'start' ? s.activeX2Coord : null,
+                        x1: s.handle !== 'end' ? s.pointerX1 : null,
+                        x2: s.handle !== 'start' ? s.pointerX2 : null,
                         type: 'visual',
                         _internal: true
                     });
@@ -530,8 +522,8 @@ export class LineChart extends common.Chart {
         for (const chart of charts) {
             const s = chart._brushState;
             chart._setBrush({
-                x1: s.activeX1Coord,
-                x2: s.activeX2Coord,
+                x1: s.pointerX1,
+                x2: s.pointerX2,
                 type: 'visual',
                 _internal: true
             });
@@ -598,8 +590,8 @@ export class LineChart extends common.Chart {
         super.afterRender(...args);
         if (this._brushState.active) {
             this._setBrush({
-                x1: this._brushState.handle !== 'end' ? this._brushState.activeX1Coord : null,
-                x2: this._brushState.handle !== 'start' ? this._brushState.activeX2Coord : null,
+                x1: this._brushState.handle !== 'end' ? this._brushState.pointerX1 : null,
+                x2: this._brushState.handle !== 'start' ? this._brushState.pointerX2 : null,
                 type: 'visual',
                 _internal: true
             });

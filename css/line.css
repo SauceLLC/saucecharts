@@ -77,6 +77,10 @@
                 fill: var(--emphasis-fill);
                 stroke: var(--emphasis-stroke);
             }
+
+            .sc-brush-mask {
+                clip-path: none;
+            }
         }
 
         .sc-brush-mask,
@@ -128,6 +132,10 @@
             .sc-brush-handle {
                 fill: var(--emphasis-fill);
                 stroke: var(--emphasis-stroke);
+            }
+
+            .sc-brush-mask {
+                clip-path: none;
             }
         }
     }
