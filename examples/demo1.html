@@ -282,6 +282,9 @@
                     merge: true,
                     padding: [height + 20, 0, 0, 0],
                     height,
+                    brush: {
+                        shared: false,
+                    }
                 });
                 const sl3 = new sc.LineChart({
                     ...shared,
@@ -289,6 +292,10 @@
                     merge: true,
                     padding: [height * 2 + 30, 0, 0, 0],
                     height,
+                    brush: {
+                        shared: true,
+                        type: 'data',
+                    }
                 });
                 const sl4 = new sc.LineChart({
                     ...shared,
@@ -296,6 +303,11 @@
                     merge: true,
                     padding: [height * 3 + 40, 0, 0, 0],
                     height,
+                    brush: {
+                        shared: true,
+                        type: 'visual',
+                        clipMask: true,
+                    }
                 });
 
                 setInterval(() => {

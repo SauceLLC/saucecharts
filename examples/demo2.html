@@ -99,7 +99,7 @@
                 const sl = new sc.BarChart({
                     ...commonOptions,
                     el: document.querySelector(".graph.i1"),
-                    title: 'ltr (below tp)',
+                    title: 'rtl (below tp)',
                     tooltipPosition: 'below',
                     xMin: 20,
                     xMax: 40,
@@ -122,7 +122,7 @@
                 const sl = new sc.BarChart({
                     ...commonOptions,
                     el: document.querySelector(".graph.i2"),
-                    title: 'ltr, 3 points per interval (above tp)',
+                    title: 'rtl, 3 points per interval (above tp)',
                     tooltipPosition: 'above',
                 });
                 self.chart2 = sl;
@@ -145,7 +145,7 @@
                 const sl = new sc.BarChart({
                     ...commonOptions,
                     el: document.querySelector(".graph.i3"),
-                    title: 'rtl (right tp)',
+                    title: 'ltr (right tp)',
                     tooltipPosition: 'right',
                 });
                 self.chart3 = sl;
@@ -164,7 +164,7 @@
                 const sl = new sc.BarChart({
                     ...commonOptions,
                     el: document.querySelector(".graph.i4"),
-                    title: 'rtl, 2 points per interval (leftright top tp)',
+                    title: 'ltr, 2 points per interval (leftright top tp)',
                     tooltipPosition: 'leftright top',
                 });
                 setInterval(async () => {
@@ -284,7 +284,7 @@
             }
 
             if (tests.includes(8)) {
-                const size = 100;
+                const size = 400;
                 let i = size;
                 const data = Array.from(new Array(size)).map((x, i) => Math.sin(i / (size / 20)));
                 const sl = new sc.BarChart({
@@ -325,7 +325,7 @@
             });
         </script>
     </head>
-    <body style="padding: 200px;">
+    <body>
         <div class="controls">
             <label><input type="checkbox" oninput="document.documentElement.classList.toggle('darkmode'); document.querySelectorAll('.saucechart').forEach(x => x.classList.toggle('sc-darkmode'));"/> Dark mode</label>
             <button type="button" id="playpause">Play/Pause</button>
