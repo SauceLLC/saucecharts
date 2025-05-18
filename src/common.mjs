@@ -135,14 +135,16 @@ export class Chart extends EventTarget {
         this.childCharts = [];
         this.title = options.title;
         this.color = options.color;
-        this.tooltip = options.tooltip || {};
-        this.xAxis = options.xAxis || {};
-        this.yAxis = options.yAxis || {};
-        this.padding = options.padding || [0, 0, 0, 0];
+        this.tooltip = options.tooltip ?? {};
+        this.zoom = options.zoom ?? {};
+        this.zoom.type ??= 'data';
+        this.xAxis = options.xAxis ?? {};
+        this.yAxis = options.yAxis ?? {};
+        this.padding = options.padding ?? [0, 0, 0, 0];
         this.width = options.width;
         this.height = options.height;
-        this.tooltipPadding = options.tooltipPadding || [this.padding[0], this.padding[2]];
-        this.tooltipPosition = options.tooltipPosition || 'leftright';
+        this.tooltipPadding = options.tooltipPadding ?? [this.padding[0], this.padding[2]];
+        this.tooltipPosition = options.tooltipPosition ?? 'leftright';
         this.disableAnimation = options.disableAnimation;
         this.darkMode = options.darkMode;
         this.tooltipLinger = options.tooltipLinger ?? 800;
@@ -217,12 +219,12 @@ export class Chart extends EventTarget {
         }
     }
 
-    adjustSize(width, height) {
+    adjustSize(boxWidth, boxHeight) {
         this.devicePixelRatio = devicePixelRatio || 1;
-        if (width === undefined) {
-            ({width, height} = this._rootSvgEl.getBoundingClientRect());
+        if (boxWidth === undefined) {
+            ({width: boxWidth, height: boxHeight} = this._rootSvgEl.getBoundingClientRect());
         }
-        if (!width || !height) {
+        if (!boxWidth || !boxHeight) {
             this._boxWidth = 0;
             this._boxHeight = 0;
             this._plotWidth = 0;
@@ -230,8 +232,8 @@ export class Chart extends EventTarget {
             this._plotBox = [0, 0, 0, 0];
             return;
         }
-        this._boxWidth = Math.round(width * this.devicePixelRatio);
-        this._boxHeight = Math.round(height * this.devicePixelRatio);
+        this._boxWidth = Math.round(boxWidth * this.devicePixelRatio);
+        this._boxHeight = Math.round(boxHeight * this.devicePixelRatio);
         const inset = this.padding.map(x => x * this.devicePixelRatio);
         this._plotWidth = Math.max(0, this.width ?
             Math.round(this.width * this.devicePixelRatio) :
@@ -292,7 +294,7 @@ export class Chart extends EventTarget {
         }
         const gap = trackLength / (ticks - 1);
         const tickLen = options.tickLength ?? 6;
-        const format = options.label || this.onAxisLabel.bind(this);
+        const format = options.label ?? this.onAxisLabel.bind(this);
         const existingTicks = el.querySelectorAll('line.sc-tick');
         const existingLabels = el.querySelectorAll('text.sc-label');
         let visualCount = 0;
@@ -324,7 +326,7 @@ export class Chart extends EventTarget {
             label.setAttribute('x', x1);
             label.setAttribute('y', y1);
             label.setAttribute('data-pct', i / (ticks - 1));
-            label.textContent = format({orientation, index: i, ticks, trackLength, options});
+            label.textContent = format ? format({orientation, index: i, ticks, trackLength, options}) : '';
             visualCount++;
         }
         for (let i = visualCount; i < existingTicks.length; i++) {
@@ -496,7 +498,7 @@ export class Chart extends EventTarget {
                 this._ttValue = document.createElement('value');
                 this._ttEntry.append(this._ttKey, this._ttValue);
             }
-            this._ttEntry.style.setProperty('--color', entry.color || chart.getColor());
+            this._ttEntry.style.setProperty('--color', entry.color ?? chart.getColor());
             this._ttKey.textContent = entry.index;
             this._ttValue.textContent = entry.y.toFixed(2);
             return this._ttEntry;
