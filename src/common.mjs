@@ -181,6 +181,7 @@ export class Chart extends EventTarget {
     removeGradient(gradient) {
         this._gradients.delete(gradient);
         gradient.el.remove();
+        gradient.el = null;
     }
 
     onResize(entries) {

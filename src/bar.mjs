@@ -290,7 +290,7 @@ export class BarChart extends common.Chart {
     }
 
     _gc() {
-        const animDur = common.getStyleValue(this.el, '--transition-duration', 'time') || 0;
+        const animDur = common.getStyleValue(this.el, '--transition-duration', 'time') || 100;
         const unclaimedFills = new Set(this._barFills.keys());
         for (const x of this._bars.values()) {
             unclaimedFills.delete(x.fillKey);
@@ -304,6 +304,7 @@ export class BarChart extends common.Chart {
             } else {
                 this._barsPendingRemoval.delete(key);
                 bar.el.remove();
+                bar.el = null;
             }
         }
         for (const x of unclaimedFills) {
