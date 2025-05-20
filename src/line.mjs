@@ -6,10 +6,8 @@ export class LineChart extends common.Chart {
 
     init(options={}) {
         this.hidePoints = options.hidePoints;
-        this.brush = options.brush || {disabled: true};
-        if (!this.brush.type) {
-            this.brush.type = 'data';
-        }
+        this.brush = options.brush ?? {disabled: true};
+        this.brush.type ??= 'data';
         this.segments = [];
         this._segmentEls = new Map();
         this._segmentFills = new Map();
@@ -177,12 +175,8 @@ export class LineChart extends common.Chart {
     adjustScale(manifest) {
         super.adjustScale(manifest);
         const data = manifest.data;
-        if (this.xMin == null) {
-            this._xMin = data[0].x;
-        }
-        if (this.xMax == null) {
-            this._xMax = data[data.length - 1].x;
-        }
+        this._xMin ??= data[0].x;
+        this._xMax ??= data[data.length - 1].x;
         if (this._xMax === this._xMin) {
             this._xMin -= 0.5;
             this._xMax += 0.5;
@@ -466,10 +460,41 @@ export class LineChart extends common.Chart {
             this.el.classList.remove('sc-brushing', 'sc-sizing', 'sc-moving');
             const hide = state.x1 === state.x2;
             for (const chart of charts) {
-                if (hide) {
+                const s = chart._brushState;
+                s.active = false;
+                if (!chart.brush.disableZoom) {
+                    chart.hideBrush();
+                    if (hide) {
+                        chart.setZoom();
+                    } else {
+                        const xMin = s.x2 > s.x1 ? s.x1 : s.x2;
+                        const xMax = s.x1 < s.x2 ? s.x2 : s.x1;
+                        if (chart.brush.type === 'data') {
+                            chart.setZoom({xRange: [xMin, xMax], type: 'data', _internal: true});
+                        } else if (chart.brush.type === 'visual') {
+                            const scale = [1, 1];
+                            const translate = [0, 0];
+                            if (chart.zoom.active && chart.zoom.type === 'visual') {
+                                if (chart.zoom.scale) {
+                                    scale[0] = chart.zoom.scale[0];
+                                    scale[1] = chart.zoom.scale[1];
+                                }
+                                if (chart.zoom.translate) {
+                                    translate[0] = chart.zoom.translate[0];
+                                    translate[1] = chart.zoom.translate[1];
+                                }
+                            }
+                            // Translate is always in pre-scaled coordinates coordinates..
+                            translate[0] += (xMin - chart._plotBox[3]) / scale[0];
+                            scale[0] *= this._plotWidth / (xMax - xMin);
+                            chart.setZoom({scale, translate, type: 'visual', _internal: true});
+                        } else {
+                            throw new TypeError("invalid brush type");
+                        }
+                    }
+                } else if (hide) {
                     chart.hideBrush();
                 }
-                chart._brushState.active = false;
             }
             if (this.brush.hideTooltip) {
                 (this.parentChart || this).resumeTooltip();

@@ -137,7 +137,7 @@ export class Chart extends EventTarget {
         this.color = options.color;
         this.tooltip = options.tooltip ?? {};
         this.zoom = options.zoom ?? {};
-        this.zoom.type ??= 'data';
+        this._zoomRevision = 0;
         this.xAxis = options.xAxis ?? {};
         this.yAxis = options.yAxis ?? {};
         this.padding = options.padding ?? [0, 0, 0, 0];
@@ -842,6 +842,36 @@ export class Chart extends EventTarget {
         }
     }
 
+    setZoom({xRange, yRange, translate, scale, type, _internal=false}={}) {
+        this._zoomRevision++;
+        if (type == null) {
+            this.zoom.active = false;
+            this.zoom.translate = this.zoom.scale = this.zoom.xRange = this.zoom.yRange = null;
+        } else {
+            if (type === 'data') {
+                this.zoom.translate = this.zoom.scale = null;
+                this.zoom.xRange = xRange ?? null;
+                this.zoom.yRange = yRange ?? null;
+            } else if (type === 'visual') {
+                this.zoom.xRange = this.zoom.yRange = null;
+                this.zoom.translate = translate ?? null;
+                this.zoom.scale = scale ?? null;
+            } else {
+                throw new TypeError("invalid zoom type");
+            }
+            this.zoom.active = true;
+        }
+        this.zoom.type = type;
+        this.render();
+        queueMicrotask(() => this.dispatchEvent(new CustomEvent('zoom', {
+            detail: {
+                ...this.zoom,
+                internal: _internal,
+                chart: this,
+            }
+        })));
+    }
+
     setData(data, options={}) {
         this.data = data;
         this.normalizedData = this.normalizeData(data);
@@ -886,6 +916,19 @@ export class Chart extends EventTarget {
         options.disableAnimation = options.disableAnimation || this.disableAnimation;
         const manifest = this.beforeRender(options);
         this.adjustScale(manifest);
+        if (this.zoom.active && this.zoom.type === 'visual') {
+            // Get offsets and size before transforms...
+            const xOfft = this.zoom.translate ? this.xCoordScale(this.zoom.translate[0]) : 0;
+            const yOfft = this.zoom.translate ? this.yCoordScale(this.zoom.translate[1]) : 0;
+            if (this.zoom.scale) {
+                this._xMax = this._xMin + (this._xMax - this._xMin) / this.zoom.scale[0];
+                this._yMax = this._yMin + (this._yMax - this._yMin) / this.zoom.scale[1];
+            }
+            this._xMin += xOfft;
+            this._xMax += xOfft;
+            this._yMin += yOfft;
+            this._yMax += yOfft;
+        }
         this.doLayout(manifest, options);
         const axisSig = [
             this._xMin,
@@ -893,7 +936,8 @@ export class Chart extends EventTarget {
             this._yMin,
             this._yMax,
             this._plotWidth,
-            this._plotHeight
+            this._plotHeight,
+            this._zoomRevision
         ].join('-');
         if (this._lastAxisSig !== axisSig) {
             this._lastAxisSig = axisSig;
@@ -922,7 +966,17 @@ export class Chart extends EventTarget {
         this._xMax = this.xMax;
         this._yMin = this.yMin;
         this._yMax = this.yMax;
-        if (this.yMin == null || this.yMax == null) {
+        if (this.zoom.active && this.zoom.type === 'data') {
+            if (this.zoom.xRange) {
+                this._xMin = this.zoom.xRange[0];
+                this._xMax = this.zoom.xRange[1];
+            }
+            if (this.zoom.yRange) {
+                this._yMin = this.zoom.yRange[0];
+                this._yMax = this.zoom.yRange[1];
+            }
+        }
+        if (this._yMin == null || this._yMax == null) {
             let min = Infinity;
             let max = -Infinity;
             for (let i = 0; i < data.length; i++) {
@@ -934,10 +988,10 @@ export class Chart extends EventTarget {
                     max = v;
                 }
             }
-            if (this.yMin == null) {
+            if (this._yMin == null) {
                 this._yMin = min;
             }
-            if (this.yMax == null) {
+            if (this._yMax == null) {
                 this._yMax = max;
             }
         }
@@ -960,14 +1014,11 @@ export class Chart extends EventTarget {
     }
 
     xValueToCoord(value) {
-        return (value - this._xMin) *
-            (this._plotWidth / (this._xMax - this._xMin)) +
-            this._plotBox[3];
+        return (value - this._xMin) * (this._plotWidth / (this._xMax - this._xMin)) + this._plotBox[3];
     }
 
     yValueToCoord(value) {
-        return this._plotBox[2] -
-            ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
+        return this._plotBox[2] - ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
     }
 
     xCoordScale(coord) {
@@ -979,15 +1030,11 @@ export class Chart extends EventTarget {
     }
 
     xCoordToValue(coord) {
-        return (coord - this._plotBox[3]) /
-            (this._plotWidth / (this._xMax - this._xMin)) +
-            this._xMin;
+        return (coord - this._plotBox[3]) / (this._plotWidth / (this._xMax - this._xMin)) + this._xMin;
     }
 
     yCoordToValue(coord) {
-        return (this._plotBox[2] - coord) /
-            (this._plotHeight / (this._yMax - this._yMin)) +
-            this._yMin;
+        return (this._plotBox[2] - coord) / (this._plotHeight / (this._yMax - this._yMin)) + this._yMin;
     }
 
     reset() {
