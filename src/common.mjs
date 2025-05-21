@@ -122,32 +122,39 @@ function largestTriangleThreeBuckets(inData, outLen) {
 const resample = largestTriangleThreeBuckets;
 
 
+
+/**
+ * Base class for charts subclasses.
+ *
+ * @param {ChartOptions} [options] - Common chart options
+ * @abstract
+ * @extends external:EventTarget
+ */
 export class Chart extends EventTarget {
 
     constructor(options={}) {
         super();
         this.init(options);
         this.id = globalIdCounter++;
-        this.yMin = options.yMin;
-        this.yMax = options.yMax;
         this.xMin = options.xMin;
         this.xMax = options.xMax;
-        this.childCharts = [];
+        this.yMin = options.yMin;
+        this.yMax = options.yMax;
         this.title = options.title;
         this.color = options.color;
-        this.tooltip = options.tooltip ?? {};
-        this.zoom = options.zoom ?? {};
-        this._zoomRevision = 0;
-        this.xAxis = options.xAxis ?? {};
-        this.yAxis = options.yAxis ?? {};
         this.padding = options.padding ?? [0, 0, 0, 0];
         this.width = options.width;
         this.height = options.height;
-        this.tooltipPadding = options.tooltipPadding ?? [this.padding[0], this.padding[2]];
-        this.tooltipPosition = options.tooltipPosition ?? 'leftright';
+        this.tooltip = options.tooltip ?? {};
+        this.tooltip.padding ??= [this.padding[0], this.padding[2]];
+        this.tooltip.position ??= 'leftright';
+        this.tooltip.linger ??= 800;
+        this.xAxis = options.xAxis ?? {};
+        this.yAxis = options.yAxis ?? {};
         this.disableAnimation = options.disableAnimation;
         this.darkMode = options.darkMode;
-        this.tooltipLinger = options.tooltipLinger ?? 800;
+        this.childCharts = [];
+        this._zoomState = {rev: 0};
         this._tooltipState = {suspendRefCnt: 0};
         this._gradients = new Set();
         this._onPointerEnterBound = this.onPointerEnter.bind(this);
@@ -167,9 +174,19 @@ export class Chart extends EventTarget {
         }, {passive: true});
     }
 
+    /**
+     * @protected
+     * @param {ChartOptionos} options
+     */
     init(options) {
     }
 
+    /**
+     * Add a color gradient which can be used in SVG contexts
+     *
+     * @param {(Gradient|GradientOptions)} gradient
+     * @returns {Gradient}
+     */
     addGradient(gradient) {
         if (!(gradient instanceof colorMod.Gradient)) {
             gradient = colorMod.Gradient.fromObject(gradient);
@@ -180,6 +197,10 @@ export class Chart extends EventTarget {
         return gradient;
     }
 
+
+    /**
+     * @param {Gradient} gradient
+     */
     removeGradient(gradient) {
         this._gradients.delete(gradient);
         gradient.el.remove();
@@ -219,6 +240,9 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * @protected
+     */
     adjustSize(boxWidth, boxHeight) {
         this.devicePixelRatio = devicePixelRatio || 1;
         if (boxWidth === undefined) {
@@ -337,6 +361,11 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * Set the DOM element to be used by this chart
+     *
+     * @param {external:Element} el
+     */
     setElement(el) {
         this.beforeSetElement(el);
         const old = this.el;
@@ -454,10 +483,21 @@ export class Chart extends EventTarget {
         this.render();
     }
 
+    /**
+     * @protected
+     */
     beforeSetElement() {}
 
+    /**
+     * @protected
+     */
     afterSetElement() {}
 
+    /**
+     * Retrieve the computed CSS color for this chart
+     *
+     * @returns {external:CSS_Color}
+     */
     getColor() {
         if (!this._computedColor) {
             this._computedColor = getStyleValue(this._plotRegionEl, '--color');
@@ -465,10 +505,17 @@ export class Chart extends EventTarget {
         return this._computedColor;
     }
 
+    /**
+     * @returns {boolean}
+     */
     isParentChart() {
         return this.el?.parentSauceChart === this;
     }
 
+    /**
+     * @protected
+     * @params {Chart} chart
+     */
     addChart(chart) {
         if (!this.isParentChart()) {
             throw new TypeError("only valid on parent");
@@ -481,11 +528,21 @@ export class Chart extends EventTarget {
         this._computedColor = null;
     }
 
+    /**
+     * @returns {Array<Chart>} All the charts sharing this chart's `el` property
+     */
     getAllCharts() {
         const root = this.isParentChart() ? this : this.parentChart;
         return [root, ...root.childCharts];
     }
 
+    /**
+     * The default tooltip formatter
+     *
+     * @protected
+     * @params {TooltipFormatOptions} options
+     * @returns {(string|external:Element)} Tooltip contents
+     */
     onTooltip({entry, chart}) {
         if (this.tooltip.format) {
             return this.tooltip.format.apply(this, arguments);
@@ -505,6 +562,13 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * The default Axis Label formatter
+     *
+     * @protected
+     * @params {AxisLabelOptions} options
+     * @returns {string} Label contents
+     */
     onAxisLabel({orientation, index, ticks}) {
         let range;
         let start;
@@ -541,7 +605,7 @@ export class Chart extends EventTarget {
                 if (this._tooltipState.pointerAborter === pointerAborter) {
                     this.hideTooltip();
                 }
-            }, this.tooltipLinger);
+            }, this.tooltip.linger);
         });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
         addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
@@ -559,7 +623,10 @@ export class Chart extends EventTarget {
         this.showTooltip();
     }
 
-    hideTooltip({x, y, index}={}) {
+    /**
+     * Hide tooltip (if visible)
+     */
+    hideTooltip() {
         const state = this._tooltipState;
         if (state.pointerAborter && !state.pointerAborter.signal.aborted) {
             state.pointerAborter.abort();
@@ -571,7 +638,10 @@ export class Chart extends EventTarget {
         state.visible = false;
     }
 
-    showTooltip({x, y, index}={}) {
+    /**
+     * Show tooltip (if available)
+     */
+    showTooltip() {
         if (!this.isTooltipAvailable() || this._tooltipState.visible) {
             return;
         }
@@ -590,6 +660,11 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * Increment the tooltip's suspend reference count by 1.
+     * While the tooltip suspend reference count is > 0 the tooltip will not be
+     * available and thus won't be visible.
+     */
     suspendTooltip() {
         this._tooltipState.suspendRefCnt++;
         if (this._tooltipState.visible) {
@@ -597,6 +672,9 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * Decrement the tooltip's suspend reference count by 1
+     */
     resumeTooltip() {
         if (this._tooltipState.suspendRefCnt === 0) {
             throw new Error("not suspended");
@@ -604,10 +682,16 @@ export class Chart extends EventTarget {
         this._tooltipState.suspendRefCnt--;
     }
 
+    /**
+     * @returns {boolean} Is the tooltip suspended or disabled
+     */
     isTooltipAvailable() {
         return !this.tooltip.disabled && this._tooltipState.suspendRefCnt === 0;
     }
 
+    /**
+     * @returns {boolean} Is the tooltip actively handling pointer events
+     */
     isTooltipPointing() {
         // i.e. Are we actively using pointer events to place the tooltip..
         return !!(
@@ -621,10 +705,10 @@ export class Chart extends EventTarget {
         const charts = this.getAllCharts();
         const chartRect = this.el.getBoundingClientRect();
         let positionCallback, hAlign, vAlign;
-        if (typeof this.tooltipPosition === 'function') {
-            positionCallback = this.tooltipPosition;
+        if (typeof this.tooltip.position === 'function') {
+            positionCallback = this.tooltip.position;
         } else {
-            let tp = this.tooltipPosition;
+            let tp = this.tooltip.position;
             if (typeof tp === 'string') {
                 tp = tp.split(/\s+/);
             }
@@ -649,6 +733,15 @@ export class Chart extends EventTarget {
         return this._tooltipState;
     }
 
+    /**
+     * Place the tooltip at specific data value coordinates or by data index
+     *
+     * @param {object} options
+     * @param {XValue} [options.x]
+     * @param {YValue} [options.y]
+     * @param {number} [options.index] - Data index
+     * @emits Chart#tooltip
+     */
     setTooltipPosition(options) {
         this._establishTooltipState();
         return this._setTooltipPosition(options);
@@ -668,6 +761,9 @@ export class Chart extends EventTarget {
         })));
     }
 
+    /**
+     * @protected
+     */
     updateVisibleTooltip(options) {
         const root = this.isParentChart() ? this : this.parentChart;
         if (root && root._tooltipState.visible && root.isTooltipAvailable()) {
@@ -729,8 +825,8 @@ export class Chart extends EventTarget {
             return;
         }
         const state = this._tooltipState;
-        const top = this.tooltipPadding[0] * this.devicePixelRatio;
-        const bottom = this._boxHeight - this.tooltipPadding[1] * this.devicePixelRatio;
+        const top = this.tooltip.padding[0] * this.devicePixelRatio;
+        const bottom = this._boxHeight - this.tooltip.padding[1] * this.devicePixelRatio;
         const centerX = tooltips.reduce((agg, o) => agg + o.coordinates[0], 0) / tooltips.length;
         const centerY = top + (bottom - top) / 2;
         let vertLine = this._tooltipGroupEl.querySelector('.sc-line.sc-vertical');
@@ -817,6 +913,12 @@ export class Chart extends EventTarget {
         state.hasDrawn = true;
     }
 
+    /**
+     * Binary search for nearest data entry using a visual X coordinate
+     *
+     * @param {XCoord} searchX
+     * @returns {DataObject}
+     */
     findNearestFromXCoord(searchX) {
         if (isNaN(searchX) || !this._renderData || !this._renderData.length) {
             return;
@@ -842,36 +944,51 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * @param {object} options
+     * @param {("data"|"visual")} options.type - What coordinate scheme to use and how to keep this
+     *                                           zoom anchored when data is updated
+     * @param {XRange} [options.xRange] - [start, end] coordinates (type=data only)
+     * @param {YRange} [options.yRange] - [start, end] coordinates (type=data only)
+     * @param {Coords} [options.translate] - [x, y] coordinate offsets (type=visual only)
+     * @param {number} [options.scale] - Scaling factor (type=visual only)
+     * @emits Chart#zoom
+     */
     setZoom({xRange, yRange, translate, scale, type, _internal=false}={}) {
-        this._zoomRevision++;
+        this._zoomState.rev++;
         if (type == null) {
-            this.zoom.active = false;
-            this.zoom.translate = this.zoom.scale = this.zoom.xRange = this.zoom.yRange = null;
+            this._zoomState.active = false;
+            this._zoomState.translate = this._zoomState.scale = null;
+            this._zoomState.xRange = this._zoomState.yRange = null;
         } else {
             if (type === 'data') {
-                this.zoom.translate = this.zoom.scale = null;
-                this.zoom.xRange = xRange ?? null;
-                this.zoom.yRange = yRange ?? null;
+                this._zoomState.translate = this._zoomState.scale = null;
+                this._zoomState.xRange = xRange ?? null;
+                this._zoomState.yRange = yRange ?? null;
             } else if (type === 'visual') {
-                this.zoom.xRange = this.zoom.yRange = null;
-                this.zoom.translate = translate ?? null;
-                this.zoom.scale = scale ?? null;
+                this._zoomState.xRange = this._zoomState.yRange = null;
+                this._zoomState.translate = translate ?? null;
+                this._zoomState.scale = scale ?? null;
             } else {
                 throw new TypeError("invalid zoom type");
             }
-            this.zoom.active = true;
+            this._zoomState.active = true;
         }
-        this.zoom.type = type;
+        this._zoomState.type = type;
         this.render();
         queueMicrotask(() => this.dispatchEvent(new CustomEvent('zoom', {
             detail: {
-                ...this.zoom,
+                ...this._zoomState,
                 internal: _internal,
                 chart: this,
             }
         })));
     }
 
+    /**
+     * @param {ChartData} [data]
+     * @param {RenderOptions} [options]
+     */
     setData(data, options={}) {
         this.data = data;
         this.normalizedData = this.normalizeData(data);
@@ -880,6 +997,12 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * @protected
+     *
+     * @param {ChartData} data
+     * @returns {Array<DataObject>}
+     */
     normalizeData(data) {
         const norm = new Array(data.length);
         if (!data.length) {
@@ -905,6 +1028,11 @@ export class Chart extends EventTarget {
         return norm;
     }
 
+    /**
+     * Render the chart
+     *
+     * @param {RenderOptions} [options]
+     */
     render(options={}) {
         if (!this.el || !this._boxWidth || !this._boxHeight) {
             return;
@@ -916,13 +1044,13 @@ export class Chart extends EventTarget {
         options.disableAnimation = options.disableAnimation || this.disableAnimation;
         const manifest = this.beforeRender(options);
         this.adjustScale(manifest);
-        if (this.zoom.active && this.zoom.type === 'visual') {
+        if (this._zoomState.active && this._zoomState.type === 'visual') {
             // Get offsets and size before transforms...
-            const xOfft = this.zoom.translate ? this.xCoordScale(this.zoom.translate[0]) : 0;
-            const yOfft = this.zoom.translate ? this.yCoordScale(this.zoom.translate[1]) : 0;
-            if (this.zoom.scale) {
-                this._xMax = this._xMin + (this._xMax - this._xMin) / this.zoom.scale[0];
-                this._yMax = this._yMin + (this._yMax - this._yMin) / this.zoom.scale[1];
+            const xOfft = this._zoomState.translate ? this.xCoordScale(this._zoomState.translate[0]) : 0;
+            const yOfft = this._zoomState.translate ? this.yCoordScale(this._zoomState.translate[1]) : 0;
+            if (this._zoomState.scale) {
+                this._xMax = this._xMin + (this._xMax - this._xMin) / this._zoomState.scale[0];
+                this._yMax = this._yMin + (this._yMax - this._yMin) / this._zoomState.scale[1];
             }
             this._xMin += xOfft;
             this._xMax += xOfft;
@@ -937,7 +1065,7 @@ export class Chart extends EventTarget {
             this._yMax,
             this._plotWidth,
             this._plotHeight,
-            this._zoomRevision
+            this._zoomState.rev
         ].join('-');
         if (this._lastAxisSig !== axisSig) {
             this._lastAxisSig = axisSig;
@@ -951,6 +1079,11 @@ export class Chart extends EventTarget {
         this.afterRender(manifest, options);
     }
 
+    /**
+     * Called before any visual reflow/painting
+     *
+     * @protected
+     */
     beforeRender(options) {
         let data = this.normalizedData;
         const resampling = data.length > this._plotWidth * 1.5;
@@ -961,19 +1094,22 @@ export class Chart extends EventTarget {
         return {data, resampling};
     }
 
+    /**
+     * @protected
+     */
     adjustScale({data}) {
         this._xMin = this.xMin;
         this._xMax = this.xMax;
         this._yMin = this.yMin;
         this._yMax = this.yMax;
-        if (this.zoom.active && this.zoom.type === 'data') {
-            if (this.zoom.xRange) {
-                this._xMin = this.zoom.xRange[0];
-                this._xMax = this.zoom.xRange[1];
+        if (this._zoomState.active && this._zoomState.type === 'data') {
+            if (this._zoomState.xRange) {
+                this._xMin = this._zoomState.xRange[0];
+                this._xMax = this._zoomState.xRange[1];
             }
-            if (this.zoom.yRange) {
-                this._yMin = this.zoom.yRange[0];
-                this._yMax = this.zoom.yRange[1];
+            if (this._zoomState.yRange) {
+                this._yMin = this._zoomState.yRange[0];
+                this._yMax = this._zoomState.yRange[1];
             }
         }
         if (this._yMin == null || this._yMax == null) {
@@ -997,46 +1133,88 @@ export class Chart extends EventTarget {
         }
     }
 
+    /**
+     * @protected
+     * @abstract
+     */
     doLayout(manifest, options) {
         throw new Error("subclass impl required");
     }
 
+    /**
+     * @protected
+     */
     afterRender(manifest, options) {
         this.updateVisibleTooltip();
     }
 
+    /**
+     * @param {XValue} value
+     * @returns {XCoord}
+     */
     xValueScale(value) {
         return value * (this._plotWidth / (this._xMax - this._xMin));
     }
 
+    /**
+     * @param {YValue} value
+     * @returns {YCoord}
+     */
     yValueScale(value) {
         return value * (this._plotHeight / (this._yMax - this._yMin));
     }
 
+    /**
+     * @param {XValue} value
+     * @returns {XCoord}
+     */
     xValueToCoord(value) {
         return (value - this._xMin) * (this._plotWidth / (this._xMax - this._xMin)) + this._plotBox[3];
     }
 
+    /**
+     * @param {YValue} value
+     * @returns {YCoord}
+     */
     yValueToCoord(value) {
         return this._plotBox[2] - ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
     }
 
+    /**
+     * @param {XCoord} coord
+     * @returns {XValue}
+     */
     xCoordScale(coord) {
         return coord / (this._plotWidth / (this._xMax - this._xMin));
     }
 
+    /**
+     * @param {YCoord} coord
+     * @returns {YValue}
+     */
     yCoordScale(coord) {
         return coord / (this._plotHeight / (this._yMax - this._yMin));
     }
 
+    /**
+     * @param {XCoord} coord
+     * @returns {XValue}
+     */
     xCoordToValue(coord) {
         return (coord - this._plotBox[3]) / (this._plotWidth / (this._xMax - this._xMin)) + this._xMin;
     }
 
+    /**
+     * @param {YCoord} coord
+     * @returns {YValue}
+     */
     yCoordToValue(coord) {
         return (this._plotBox[2] - coord) / (this._plotHeight / (this._yMax - this._yMin)) + this._yMin;
     }
 
+    /**
+     * Clear this charts data and rendering
+     */
     reset() {
         if (this.data) {
             this.data.length = 0;
@@ -1046,8 +1224,20 @@ export class Chart extends EventTarget {
         this.doReset();
     }
 
+    /**
+     * @protected
+     * @abstract
+     */
     doReset() {}
 
+    /**
+     * Create an SVG or CSS path
+     *
+     * @param {Coords} coords
+     * @param {object} [options]
+     * @param {boolean} [options.css] - CSS compatible output
+     * @param {boolean} [options.closed] - Close the Path so it can be filled
+     */
     makePath(coords, {css, closed}={}) {
         if (!coords.length) {
             return '';
@@ -1064,3 +1254,169 @@ export class Chart extends EventTarget {
         return css ? `path('${path}')` : path;
     }
 }
+
+
+/**
+ * @typedef ChartOptions
+ * @type {object}
+ * @property {external:Element} [el] - DOM Element to insert chart into
+ * @property {boolean} [merge] - Merge with existing Chart using this same element
+ * @property {ChartData} [data] - Initial data to use for chart rendering
+ * @property {number} [xMin] - Minimum X data value
+ * @property {number} [xMax] - Maximum X data value
+ * @property {number} [yMin] - Minimum Y data value
+ * @property {number} [yMax] - Maximum Y data value
+ * @property {string} [title] - Visually displayed title of chart
+ * @property {external:CSS_Color} [color] - The CSS color basis for this chart's data
+ * @property {BoxArray} [padding] - Plot padding in DPI adjusted coordinates.
+ * @property {number} [width] - Fixed width of plot
+ * @property {number} [height] - Fixed height of plot
+ * @property {TooltipOptions} [tooltip] - Tooltip options
+ * @property {AxisOptions} [xAxis] - X axis options
+ * @property {AxisOptions} [yAxis] - Y axis options
+ * @property {boolean} [disableAnimation] - Disable all animation/transitions
+ * @property {boolean} [darkMode] - Force use of darkmode
+ */
+
+
+/**
+ * Native CSS Color value (browser support dependent)
+ *
+ * @typedef CSS_Color
+ * @type {string}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value}
+ */
+
+
+/**
+ * @typedef EventTarget
+ * @type {EventTarget}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/EventTarget}
+ */
+
+
+/**
+ * @typedef Element
+ * @type {Element}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element}
+ */
+
+
+/**
+ * Coordinate box [top, right, bottom, left]
+ *
+ * @typedef BoxArray
+ * @type {Array<number>}
+ * @property {number} 0 - top
+ * @property {number} 1 - right
+ * @property {number} 2 - bottom
+ * @property {number} 3 - left
+ */
+
+
+/**
+ * Chart Tooltip options
+ *
+ * @typedef TooltipOptions
+ * @type {object}
+ * @property {boolean} [disabled]
+ * @property {BoxArray} [padding] - Padding offsets for tooltip box
+ * @property {number} [linger=800] - Milliseconds to linger before hiding
+ * @property {TooltipPosition} [position="leftright"] - Relative positioning of tooltip with
+ *                                                      respect to the pointer
+ * @property {function} [format] - Custom callback function for tooltip value
+ */
+
+
+/**
+ * Chart Tooltip positions
+ *
+ * A string containing horizontal and/or veritical placement hints.
+ *
+ * @example
+ * "left below"
+ *
+ * @typedef TooltipPosition
+ * @type {string}
+ * @property {"left"|"center"|"right"|"leftright"} 0 - Horizontal placement hints
+ * @property {"above"|"top"|"middle"|"bottom"|"below"} 1 - Vertical placement hints
+ */
+
+
+/**
+ * Chart Axis options
+ *
+ * @typedef AxisOptions
+ * @type {object}
+ * @property {boolean} [disabled]
+ * @property {("left"|"right")} [align="left"] - Placement of vertical axis elements
+ * @property {number} [ticks] - Number of ticks/labels to draw
+ * @property {boolean} [showFirst] - Render the first (low) value of the axis
+ * @property {number} [tickLength=6] - Size of the tick marks
+ * @property {function} [label] - Custom callback function for label values
+ */
+
+
+/**
+ * Chart data array - Chart specific meaning
+ *
+ * @typedef ChartData
+ * @type {Array<DataObject|DataValue|DataTuple>}
+ */
+
+
+/**
+ * Chart type specific data object
+ *
+ * @typedef DataObject
+ * @type object
+ */
+
+
+/**
+ * Y value of data.  X is infered by array index
+ *
+ * @typedef DataValue
+ * @type number
+ */
+
+
+/**
+ * X, Y data values
+ *
+ * @typedef DataTuple
+ * @type Array<number>
+ * @property {number} 0 - X value
+ * @property {number} 1 - Y value
+ */
+
+
+/**
+ * Tooltip position event
+ *
+ * @event Chart#tooltip
+ * @type {object}
+ * @property {number} [x]
+ * @property {number} [y]
+ * @property {number} [index]
+ * @property {boolean} internal - Was the event triggered internally by pointer events
+ * @property {Chart} chart
+ */
+
+
+/**
+ * Zoom event
+ *
+ * @event Chart#zoom
+ * @type {object}
+ * @property {("data"|"visual")} type
+ * @property {XRange} [xRange]
+ * @property {YRange} [yRange]
+ * @property {Coords} [translate]
+ * @property {number} [scale]
+ * @property {boolean} internal - Was the event triggered internally by pointer events
+ * @property {Chart} chart
+ */
