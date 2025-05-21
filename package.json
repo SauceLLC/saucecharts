@@ -1,11 +1,18 @@
 {
   "name": "saucecharts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Simple, modern, web chart library",
   "main": "src/index.mjs",
   "author": "Sauce, LLC",
   "license": "MIT",
+  "scripts": {
+    "docs": "jsdoc -c .jsdoc.conf -P package.json -R README.md"
+  },
   "devDependencies": {
     "eslint": "8.57.1"
+  },
+  "dependencies": {
+    "docdash": "2.0.2",
+    "jsdoc": "4.0.4"
   }
 }

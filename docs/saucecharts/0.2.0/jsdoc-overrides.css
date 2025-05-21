@@ -1,0 +1,244 @@
+
+body {
+    font-size: 14px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Reset */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+    line-height: normal;
+    letter-spacing: normal;
+}
+
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.5em;
+}
+
+h3 {
+    font-size: 1.17em;
+}
+
+h4 {
+    font-size: 1em;
+}
+
+h5 {
+    font-size: 0.83em;
+}
+
+h1.page-title {
+    font-size: 3em;
+    font-weight: normal;
+}
+
+ul {
+    margin-top: 0;
+    padding-left: 2em;
+}
+
+nav {
+    padding-bottom: 2rem;
+}
+
+nav > h2 > a {
+    color: black !important;
+    font-size: 1.2em;
+    padding-bottom: 0.3em;
+}
+
+nav ul ul a,
+nav ul ul a:active {
+    color: #222;
+}
+
+nav ul ul a:hover {
+    color: black;
+}
+
+nav a:hover,
+nav a:active {
+    color: black;
+}
+
+h1.page-title {
+    margin: 1em 2rem;
+}
+
+#main section {
+    max-width: 60em;
+    padding: 0 1rem 0 2rem;
+}
+
+#main section .class-description {
+    font-size: 1.1em;
+}
+
+#main section .container-overview {
+    padding-left: 1rem;
+}
+
+#main section .container-overview h2 {
+    margin-left: -2rem;
+}
+
+#main section .container-overview h4.name {
+    margin-left: -1rem;
+}
+
+h4.name {
+    background: #424242;
+    margin-left: -1rem;
+    margin-top: 3rem;
+    border-radius: 0.2em;
+    border: none;
+}
+
+h4.name.target::before {
+    content: '';
+    position: absolute;
+    height: 2.5em;
+    border-left: 3px dotted #004f86;
+    margin-left: -1.5em;
+    margin-top: -0.6em;
+}
+
+h4.name.target {
+    background-color: #004f86;
+}
+
+nav a {
+    transition: background 400ms, color 400ms, padding 400ms;
+}
+nav a.target {
+    background: #004f86;
+    color: white;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+nav a.target:hover {
+    color: white;
+    text-decoration: none;
+    cursor: initial;
+}
+
+h3.subsection-title + h4.name,
+.container-overview > h4.name {
+    margin-top: 0.5rem;
+}
+
+h4.name a {
+    border: none;
+}
+
+nav > ul > li > a {
+    color: black;
+}
+
+.signature {
+    color: #7ab4ff;
+    font-size: 0.85em;
+    font-weight: normal;
+}
+
+a, a.active,
+span.param-type,.params td .param-type, .param-type dd {
+    color: #458bfa;
+}
+
+table.params,
+table.props {
+    font-size: 0.9em;
+    margin: 0.5em 0;
+}
+
+table.params th,
+table.props th {
+    padding: 0.7em;
+}
+
+table.params td,
+table.props td {
+    padding: 0.7em;
+    border-top: 1px solid #eee;
+}
+
+table.params td > table.params,
+table.params td > table.props,
+table.props td > table.params,
+table.props td > table.props {
+    font-size: 0.8em;
+    border: none;
+    box-shadow: none;
+}
+
+table.params td > table.params thead,
+table.params td > table.props thead,
+table.props td > table.params thead,
+table.props td > table.props thead {
+    display: none;
+}
+
+#main > section > article {
+    padding-left: 1rem;
+}
+
+.container-overview > h2 {
+    font-size: 1.3em;
+    text-transform: uppercase;
+}
+
+#main > section > article > .subsection-title {
+    margin: 2rem 0 0 -1rem;
+    text-transform: uppercase;
+}
+
+article a {
+    border: none;
+}
+
+article a:hover, 
+article a:active {
+    color: #007aff;
+}
+
+article > h5 {
+    text-transform: uppercase;
+    font-size: 0.8em;
+}
+
+.type-signature,
+.type-signature a {
+    color: #ff9f48 !important;
+    font-size: 0.8em;
+    font-weight: normal;
+}
+.type-signature a {
+    border: none;
+}
+
+.tag-source {
+    font-size: 0.7em;
+    color: #999
+}
+
+.tag-source a {
+    color: #999;
+    border: none;
+}
+
+.tag-source a:hover {
+    color: #777;
+}
+
+dl.details {
+    margin-left: -1rem;
+    margin-top: -0.4rem;
+}
