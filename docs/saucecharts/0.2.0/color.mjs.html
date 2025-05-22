@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>color.mjs - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Chart.html">Chart</a><ul class='methods'><li data-type='method'><a href="Chart.html#addChart">addChart</a></li><li data-type='method'><a href="Chart.html#addGradient">addGradient</a></li><li data-type='method'><a href="Chart.html#adjustScale">adjustScale</a></li><li data-type='method'><a href="Chart.html#adjustSize">adjustSize</a></li><li data-type='method'><a href="Chart.html#afterRender">afterRender</a></li><li data-type='method'><a href="Chart.html#afterSetElement">afterSetElement</a></li><li data-type='method'><a href="Chart.html#beforeRender">beforeRender</a></li><li data-type='method'><a href="Chart.html#beforeSetElement">beforeSetElement</a></li><li data-type='method'><a href="Chart.html#doLayout">doLayout</a></li><li data-type='method'><a href="Chart.html#doReset">doReset</a></li><li data-type='method'><a href="Chart.html#findNearestFromXCoord">findNearestFromXCoord</a></li><li data-type='method'><a href="Chart.html#getAllCharts">getAllCharts</a></li><li data-type='method'><a href="Chart.html#getColor">getColor</a></li><li data-type='method'><a href="Chart.html#hideTooltip">hideTooltip</a></li><li data-type='method'><a href="Chart.html#init">init</a></li><li data-type='method'><a href="Chart.html#isParentChart">isParentChart</a></li><li data-type='method'><a href="Chart.html#isTooltipAvailable">isTooltipAvailable</a></li><li data-type='method'><a href="Chart.html#isTooltipPointing">isTooltipPointing</a></li><li data-type='method'><a href="Chart.html#makePath">makePath</a></li><li data-type='method'><a href="Chart.html#normalizeData">normalizeData</a></li><li data-type='method'><a href="Chart.html#onAxisLabel">onAxisLabel</a></li><li data-type='method'><a href="Chart.html#onTooltip">onTooltip</a></li><li data-type='method'><a href="Chart.html#removeGradient">removeGradient</a></li><li data-type='method'><a href="Chart.html#render">render</a></li><li data-type='method'><a href="Chart.html#reset">reset</a></li><li data-type='method'><a href="Chart.html#resumeTooltip">resumeTooltip</a></li><li data-type='method'><a href="Chart.html#setData">setData</a></li><li data-type='method'><a href="Chart.html#setElement">setElement</a></li><li data-type='method'><a href="Chart.html#setTooltipPosition">setTooltipPosition</a></li><li data-type='method'><a href="Chart.html#setZoom">setZoom</a></li><li data-type='method'><a href="Chart.html#showTooltip">showTooltip</a></li><li data-type='method'><a href="Chart.html#suspendTooltip">suspendTooltip</a></li><li data-type='method'><a href="Chart.html#updateVisibleTooltip">updateVisibleTooltip</a></li><li data-type='method'><a href="Chart.html#xCoordScale">xCoordScale</a></li><li data-type='method'><a href="Chart.html#xCoordToValue">xCoordToValue</a></li><li data-type='method'><a href="Chart.html#xValueScale">xValueScale</a></li><li data-type='method'><a href="Chart.html#xValueToCoord">xValueToCoord</a></li><li data-type='method'><a href="Chart.html#yCoordScale">yCoordScale</a></li><li data-type='method'><a href="Chart.html#yCoordToValue">yCoordToValue</a></li><li data-type='method'><a href="Chart.html#yValueScale">yValueScale</a></li><li data-type='method'><a href="Chart.html#yValueToCoord">yValueToCoord</a></li></ul></li><li><a href="module-bar.BarChart.html">BarChart</a><ul class='methods'><li data-type='method'><a href="module-bar.BarChart.html#addChart">addChart</a></li><li data-type='method'><a href="module-bar.BarChart.html#addGradient">addGradient</a></li><li data-type='method'><a href="module-bar.BarChart.html#adjustScale">adjustScale</a></li><li data-type='method'><a href="module-bar.BarChart.html#adjustSize">adjustSize</a></li><li data-type='method'><a href="module-bar.BarChart.html#afterRender">afterRender</a></li><li data-type='method'><a href="module-bar.BarChart.html#afterSetElement">afterSetElement</a></li><li data-type='method'><a href="module-bar.BarChart.html#beforeRender">beforeRender</a></li><li data-type='method'><a href="module-bar.BarChart.html#beforeSetElement">beforeSetElement</a></li><li data-type='method'><a href="module-bar.BarChart.html#doLayout">doLayout</a></li><li data-type='method'><a href="module-bar.BarChart.html#doReset">doReset</a></li><li data-type='method'><a href="module-bar.BarChart.html#findNearestFromXCoord">findNearestFromXCoord</a></li><li data-type='method'><a href="module-bar.BarChart.html#getAllCharts">getAllCharts</a></li><li data-type='method'><a href="module-bar.BarChart.html#getColor">getColor</a></li><li data-type='method'><a href="module-bar.BarChart.html#hideTooltip">hideTooltip</a></li><li data-type='method'><a href="module-bar.BarChart.html#init">init</a></li><li data-type='method'><a href="module-bar.BarChart.html#isParentChart">isParentChart</a></li><li data-type='method'><a href="module-bar.BarChart.html#isTooltipAvailable">isTooltipAvailable</a></li><li data-type='method'><a href="module-bar.BarChart.html#isTooltipPointing">isTooltipPointing</a></li><li data-type='method'><a href="module-bar.BarChart.html#makePath">makePath</a></li><li data-type='method'><a href="module-bar.BarChart.html#normalizeData">normalizeData</a></li><li data-type='method'><a href="module-bar.BarChart.html#onAxisLabel">onAxisLabel</a></li><li data-type='method'><a href="module-bar.BarChart.html#onTooltip">onTooltip</a></li><li data-type='method'><a href="module-bar.BarChart.html#removeGradient">removeGradient</a></li><li data-type='method'><a href="module-bar.BarChart.html#render">render</a></li><li data-type='method'><a href="module-bar.BarChart.html#reset">reset</a></li><li data-type='method'><a href="module-bar.BarChart.html#resumeTooltip">resumeTooltip</a></li><li data-type='method'><a href="module-bar.BarChart.html#setData">setData</a></li><li data-type='method'><a href="module-bar.BarChart.html#setElement">setElement</a></li><li data-type='method'><a href="module-bar.BarChart.html#setTooltipPosition">setTooltipPosition</a></li><li data-type='method'><a href="module-bar.BarChart.html#setZoom">setZoom</a></li><li data-type='method'><a href="module-bar.BarChart.html#showTooltip">showTooltip</a></li><li data-type='method'><a href="module-bar.BarChart.html#suspendTooltip">suspendTooltip</a></li><li data-type='method'><a href="module-bar.BarChart.html#updateVisibleTooltip">updateVisibleTooltip</a></li><li data-type='method'><a href="module-bar.BarChart.html#xCoordScale">xCoordScale</a></li><li data-type='method'><a href="module-bar.BarChart.html#xCoordToValue">xCoordToValue</a></li><li data-type='method'><a href="module-bar.BarChart.html#xValueScale">xValueScale</a></li><li data-type='method'><a href="module-bar.BarChart.html#xValueToCoord">xValueToCoord</a></li><li data-type='method'><a href="module-bar.BarChart.html#yCoordScale">yCoordScale</a></li><li data-type='method'><a href="module-bar.BarChart.html#yCoordToValue">yCoordToValue</a></li><li data-type='method'><a href="module-bar.BarChart.html#yValueScale">yValueScale</a></li><li data-type='method'><a href="module-bar.BarChart.html#yValueToCoord">yValueToCoord</a></li></ul></li><li><a href="module-color.Color.html">Color</a><ul class='methods'><li data-type='method'><a href="module-color.Color.html#adjustAlpha">adjustAlpha</a></li><li data-type='method'><a href="module-color.Color.html#adjustHue">adjustHue</a></li><li data-type='method'><a href="module-color.Color.html#adjustLight">adjustLight</a></li><li data-type='method'><a href="module-color.Color.html#adjustSaturation">adjustSaturation</a></li><li data-type='method'><a href="module-color.Color.html#alpha">alpha</a></li><li data-type='method'><a href="module-color.Color.html#clone">clone</a></li><li data-type='method'><a href="module-color.Color.html#hue">hue</a></li><li data-type='method'><a href="module-color.Color.html#light">light</a></li><li data-type='method'><a href="module-color.Color.html#saturation">saturation</a></li><li data-type='method'><a href="module-color.Color.html#toString">toString</a></li><li data-type='method'><a href="module-color.Color.html#.fromHex">fromHex</a></li><li data-type='method'><a href="module-color.Color.html#.fromRGB">fromRGB</a></li></ul></li><li><a href="module-color.Gradient.html">Gradient</a><ul class='methods'><li data-type='method'><a href="module-color.Gradient.html#addColor">addColor</a></li><li data-type='method'><a href="module-color.Gradient.html#.fromObject">fromObject</a></li></ul></li><li><a href="module-color.LinearGradient.html">LinearGradient</a></li><li><a href="module-line.LineChart.html">LineChart</a><ul class='methods'><li data-type='method'><a href="module-line.LineChart.html#addChart">addChart</a></li><li data-type='method'><a href="module-line.LineChart.html#addGradient">addGradient</a></li><li data-type='method'><a href="module-line.LineChart.html#adjustScale">adjustScale</a></li><li data-type='method'><a href="module-line.LineChart.html#adjustSize">adjustSize</a></li><li data-type='method'><a href="module-line.LineChart.html#afterRender">afterRender</a></li><li data-type='method'><a href="module-line.LineChart.html#afterSetElement">afterSetElement</a></li><li data-type='method'><a href="module-line.LineChart.html#beforeRender">beforeRender</a></li><li data-type='method'><a href="module-line.LineChart.html#beforeSetElement">beforeSetElement</a></li><li data-type='method'><a href="module-line.LineChart.html#doLayout">doLayout</a></li><li data-type='method'><a href="module-line.LineChart.html#doReset">doReset</a></li><li data-type='method'><a href="module-line.LineChart.html#findNearestFromXCoord">findNearestFromXCoord</a></li><li data-type='method'><a href="module-line.LineChart.html#getAllCharts">getAllCharts</a></li><li data-type='method'><a href="module-line.LineChart.html#getColor">getColor</a></li><li data-type='method'><a href="module-line.LineChart.html#hideBrush">hideBrush</a></li><li data-type='method'><a href="module-line.LineChart.html#hideTooltip">hideTooltip</a></li><li data-type='method'><a href="module-line.LineChart.html#init">init</a></li><li data-type='method'><a href="module-line.LineChart.html#isParentChart">isParentChart</a></li><li data-type='method'><a href="module-line.LineChart.html#isTooltipAvailable">isTooltipAvailable</a></li><li data-type='method'><a href="module-line.LineChart.html#isTooltipPointing">isTooltipPointing</a></li><li data-type='method'><a href="module-line.LineChart.html#makePath">makePath</a></li><li data-type='method'><a href="module-line.LineChart.html#normalizeData">normalizeData</a></li><li data-type='method'><a href="module-line.LineChart.html#onAxisLabel">onAxisLabel</a></li><li data-type='method'><a href="module-line.LineChart.html#onTooltip">onTooltip</a></li><li data-type='method'><a href="module-line.LineChart.html#removeGradient">removeGradient</a></li><li data-type='method'><a href="module-line.LineChart.html#render">render</a></li><li data-type='method'><a href="module-line.LineChart.html#reset">reset</a></li><li data-type='method'><a href="module-line.LineChart.html#resumeTooltip">resumeTooltip</a></li><li data-type='method'><a href="module-line.LineChart.html#setBrush">setBrush</a></li><li data-type='method'><a href="module-line.LineChart.html#setData">setData</a></li><li data-type='method'><a href="module-line.LineChart.html#setElement">setElement</a></li><li data-type='method'><a href="module-line.LineChart.html#setSegments">setSegments</a></li><li data-type='method'><a href="module-line.LineChart.html#setTooltipPosition">setTooltipPosition</a></li><li data-type='method'><a href="module-line.LineChart.html#setZoom">setZoom</a></li><li data-type='method'><a href="module-line.LineChart.html#showBrush">showBrush</a></li><li data-type='method'><a href="module-line.LineChart.html#showTooltip">showTooltip</a></li><li data-type='method'><a href="module-line.LineChart.html#suspendTooltip">suspendTooltip</a></li><li data-type='method'><a href="module-line.LineChart.html#updateVisibleTooltip">updateVisibleTooltip</a></li><li data-type='method'><a href="module-line.LineChart.html#xCoordScale">xCoordScale</a></li><li data-type='method'><a href="module-line.LineChart.html#xCoordToValue">xCoordToValue</a></li><li data-type='method'><a href="module-line.LineChart.html#xValueScale">xValueScale</a></li><li data-type='method'><a href="module-line.LineChart.html#xValueToCoord">xValueToCoord</a></li><li data-type='method'><a href="module-line.LineChart.html#yCoordScale">yCoordScale</a></li><li data-type='method'><a href="module-line.LineChart.html#yCoordToValue">yCoordToValue</a></li><li data-type='method'><a href="module-line.LineChart.html#yValueScale">yValueScale</a></li><li data-type='method'><a href="module-line.LineChart.html#yValueToCoord">yValueToCoord</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-bar.html">bar</a></li><li><a href="module-color.html">color</a><ul class='methods'><li data-type='method'><a href="module-color.html#.parse">parse</a></li></ul></li><li><a href="module-line.html">line</a></li></ul><h3>Externals</h3><ul><li><a href="external-CSS_Color.html">CSS_Color</a></li><li><a href="external-Element.html">Element</a></li><li><a href="external-EventTarget.html">EventTarget</a></li></ul><h3>Events</h3><ul><li><a href="Chart.html#event:tooltip">tooltip</a></li><li><a href="Chart.html#event:zoom">zoom</a></li><li><a href="LineChart.html#event:brush">brush</a></li><li><a href="module-bar.BarChart.html#event:tooltip">tooltip</a></li><li><a href="module-bar.BarChart.html#event:zoom">zoom</a></li><li><a href="module-line.LineChart.html#event:tooltip">tooltip</a></li><li><a href="module-line.LineChart.html#event:zoom">zoom</a></li></ul><h3><a href="global.html">Global</a></h3>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">color.mjs</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module color
+ */
+
+import {createSVG} from './common.mjs';
+
+let gradientIdCounter = 0;
+
+
+/**
+ * @param {number} h - Hue 0 -> 1 float (0 = 0deg, 1 = 360deg)
+ * @param {number} s - Saturation 0 -> 1 float
+ * @param {number} l - Lightness 0 -> 1 float
+ * @param {number} [a] - Alpha 0 -> 1 float
+ */
+export class Color {
+
+    /**
+     * @param {number} r - Red 0 -> 1 float
+     * @param {number} g - Green 0 -> 1 float
+     * @param {number} b - Blue 0 -> 1 float
+     * @param {number} [a] - Alpha 0 -> 1 float
+     */
+    static fromRGB(r, g, b, a) {
+        const maxC = Math.max(r, g, b);
+        const minC = Math.min(r, g, b);
+        const d = maxC - minC;
+        let h = 0;
+        if (!d) {
+            h = 0;
+        } else if (maxC === r) {
+            h = ((g - b) / d) % 6;
+        } else if (maxC === g) {
+            h = (b - r) / d + 2; } else {
+            h = (r - g) / d + 4;
+        }
+        h = Math.round(h * 60);
+        if (h &lt; 0) {
+            h += 360;
+        }
+        h /= 360;
+        const l = (maxC + minC) / 2;
+        const s = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+        return new this(h, s, l, a);
+    }
+
+    /**
+     * @param {string} hex - RGB in 3, 4, 6, or 8 character format. a.la., #123, #112233, etc.
+     */
+    static fromHex(hex) {
+        if (hex.length >= 7) {
+            const r = parseInt(hex.substr(1, 2), 16) / 0xff;
+            const g = parseInt(hex.substr(3, 2), 16) / 0xff;
+            const b = parseInt(hex.substr(5, 2), 16) / 0xff;
+            const a = (hex.length === 9) ? parseInt(hex.substr(7, 2), 16)  / 0xff : undefined;
+            return this.fromRGB(r, g, b, a);
+        } else if (hex.length >= 4) {
+            const r = parseInt(''.padStart(2, hex.substr(1, 1)), 16) / 0xff;
+            const g = parseInt(''.padStart(2, hex.substr(2, 1)), 16) / 0xff;
+            const b = parseInt(''.padStart(2, hex.substr(3, 1)), 16) / 0xff;
+            const a = (hex.length === 5) ? parseInt(''.padStart(2, hex.substr(4, 1)), 16) / 0xff : undefined;
+            return this.fromRGB(r, g, b, a);
+        } else {
+            throw new Error('Invalid hex color');
+        }
+    }
+
+    constructor(h, s, l, a) {
+        this.h = h;
+        this.s = s;
+        this.l = l;
+        this.a = a;
+    }
+
+    /**
+     * @returns {Color} Copy of this color
+     */
+    clone() {
+        return new this.constructor(this.h, this.s, this.l, this.a);
+    }
+
+    /**
+     * Create clone with new Hue value
+     *
+     * @param {number} h - Hue 0 -> 1
+     * @returns {Color}
+     */
+    hue(h) {
+        const c = this.clone();
+        c.h = h;
+        return c;
+    }
+
+    /**
+     * Create clone with new Saturation value
+     *
+     * @param {number} s - Saturation 0 -> 1
+     * @returns {Color}
+     */
+    saturation(s) {
+        const c = this.clone();
+        c.s = s;
+        return c;
+    }
+
+    /**
+     * Create clone with new Lightness value
+     *
+     * @param {number} l - Lightness 0 -> 1
+     * @returns {Color}
+     */
+    light(l) {
+        const c = this.clone();
+        c.l = l;
+        return c;
+    }
+
+    /**
+     * Create clone with new Alpha value
+     *
+     * @param {number} a - Alpha 0 -> 1
+     * @returns {Color}
+     */
+    alpha(a) {
+        const c = this.clone();
+        c.a = a;
+        return c;
+    }
+
+    /**
+     * Create clone with adjusted Hue value
+     *
+     * @param {number} hd - Hue Delta -1 -> 1
+     * @returns {Color} this
+     */
+    adjustHue(hd) {
+        const c = this.clone();
+        c.h += hd;
+        return c;
+    }
+
+    /**
+     * Create clone with adjusted Lightness value
+     *
+     * @param {number} hd - Lightness Delta -1 -> 1
+     * @returns {Color} this
+     */
+    adjustLight(ld) {
+        const c = this.clone();
+        c.l += ld;
+        return c;
+    }
+
+    /**
+     * Create clone with adjusted Saturation value
+     *
+     * @param {number} sd - Saturation Delta -1 -> 1
+     * @returns {Color} this
+     */
+    adjustSaturation(sd) {
+        const c = this.clone();
+        c.s += sd;
+        return c;
+    }
+
+    /**
+     * Create clone with adjusted Alpha value
+     *
+     * @param {number} ad - Alpha Delta -1 -> 1
+     * @returns {Color} this
+     */
+    adjustAlpha(ad) {
+        const c = this.clone();
+        c.a += ad;
+        return c;
+    }
+
+    /**
+     * @returns {external:CSS_Color}
+     */
+    toString(options={}) {
+        const h = Number((this.h * 360).toFixed(3));
+        const s = Number((this.s * 100).toFixed(3));
+        const l = Number((this.l * 100).toFixed(3));
+        const a = this.a !== undefined ? ` / ${Number((this.a * 100).toFixed(3))}%` : '';
+        return `hsl(${h} ${s} ${l}%${a})`;
+    }
+}
+
+
+/**
+ * @typedef {object} GradientOptions
+ * @property {string} type
+ * @property {Array&lt;(string|Color)>} [colors]
+ */
+
+
+/**
+ * @param {GradientOptions} options
+ */
+export class Gradient {
+
+    /**
+     * Return a typed gradient subclass based on the `type` option
+     *
+     * @param {object} obj
+     * @param {"linear"} obj.type
+     */
+    static fromObject(obj) {
+        if (obj.type === 'linear') {
+            return new LinearGradient(obj);
+        } else {
+            throw new TypeError("unsupported type");
+        }
+    }
+
+    constructor({type, colors}={}) {
+        this.type = type;
+        this.colors = [];
+        this.id = `color-gradient-${type}-${gradientIdCounter++}`;
+        if (colors) {
+            for (const x of colors) {
+                if (typeof x === 'string' || (x instanceof Color)) {
+                    this.addColor(x);
+                } else {
+                    this.addColor(x.color, x.offset);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param {string|Color} color
+     * @param {number} offset
+     */
+    addColor(color, offset) {
+        this.colors.push({
+            color: (color instanceof Color) ? color : parse(color),
+            offset
+        });
+    }
+}
+
+
+/**
+ * @extends {Gradient}
+ * @param {GradientOptions | object} options
+ * @param {number} options.rotate
+ */
+export class LinearGradient extends Gradient {
+    constructor(options) {
+        super(options);
+        this.rotate = options.rotate;
+        this.el = createSVG({
+            name: 'linearGradient',
+            id: this.id,
+            attrs: {
+                x1: 0,
+                y1: 1,
+                x2: 0,
+                y2: 0,
+            }
+        });
+    }
+
+    render() {
+        this.el.setAttribute('class', 'sc-gradient');
+        const rotate = (this.rotate || 0) % 360;
+        if (rotate) {
+            this.el.setAttribute('gradientTransform', `rotate(${rotate} 0.5 0.5)`);
+        } else {
+            this.el.removeAttribute('gradientTransform');
+        }
+        let left = 0;
+        const stops = [];
+        for (const [i, x] of this.colors.entries()) {
+            let offset = x.offset;
+            if (offset == null) {
+                if (i === 0) {
+                    offset = 0;
+                } else if (i === this.colors.length - 1) {
+                    offset = 1;
+                } else {
+                    const nextBorderJump = this.colors.slice(i).findIndex(x => x.offset != null);
+                    let steps, right;
+                    if (nextBorderJump !== -1) {
+                        steps = nextBorderJump + 1;
+                        right = this.colors[nextBorderJump + i].offset;
+                    } else {
+                        steps = this.colors.length - i;
+                        right = 1;
+                    }
+                    offset = left + (right - left) / steps;
+                }
+            }
+            left = offset;
+            const stop = createSVG({
+                name: 'stop',
+                attrs: {
+                    offset: `${offset * 100}%`,
+                },
+                style: {
+                    'stop-color': x.color,
+                }
+            });
+            stops.push(stop);
+        }
+        this.el.replaceChildren(...stops);
+    }
+}
+
+
+let _colorCanvasCtx;
+/**
+ */
+export function parse(value) {
+    if (value == null) {
+        throw new TypeError('invalid color or gradient');
+    }
+    if (value instanceof Color) {
+        return value;
+    } else if (value instanceof Gradient) {
+        return value;
+    } else if (typeof value === 'object') {
+        return Gradient.fromObject(value);
+    }
+    if (!_colorCanvasCtx) {
+        _colorCanvasCtx = (new OffscreenCanvas(1, 1)).getContext('2d', {willReadFrequently: true});
+    }
+    const ctx = _colorCanvasCtx;
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = value;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1, {colorSpace: 'srgb'}).data;
+    return Color.fromRGB(r / 255, g / 255, b / 255, a / 255);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
+
+<link type="text/css" rel="stylesheet" href="../../css/jsdoc-overrides.css"/>
+<script src="../../js/jsdoc-overrides.js"></script>
