@@ -1,10 +1,26 @@
+/**
+ * @module color
+ */
 
 import {createSVG} from './common.mjs';
 
 let gradientIdCounter = 0;
 
 
+/**
+ * @param {number} h - Hue 0 -> 1 float (0 = 0deg, 1 = 360deg)
+ * @param {number} s - Saturation 0 -> 1 float
+ * @param {number} l - Lightness 0 -> 1 float
+ * @param {number} [a] - Alpha 0 -> 1 float
+ */
 export class Color {
+
+    /**
+     * @param {number} r - Red 0 -> 1 float
+     * @param {number} g - Green 0 -> 1 float
+     * @param {number} b - Blue 0 -> 1 float
+     * @param {number} [a] - Alpha 0 -> 1 float
+     */
     static fromRGB(r, g, b, a) {
         const maxC = Math.max(r, g, b);
         const minC = Math.min(r, g, b);
@@ -28,6 +44,9 @@ export class Color {
         return new this(h, s, l, a);
     }
 
+    /**
+     * @param {string} hex - RGB in 3, 4, 6, or 8 character format. a.la., #123, #112233, etc.
+     */
     static fromHex(hex) {
         if (hex.length >= 7) {
             const r = parseInt(hex.substr(1, 2), 16) / 0xff;
@@ -53,58 +72,112 @@ export class Color {
         this.a = a;
     }
 
+    /**
+     * @returns {Color} Copy of this color
+     */
     clone() {
         return new this.constructor(this.h, this.s, this.l, this.a);
     }
 
+    /**
+     * Create clone with new Hue value
+     *
+     * @param {number} h - Hue 0 -> 1
+     * @returns {Color}
+     */
     hue(h) {
         const c = this.clone();
         c.h = h;
         return c;
     }
 
+    /**
+     * Create clone with new Saturation value
+     *
+     * @param {number} s - Saturation 0 -> 1
+     * @returns {Color}
+     */
     saturation(s) {
         const c = this.clone();
         c.s = s;
         return c;
     }
 
+    /**
+     * Create clone with new Lightness value
+     *
+     * @param {number} l - Lightness 0 -> 1
+     * @returns {Color}
+     */
     light(l) {
         const c = this.clone();
         c.l = l;
         return c;
     }
 
+    /**
+     * Create clone with new Alpha value
+     *
+     * @param {number} a - Alpha 0 -> 1
+     * @returns {Color}
+     */
     alpha(a) {
         const c = this.clone();
         c.a = a;
         return c;
     }
 
-    adjustHue(h) {
+    /**
+     * Create clone with adjusted Hue value
+     *
+     * @param {number} hd - Hue Delta -1 -> 1
+     * @returns {Color} this
+     */
+    adjustHue(hd) {
         const c = this.clone();
-        c.h = h;
+        c.h += hd;
         return c;
     }
 
+    /**
+     * Create clone with adjusted Lightness value
+     *
+     * @param {number} hd - Lightness Delta -1 -> 1
+     * @returns {Color} this
+     */
     adjustLight(ld) {
         const c = this.clone();
         c.l += ld;
         return c;
     }
 
+    /**
+     * Create clone with adjusted Saturation value
+     *
+     * @param {number} sd - Saturation Delta -1 -> 1
+     * @returns {Color} this
+     */
     adjustSaturation(sd) {
         const c = this.clone();
         c.s += sd;
         return c;
     }
 
+    /**
+     * Create clone with adjusted Alpha value
+     *
+     * @param {number} ad - Alpha Delta -1 -> 1
+     * @returns {Color} this
+     */
     adjustAlpha(ad) {
         const c = this.clone();
         c.a += ad;
         return c;
     }
 
+    /**
+     * @returns {external:CSS_Color}
+     */
     toString(options={}) {
         const h = Number((this.h * 360).toFixed(3));
         const s = Number((this.s * 100).toFixed(3));
@@ -115,8 +188,24 @@ export class Color {
 }
 
 
+/**
+ * @typedef {object} GradientOptions
+ * @property {string} type
+ * @property {Array<(string|Color)>} [colors]
+ */
+
+
+/**
+ * @param {GradientOptions} options
+ */
 export class Gradient {
 
+    /**
+     * Return a typed gradient subclass based on the `type` option
+     *
+     * @param {object} obj
+     * @param {"linear"} obj.type
+     */
     static fromObject(obj) {
         if (obj.type === 'linear') {
             return new LinearGradient(obj);
@@ -140,6 +229,10 @@ export class Gradient {
         }
     }
 
+    /**
+     * @param {string|Color} color
+     * @param {number} offset
+     */
     addColor(color, offset) {
         this.colors.push({
             color: (color instanceof Color) ? color : parse(color),
@@ -149,6 +242,11 @@ export class Gradient {
 }
 
 
+/**
+ * @extends {Gradient}
+ * @param {GradientOptions | object} options
+ * @param {number} options.rotate
+ */
 export class LinearGradient extends Gradient {
     constructor(options) {
         super(options);
@@ -213,6 +311,8 @@ export class LinearGradient extends Gradient {
 
 
 let _colorCanvasCtx;
+/**
+ */
 export function parse(value) {
     if (value == null) {
         throw new TypeError('invalid color or gradient');

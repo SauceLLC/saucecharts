@@ -1,7 +1,26 @@
+/**
+ * @module line
+ */
+
 import * as common from './common.mjs';
 import * as colorMod from './color.mjs';
 
 
+/**
+ * @typedef {object} LineChartOptions
+ * @property {boolean} [hidePoints] - Hide the data marker points on the line
+ * @property {object} [brush] - Brush (i.e. selection) options
+ * @property {boolean} [brush.disabled=true]
+ * @property {"data"|"visual"} [brush.type] - Brush selection will anchor to data or visual coordinates
+ */
+
+/**
+ * A Line Chart
+ *
+ * @extends Chart
+ * @param {LineChartOptions|ChartOptions} [options]
+ * @emits LineChart#brush
+ */
 export class LineChart extends common.Chart {
 
     init(options={}) {
@@ -16,6 +35,14 @@ export class LineChart extends common.Chart {
         this._onPointerDownBound = this.onPointerDown.bind(this);
     }
 
+    /**
+     * Set the horizontal segments for this data.  A segment is data clipped `rect` that can be
+     * stylized independently to give special meaning to a data range.
+     *
+     * @param {Array<Segment>} segments
+     * @param {object} [options]
+     * @param {boolean} [options.render=true] - Force a render
+     */
     setSegments(segments, options={}) {
         this.segments = segments;
         if (options.render !== false) {
@@ -345,6 +372,9 @@ export class LineChart extends common.Chart {
         }
     }
 
+    /**
+     * Show the current brush
+     */
     showBrush() {
         const state = this._brushState;
         if (state.visible) {
@@ -354,6 +384,9 @@ export class LineChart extends common.Chart {
         state.visible = true;
     }
 
+    /**
+     * Hide the current brush.  Any active pointer interaction will be cancelled.
+     */
     hideBrush() {
         const state = this._brushState;
         if (state.pointerAborter && !state.pointerAborter.signal.aborted) {
@@ -366,6 +399,15 @@ export class LineChart extends common.Chart {
         state.visible = false;
     }
 
+    /**
+     * Set the brush parameters.  I.e. Mark a selection on the chart.
+     * Will also show the brush if not currently visible.
+     *
+     * @param {object} options
+     * @param {"data"|"visual"} options.type - Indicate what unit type the x1 and x2 options are
+     * @param {number} [options.x1] - Starting x value/coordinate
+     * @param {number} [options.x2] - Ending x value/coordinate
+     */
     setBrush(options) {
         this._establishBrushState();
         this._setBrush(options);
@@ -663,3 +705,15 @@ export class LineChart extends common.Chart {
         }
     }
 }
+
+
+/**
+ * Brush event
+ *
+ * @event LineChart#brush
+ * @type {object}
+ * @property {number} x1
+ * @property {number} x2
+ * @property {boolean} internal - Was the event triggered internally by pointer events
+ * @property {Chart} chart
+ */

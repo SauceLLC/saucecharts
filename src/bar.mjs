@@ -1,7 +1,24 @@
+/**
+ * @module bar
+ */
+
 import * as common from './common.mjs';
 import * as colorMod from './color.mjs';
 
 
+/**
+ * @typedef {object} BarChartOptions
+ * @property {number} [barSpacing=6]
+ * @property {number} [barRadius=4]
+ */
+
+
+/**
+ * A Bar Chart
+ *
+ * @extends Chart
+ * @param {BarChartOptions|ChartOptions} [options]
+ */
 export class BarChart extends common.Chart {
 
     init(options={}) {
