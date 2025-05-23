@@ -1,5 +1,122 @@
 import * as colorMod from './color.mjs';
 
+/**
+ * Coordinate box [top, right, bottom, left]
+ *
+ * @typedef BoxArray
+ * @type {Array<number>}
+ * @property {number} 0 - top
+ * @property {number} 1 - right
+ * @property {number} 2 - bottom
+ * @property {number} 3 - left
+ */
+
+
+/**
+ * Chart Tooltip options
+ *
+ * @typedef TooltipOptions
+ * @type {object}
+ * @property {boolean} [disabled]
+ * @property {BoxArray} [padding] - Padding offsets for tooltip box
+ * @property {number} [linger=800] - Milliseconds to linger before hiding
+ * @property {TooltipPosition} [position="leftright"] - Relative positioning of tooltip with
+ *                                                      respect to the pointer
+ * @property {function} [format] - Custom callback function for tooltip value
+ */
+
+
+/**
+ * Chart Tooltip positions
+ *
+ * A string containing horizontal and/or veritical placement hints.
+ *
+ * @example
+ * "left below"
+ *
+ * @typedef TooltipPosition
+ * @type {string}
+ * @property {"left"|"center"|"right"|"leftright"} 0 - Horizontal placement hints
+ * @property {"above"|"top"|"middle"|"bottom"|"below"} 1 - Vertical placement hints
+ */
+
+
+/**
+ * Chart Axis options
+ *
+ * @typedef AxisOptions
+ * @type {object}
+ * @property {boolean} [disabled]
+ * @property {("left"|"right")} [align="left"] - Placement of vertical axis elements
+ * @property {number} [ticks] - Number of ticks/labels to draw
+ * @property {boolean} [showFirst] - Render the first (low) value of the axis
+ * @property {number} [tickLength=6] - Size of the tick marks
+ * @property {function} [label] - Custom callback function for label values
+ */
+
+
+/**
+ * Chart data array - Chart specific meaning
+ *
+ * @typedef ChartData
+ * @type {Array<DataObject|DataValue|DataTuple>}
+ */
+
+
+/**
+ * Chart type specific data object
+ *
+ * @typedef DataObject
+ * @type object
+ */
+
+
+/**
+ * Y value of data.  X is infered by array index
+ *
+ * @typedef DataValue
+ * @type number
+ */
+
+
+/**
+ * X, Y data values
+ *
+ * @typedef DataTuple
+ * @type Array<number>
+ * @property {number} 0 - X value
+ * @property {number} 1 - Y value
+ */
+
+
+/**
+ * Tooltip position event
+ *
+ * @event Chart#tooltip
+ * @type {object}
+ * @property {number} [x]
+ * @property {number} [y]
+ * @property {number} [index]
+ * @property {boolean} internal - Was the event triggered internally by pointer events
+ * @property {Chart} chart
+ */
+
+
+/**
+ * Zoom event
+ *
+ * @event Chart#zoom
+ * @type {object}
+ * @property {("data"|"visual")} type
+ * @property {XRange} [xRange]
+ * @property {YRange} [yRange]
+ * @property {Coords} [translate]
+ * @property {number} [scale]
+ * @property {boolean} internal - Was the event triggered internally by pointer events
+ * @property {Chart} chart
+ */
+
+
 let globalIdCounter = 0;
 
 
@@ -121,6 +238,28 @@ function largestTriangleThreeBuckets(inData, outLen) {
 
 const resample = largestTriangleThreeBuckets;
 
+
+/**
+ * @typedef ChartOptions
+ * @type {object}
+ * @property {external:Element} [el] - DOM Element to insert chart into
+ * @property {boolean} [merge] - Merge with existing Chart using this same element
+ * @property {ChartData} [data] - Initial data to use for chart rendering
+ * @property {number} [xMin] - Minimum X data value
+ * @property {number} [xMax] - Maximum X data value
+ * @property {number} [yMin] - Minimum Y data value
+ * @property {number} [yMax] - Maximum Y data value
+ * @property {string} [title] - Visually displayed title of chart
+ * @property {external:CSS_Color} [color] - The CSS color basis for this chart's data
+ * @property {BoxArray} [padding] - Plot padding in DPI adjusted coordinates.
+ * @property {number} [width] - Fixed width of plot
+ * @property {number} [height] - Fixed height of plot
+ * @property {TooltipOptions} [tooltip] - Tooltip options
+ * @property {AxisOptions} [xAxis] - X axis options
+ * @property {AxisOptions} [yAxis] - Y axis options
+ * @property {boolean} [disableAnimation] - Disable all animation/transitions
+ * @property {boolean} [darkMode] - Force use of darkmode
+ */
 
 
 /**
@@ -1254,3 +1393,31 @@ export class Chart extends EventTarget {
         return css ? `path('${path}')` : path;
     }
 }
+
+
+/**
+ * Native CSS Color value (browser support dependent)
+ *
+ * @typedef CSS_Color
+ * @type {string}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value}
+ */
+
+
+/**
+ * @typedef EventTarget
+ * @type {EventTarget}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/EventTarget}
+ */
+
+
+/**
+ * @typedef Element
+ * @type {Element}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element}
+ */
+
+

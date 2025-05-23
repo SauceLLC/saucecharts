@@ -1,7 +1,3 @@
-/**
- * @module bar
- */
-
 import * as common from './common.mjs';
 import * as colorMod from './color.mjs';
 
@@ -14,8 +10,6 @@ import * as colorMod from './color.mjs';
 
 
 /**
- * A Bar Chart
- *
  * @extends Chart
  * @param {BarChartOptions|ChartOptions} [options]
  */

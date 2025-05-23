@@ -1,7 +1,3 @@
-/**
- * @module color
- */
-
 import {createSVG} from './common.mjs';
 
 let gradientIdCounter = 0;

@@ -1,24 +1,11 @@
-/**
- * @module line
- */
-
 import * as common from './common.mjs';
 import * as colorMod from './color.mjs';
-
-
-/**
- * @typedef {object} LineChartOptions
- * @property {boolean} [hidePoints] - Hide the data marker points on the line
- * @property {object} [brush] - Brush (i.e. selection) options
- * @property {boolean} [brush.disabled=true]
- * @property {"data"|"visual"} [brush.type] - Brush selection will anchor to data or visual coordinates
- */
 
 /**
  * A Line Chart
  *
  * @extends Chart
- * @param {LineChartOptions|ChartOptions} [options]
+ * @param {LineChartOptions} [options]
  * @emits LineChart#brush
  */
 export class LineChart extends common.Chart {
@@ -717,3 +704,12 @@ export class LineChart extends common.Chart {
  * @property {boolean} internal - Was the event triggered internally by pointer events
  * @property {Chart} chart
  */
+
+/**
+ * @typedef {object} LineChartOptions
+ * @property {boolean} [hidePoints] - Hide the data marker points on the line
+ * @property {object} [brush] - Brush (i.e. selection) options
+ * @property {boolean} [brush.disabled=true]
+ * @property {"data"|"visual"} [brush.type] - Brush selection will anchor to data or visual coordinates
+ */
+
