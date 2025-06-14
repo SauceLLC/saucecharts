@@ -1,3 +1,6 @@
+/**
+ * @module color
+ */
 import {createSVG} from './common.mjs';
 
 let gradientIdCounter = 0;
@@ -16,6 +19,7 @@ export class Color {
      * @param {number} g - Green 0 -> 1 float
      * @param {number} b - Blue 0 -> 1 float
      * @param {number} [a] - Alpha 0 -> 1 float
+     * @returns {Color}
      */
     static fromRGB(r, g, b, a) {
         const maxC = Math.max(r, g, b);
@@ -42,6 +46,7 @@ export class Color {
 
     /**
      * @param {string} hex - RGB in 3, 4, 6, or 8 character format. a.la., #123, #112233, etc.
+     * @returns {Color}
      */
     static fromHex(hex) {
         if (hex.length >= 7) {
@@ -69,7 +74,7 @@ export class Color {
     }
 
     /**
-     * @returns {Color} Copy of this color
+     * @returns {Color} A copy of this color
      */
     clone() {
         return new this.constructor(this.h, this.s, this.l, this.a);
@@ -127,7 +132,7 @@ export class Color {
      * Create clone with adjusted Hue value
      *
      * @param {number} hd - Hue Delta -1 -> 1
-     * @returns {Color} this
+     * @returns {Color}
      */
     adjustHue(hd) {
         const c = this.clone();
@@ -139,7 +144,7 @@ export class Color {
      * Create clone with adjusted Lightness value
      *
      * @param {number} hd - Lightness Delta -1 -> 1
-     * @returns {Color} this
+     * @returns {Color}
      */
     adjustLight(ld) {
         const c = this.clone();
@@ -151,7 +156,7 @@ export class Color {
      * Create clone with adjusted Saturation value
      *
      * @param {number} sd - Saturation Delta -1 -> 1
-     * @returns {Color} this
+     * @returns {Color}
      */
     adjustSaturation(sd) {
         const c = this.clone();
@@ -163,7 +168,7 @@ export class Color {
      * Create clone with adjusted Alpha value
      *
      * @param {number} ad - Alpha Delta -1 -> 1
-     * @returns {Color} this
+     * @returns {Color}
      */
     adjustAlpha(ad) {
         const c = this.clone();
@@ -199,7 +204,7 @@ export class Gradient {
     /**
      * Return a typed gradient subclass based on the `type` option
      *
-     * @param {object} obj
+     * @param {GradientOptions} obj
      * @param {"linear"} obj.type
      */
     static fromObject(obj) {
@@ -240,7 +245,7 @@ export class Gradient {
 
 /**
  * @extends {Gradient}
- * @param {GradientOptions | object} options
+ * @param {GradientOptions|object} options
  * @param {number} options.rotate
  */
 export class LinearGradient extends Gradient {
@@ -308,6 +313,7 @@ export class LinearGradient extends Gradient {
 
 let _colorCanvasCtx;
 /**
+ * @returns {Color}
  */
 export function parse(value) {
     if (value == null) {

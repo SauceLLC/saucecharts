@@ -1,3 +1,6 @@
+/**
+ * @module bar
+ */
 import * as common from './common.mjs';
 import * as colorMod from './color.mjs';
 
@@ -10,8 +13,8 @@ import * as colorMod from './color.mjs';
 
 
 /**
- * @extends Chart
- * @param {BarChartOptions|ChartOptions} [options]
+ * @extends module:common.Chart
+ * @param {BarChartOptions|module:common~ChartOptions} [options]
  */
 export class BarChart extends common.Chart {
 

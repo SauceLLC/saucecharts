@@ -1,4 +1,31 @@
+/**
+ * @module common
+ */
 import * as colorMod from './color.mjs';
+
+
+/**
+ * Native CSS Color value (browser support dependent)
+ *
+ * @typedef CSS_Color
+ * @type {string}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value}
+ */
+
+/**
+ * @typedef EventTarget
+ * @type {EventTarget}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/EventTarget}
+ */
+
+/**
+ * @typedef Element
+ * @type {Element}
+ * @external
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element}
+ */
 
 /**
  * Coordinate box [top, right, bottom, left]
@@ -10,7 +37,6 @@ import * as colorMod from './color.mjs';
  * @property {number} 2 - bottom
  * @property {number} 3 - left
  */
-
 
 /**
  * Chart Tooltip options
@@ -24,7 +50,6 @@ import * as colorMod from './color.mjs';
  *                                                      respect to the pointer
  * @property {function} [format] - Custom callback function for tooltip value
  */
-
 
 /**
  * Chart Tooltip positions
@@ -40,7 +65,6 @@ import * as colorMod from './color.mjs';
  * @property {"above"|"top"|"middle"|"bottom"|"below"} 1 - Vertical placement hints
  */
 
-
 /**
  * Chart Axis options
  *
@@ -54,6 +78,12 @@ import * as colorMod from './color.mjs';
  * @property {function} [label] - Custom callback function for label values
  */
 
+/**
+ * Chart type specific data object
+ *
+ * @typedef DataObject
+ * @type object
+ */
 
 /**
  * Chart data array - Chart specific meaning
@@ -62,22 +92,12 @@ import * as colorMod from './color.mjs';
  * @type {Array<DataObject|DataValue|DataTuple>}
  */
 
-
-/**
- * Chart type specific data object
- *
- * @typedef DataObject
- * @type object
- */
-
-
 /**
  * Y value of data.  X is infered by array index
  *
  * @typedef DataValue
  * @type number
  */
-
 
 /**
  * X, Y data values
@@ -87,7 +107,6 @@ import * as colorMod from './color.mjs';
  * @property {number} 0 - X value
  * @property {number} 1 - Y value
  */
-
 
 /**
  * Tooltip position event
@@ -100,7 +119,6 @@ import * as colorMod from './color.mjs';
  * @property {boolean} internal - Was the event triggered internally by pointer events
  * @property {Chart} chart
  */
-
 
 /**
  * Zoom event
@@ -115,7 +133,6 @@ import * as colorMod from './color.mjs';
  * @property {boolean} internal - Was the event triggered internally by pointer events
  * @property {Chart} chart
  */
-
 
 let globalIdCounter = 0;
 
@@ -317,7 +334,7 @@ export class Chart extends EventTarget {
 
     /**
      * @protected
-     * @param {ChartOptionos} options
+     * @param {ChartOptions} options
      */
     init(options) {
     }
@@ -325,8 +342,8 @@ export class Chart extends EventTarget {
     /**
      * Add a color gradient which can be used in SVG contexts
      *
-     * @param {(Gradient|GradientOptions)} gradient
-     * @returns {Gradient}
+     * @param {(module:color.Gradient|module:color.GradientOptions)} gradient
+     * @returns {module:color.Gradient}
      */
     addGradient(gradient) {
         if (!(gradient instanceof colorMod.Gradient)) {
@@ -340,7 +357,7 @@ export class Chart extends EventTarget {
 
 
     /**
-     * @param {Gradient} gradient
+     * @param {module:color.Gradient} gradient
      */
     removeGradient(gradient) {
         this._gradients.delete(gradient);
@@ -670,7 +687,7 @@ export class Chart extends EventTarget {
     }
 
     /**
-     * @returns {Array<Chart>} All the charts sharing this chart's `el` property
+     * @returns {Array<module:common.Chart>} All the charts sharing this chart's `el` property
      */
     getAllCharts() {
         const root = this.isParentChart() ? this : this.parentChart;
@@ -1126,7 +1143,7 @@ export class Chart extends EventTarget {
 
     /**
      * @param {ChartData} [data]
-     * @param {RenderOptions} [options]
+     * @param {object} [options]
      */
     setData(data, options={}) {
         this.data = data;
@@ -1170,7 +1187,7 @@ export class Chart extends EventTarget {
     /**
      * Render the chart
      *
-     * @param {RenderOptions} [options]
+     * @param {object} [options]
      */
     render(options={}) {
         if (!this.el || !this._boxWidth || !this._boxHeight) {
@@ -1393,31 +1410,3 @@ export class Chart extends EventTarget {
         return css ? `path('${path}')` : path;
     }
 }
-
-
-/**
- * Native CSS Color value (browser support dependent)
- *
- * @typedef CSS_Color
- * @type {string}
- * @external
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/CSS/color_value}
- */
-
-
-/**
- * @typedef EventTarget
- * @type {EventTarget}
- * @external
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/EventTarget}
- */
-
-
-/**
- * @typedef Element
- * @type {Element}
- * @external
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element}
- */
-
-
