@@ -89,16 +89,7 @@ function fixLongname(name, sep='~') {
         return symbols.get(name);
     }
     throw new NotFound();
-    //return `${modulePrefix}${sep}${name}`;
 }
-
-exports.defineTags = function(dictionary) {
-    dictionary.defineTag('local', {
-        onTagged: function(doclet, tag) {
-            console.log('onTAGGED', tag.text, doclet);
-        }
-    });
-};
 
 
 exports.handlers = {
