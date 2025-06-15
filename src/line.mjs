@@ -8,7 +8,7 @@ import * as colorMod from './color.mjs';
 /**
  * Brush event
  *
- * @event LineChart#brush
+ * @event brush
  * @type {object}
  * @property {number} x1
  * @property {number} x2
@@ -29,7 +29,7 @@ import * as colorMod from './color.mjs';
  *
  * @extends module:common.Chart
  * @param {LineChartOptions|module:common~ChartOptions} [options]
- * @emits LineChart#brush
+ * @emits brush
  */
 export class LineChart extends common.Chart {
 

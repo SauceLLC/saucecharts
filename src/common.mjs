@@ -111,7 +111,7 @@ import * as colorMod from './color.mjs';
 /**
  * Tooltip position event
  *
- * @event Chart#tooltip
+ * @event tooltip
  * @type {object}
  * @property {number} [x]
  * @property {number} [y]
@@ -123,7 +123,7 @@ import * as colorMod from './color.mjs';
 /**
  * Zoom event
  *
- * @event Chart#zoom
+ * @event zoom
  * @type {object}
  * @property {("data"|"visual")} type
  * @property {XRange} [xRange]
@@ -285,8 +285,8 @@ const resample = largestTriangleThreeBuckets;
  * @abstract
  * @extends external:EventTarget
  * @param {ChartOptions} [options] - Common chart options
- * @emits Chart#zoom
- * @emits Chart#tooltip
+ * @emits zoom
+ * @emits tooltip
  */
 export class Chart extends EventTarget {
 
