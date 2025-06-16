@@ -21,6 +21,7 @@ import * as colorMod from './color.mjs';
  * @property {boolean} [hidePoints] - Hide the data marker points on the line
  * @property {object} [brush] - Brush (i.e. selection) options
  * @property {boolean} [brush.disabled=true]
+ * @property {boolean} [brush.hideTooltip=false] - Hide tooltip when actively brushing
  * @property {"data"|"visual"} [brush.type] - Brush selection will anchor to data or visual coordinates
  */
 
