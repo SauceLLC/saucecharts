@@ -89,10 +89,11 @@
                 fill 200ms var(--brush-fade-delay),
                 stroke 200ms var(--brush-fade-delay),
                 x linear var(--transition-duration),
-                width linear var(--transition-duration);
+                var(--width-transition)
         }
 
         .sc-brush-mask {
+            --width-transition: none;
             --fill: color-mix(in srgb, hsl(from var(--fg-color) h s calc(l + (10 * var(--shade-dir))) / 0.25), var(--color) 8%);
             --emphasis-fill: color-mix(in srgb, hsl(from var(--fg-color) h s calc(l + (30 * var(--shade-dir))) / 0.5), var(--color) 12%);
             --emphasis-stroke: hsl(from var(--fg-color) h s calc(l + (0 * var(--shade-dir))) / 0.8);
@@ -104,6 +105,7 @@
         }
 
         .sc-brush-handle {
+            --width-transition: width linear var(--transition-duration);
             --emphasis-fill: hsl(from var(--fg-color) h s calc(l + (10 * var(--shade-dir))) / 0.7);
             --emphasis-stroke: none;
 
