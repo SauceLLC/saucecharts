@@ -70,6 +70,7 @@ import * as colorMod from './color.mjs';
  * @property {boolean} [hidePoints] - Hide the data marker points on the line
  * @property {object} [brush] - Brush (i.e. selection) options
  * @property {boolean} [brush.disabled=true]
+ * @property {boolean} [brush.hideTooltip=false] - Hide tooltip when actively brushing
  * @property {"data"|"visual"} [brush.type] - Brush selection will anchor to data or visual coordinates
  */
 
@@ -470,22 +471,30 @@ export class LineChart extends common.Chart {
     setBrush(options) {
         this._establishBrushState();
         this._setBrush(options);
-        this.showBrush();
+        if (this._brushState.x1 != null || this._brushState.x2 != null) {
+            this.showBrush();
+        } else {
+            this.hideBrush();
+        }
     }
 
     _setBrush({x1, x2, type=this.brush.type, _internal=false}) {
         const state = this._brushState;
-        if (x1 != null) {
-            state.x1 = type === this.brush.type ? x1 :
+        if (x1 !== undefined) {
+            state.x1 = (type === this.brush.type || x1 === null) ? x1 :
                 type === 'data' ?
                     this.xValueToCoord(x1) :
                     this.xCoordToValue(x1);
+        } else if (state.x1 == null) {
+            throw new Error('missing x1 state');
         }
         if (x2 != null) {
-            state.x2 = type === this.brush.type ? x2 :
+            state.x2 = (type === this.brush.type || x1 === null) ? x2 :
                 type === 'data' ?
                     this.xValueToCoord(x2) :
                     this.xCoordToValue(x2);
+        } else if (state.x2 == null) {
+            throw new Error('missing x1 state');
         }
         this._updateBrush();
         queueMicrotask(() => this.dispatchEvent(new CustomEvent('brush', {
@@ -575,14 +584,14 @@ export class LineChart extends common.Chart {
                         } else if (chart.brush.type === 'visual') {
                             const scale = [1, 1];
                             const translate = [0, 0];
-                            if (chart.zoom.active &amp;&amp; chart.zoom.type === 'visual') {
-                                if (chart.zoom.scale) {
-                                    scale[0] = chart.zoom.scale[0];
-                                    scale[1] = chart.zoom.scale[1];
+                            if (chart._zoomState.active &amp;&amp; chart._zoomState.type === 'visual') {
+                                if (chart._zoomState.scale) {
+                                    scale[0] = chart._zoomState.scale[0];
+                                    scale[1] = chart._zoomState.scale[1];
                                 }
-                                if (chart.zoom.translate) {
-                                    translate[0] = chart.zoom.translate[0];
-                                    translate[1] = chart.zoom.translate[1];
+                                if (chart._zoomState.translate) {
+                                    translate[0] = chart._zoomState.translate[0];
+                                    translate[1] = chart._zoomState.translate[1];
                                 }
                             }
                             // Translate is always in pre-scaled coordinates coordinates..
@@ -637,8 +646,8 @@ export class LineChart extends common.Chart {
                 for (const chart of charts) {
                     const s = chart._brushState;
                     chart._setBrush({
-                        x1: s.handle !== 'end' ? s.pointerX1 : null,
-                        x2: s.handle !== 'start' ? s.pointerX2 : null,
+                        x1: s.handle !== 'end' ? s.pointerX1 : undefined,
+                        x2: s.handle !== 'start' ? s.pointerX2 : undefined,
                         type: 'visual',
                         _internal: true
                     });
@@ -658,8 +667,10 @@ export class LineChart extends common.Chart {
     }
 
     _updateBrush() {
-        const state = this._brushState;
-        let {x1, x2} = state;
+        let {x1, x2} = this._brushState;
+        if (x1 == null || x2 == null) {
+            return;
+        }
         if (this.brush.type === 'data') {
             x1 = this.xValueToCoord(x1);
             x2 = this.xValueToCoord(x2);
@@ -716,8 +727,8 @@ export class LineChart extends common.Chart {
         super.afterRender(...args);
         if (this._brushState.active) {
             this._setBrush({
-                x1: this._brushState.handle !== 'end' ? this._brushState.pointerX1 : null,
-                x2: this._brushState.handle !== 'start' ? this._brushState.pointerX2 : null,
+                x1: this._brushState.handle !== 'end' ? this._brushState.pointerX1 : undefined,
+                x2: this._brushState.handle !== 'start' ? this._brushState.pointerX2 : undefined,
                 type: 'visual',
                 _internal: true
             });
