@@ -200,18 +200,22 @@ export class LineChart extends common.Chart {
                 'clip-path': `url(#${lineClipId})`,
             }
         });
-        this._markerLineEl = this.hidePoints ? undefined : common.createSVG({
-            name: 'path',
-            class: ['sc-data', 'sc-line', 'sc-visual-data-line-markers'],
-            attrs: {
-                'clip-path': `url(#${markerLineClipId})`,
-                'marker-start': `url(#${markerId})`,
-                'marker-mid': `url(#${markerId})`,
-                'marker-end': `url(#${markerId})`,
-            }
-        });
-        this._areaEl = defs.querySelector('path.sc-area');
-        this._plotRegionEl.replaceChildren(defs, this._backgroundEl, this._lineEl, this._markerLineEl);
+        const plotRegionChildren = [defs, this._backgroundEl, this._lineEl];
+        if (!this.hidePoints) {
+            this._markerLineEl = common.createSVG({
+                name: 'path',
+                class: ['sc-data', 'sc-line', 'sc-visual-data-line-markers'],
+                attrs: {
+                    'clip-path': `url(#${markerLineClipId})`,
+                    'marker-start': `url(#${markerId})`,
+                    'marker-mid': `url(#${markerId})`,
+                    'marker-end': `url(#${markerId})`,
+                }
+            });
+            plotRegionChildren.push(this._markerLineEl);
+        } else {
+            this._markerLineEl = undefined;
+        }
         if (!this.brush.disabled) {
             const groupEl = common.createSVG({name: 'g', class: ['sc-brush']});
             const maskAttrs = {};
@@ -238,8 +242,10 @@ export class LineChart extends common.Chart {
             } else {
                 groupEl.classList.add('sc-passive');
             }
-            this._plotRegionEl.append(groupEl);
+            plotRegionChildren.push(groupEl);
         }
+        this._plotRegionEl.append(...plotRegionChildren);
+        this._areaEl = defs.querySelector('path.sc-area');
         this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
     }
 
