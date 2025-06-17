@@ -59,7 +59,6 @@
             const commonOptions = {
                 hidePoints: false,
                 padding: [20, 5, 20, 40],
-                brush: {hideTooltip: true},
                 disableAnimation: false,
             };
 
@@ -74,8 +73,17 @@
                 const sl = new sc.LineChart({
                     ...commonOptions,
                     el: document.querySelector(".graph.i1"),
-                    onTooltip: ({entry}) => `${entry.x},${entry.y.toFixed(6)}`,
-                    title: 'ltr',
+                    tooltip: {
+                        formatKey: ({value}) => `cust tt k ${value.toFixed(1)}`,
+                        format: ({value}) => `cust tt v ${value.toFixed(1)}`,
+                    },
+                    xAxis: {
+                        format: ({value}) => `cust x ${value.toFixed(1)}`,
+                    },
+                    yAxis: {
+                        format: ({value}) => `cust y ${value.toFixed(1)}`,
+                    },
+                    title: 'ltr, custom tooltip, custom axis',
                     xMin: ts() + 4000,
                     xMax: ts() + 8000,
                 });
@@ -212,7 +220,6 @@
                     yAxis: {disabled: true},
                     brush: {
                         shared: true,
-                        hideTooltip: true,
                     },
                 };
 
@@ -221,7 +228,7 @@
                     el: document.querySelector(".graph.i7"),
                     padding: [20, 0, 0, 0],
                     title: 'Multiple graphs',
-                    //brush: {hideTooltip: true},
+                    brush: {disabled: true},
                 });
                 const sl2 = new sc.LineChart({
                     ...shared,
@@ -284,7 +291,6 @@
                     brush: {
                         shared: true,
                         type: 'visual',
-                        hideTooltip: true,
                     },
                 };
                 const height = 50;
