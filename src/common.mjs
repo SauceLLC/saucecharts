@@ -406,6 +406,13 @@ export class Chart extends EventTarget {
         if (boxWidth === undefined) {
             ({width: boxWidth, height: boxHeight} = this._rootSvgEl.getBoundingClientRect());
         }
+        const allCharts = this.getAllCharts();
+        if (allCharts.every(x => x.width != null)) {
+            boxWidth = Math.max(...allCharts.map(x => x.padding[3] + x.width + x.padding[1]));
+        }
+        if (allCharts.every(x => x.height != null)) {
+            boxHeight = Math.max(...allCharts.map(x => x.padding[0] + x.height + x.padding[2]));
+        }
         if (!boxWidth || !boxHeight) {
             this._boxWidth = 0;
             this._boxHeight = 0;
