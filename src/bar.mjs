@@ -50,7 +50,7 @@ export class BarChart extends common.Chart {
                 'clip-path': `url(#${barsClipId})`,
             }
         });
-        this._plotRegionEl.replaceChildren(defs, this._barsEl);
+        this._plotRegionEl.append(defs, this._barsEl);
     }
 
     doReset() {

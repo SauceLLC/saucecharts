@@ -543,10 +543,6 @@ export class Chart extends EventTarget {
                 this._plotRegionEl.remove();
                 this._plotRegionEl = null;
             }
-            if (this._titleEl) {
-                this._titleEl.remove();
-                this._titleEl = null;
-            }
             if (this._xAxisEl) {
                 this._xAxisEl.remove();
                 this._xAxisEl = null;
@@ -610,18 +606,17 @@ export class Chart extends EventTarget {
             this._plotRegionEl.style.setProperty('--color', this.color);
             this._computedColor = null;
         }
-        this._rootSvgEl.querySelector('.sc-plot-regions').append(this._plotRegionEl);
         if (this.title) {
-            this._titleEl = createHTML({
-                name: 'div',
+            const titleEl = createSVG({
+                name: 'text',
                 class: 'sc-title',
-                data: {
-                    scId: this.id,
-                }
+                x: 0,
+                y: 10,
             });
-            this._titleEl.append(this.title);
-            el.append(this._titleEl);
+            titleEl.textContent = this.title;
+            this._plotRegionEl.append(titleEl);
         }
+        this._rootSvgEl.querySelector('.sc-plot-regions').append(this._plotRegionEl);
         if (!this.xAxis.disabled) {
             this._xAxisEl = createSVG({
                 name: 'g',
