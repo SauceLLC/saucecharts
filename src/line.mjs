@@ -20,9 +20,12 @@ import * as colorMod from './color.mjs';
  * @typedef {object} LineChartOptions
  * @property {boolean} [hidePoints] - Hide the data marker points on the line
  * @property {object} [brush] - Brush (i.e. selection) options
- * @property {boolean} [brush.disabled=true]
- * @property {boolean} [brush.hideTooltip=false] - Hide tooltip when actively brushing
- * @property {"data"|"visual"} [brush.type] - Brush selection will anchor to data or visual coordinates
+ * @property {boolean} [brush.disabled=false]
+ * @property {"data"|"visual"} [brush.type="data"] - Brush selection will anchor to data or visual coordinates
+ * @property {boolean} [brush.showTooltip=false] - Allow showing tooltip when actively brushing
+ * @property {boolean} [brush.disableZoom=false] - Disable auto-zoom when brush finishes
+ * @property {boolean} [brush.clipMask=false] - Visually clip the brush selection to the data area
+ * @property {boolean} [brush.passive=false] - Do not allow pointer interaction
  */
 
 /**
@@ -36,7 +39,7 @@ export class LineChart extends common.Chart {
 
     init(options={}) {
         this.hidePoints = options.hidePoints;
-        this.brush = options.brush ?? {disabled: true};
+        this.brush = options.brush ?? {};
         this.brush.type ??= 'data';
         this.segments = [];
         this._segmentEls = new Map();
@@ -481,7 +484,7 @@ export class LineChart extends common.Chart {
         for (const x of charts) {
             x._establishBrushState({active: true});
         }
-        if (this.brush.hideTooltip) {
+        if (!this.brush.showTooltip) {
             (this.parentChart || this).suspendTooltip();
         }
         this.el.classList.add('sc-brushing');
@@ -563,7 +566,7 @@ export class LineChart extends common.Chart {
                     chart.hideBrush();
                 }
             }
-            if (this.brush.hideTooltip) {
+            if (!this.brush.showTooltip) {
                 (this.parentChart || this).resumeTooltip();
             }
         });

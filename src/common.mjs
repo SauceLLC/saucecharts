@@ -49,6 +49,7 @@ import * as colorMod from './color.mjs';
  * @property {TooltipPosition} [position="leftright"] - Relative positioning of tooltip with
  *                                                      respect to the pointer
  * @property {function} [format] - Custom callback function for tooltip value
+ * @property {function} [formatKey] - Custom callback function for tooltip key
  */
 
 /**
@@ -75,7 +76,7 @@ import * as colorMod from './color.mjs';
  * @property {number} [ticks] - Number of ticks/labels to draw
  * @property {boolean} [showFirst] - Render the first (low) value of the axis
  * @property {number} [tickLength=6] - Size of the tick marks
- * @property {function} [label] - Custom callback function for label values
+ * @property {function} [format] - Custom callback function for label values
  */
 
 /**
@@ -483,7 +484,6 @@ export class Chart extends EventTarget {
         }
         const gap = trackLength / (ticks - 1);
         const tickLen = options.tickLength ?? 6;
-        const format = options.label ?? this.onAxisLabel.bind(this);
         const existingTicks = el.querySelectorAll('line.sc-tick');
         const existingLabels = el.querySelectorAll('text.sc-label');
         let visualCount = 0;
@@ -515,7 +515,12 @@ export class Chart extends EventTarget {
             label.setAttribute('x', x1);
             label.setAttribute('y', y1);
             label.setAttribute('data-pct', i / (ticks - 1));
-            label.textContent = format ? format({orientation, index: i, ticks, trackLength, options}) : '';
+            label.textContent = this.onAxisLabel({
+                orientation,
+                tick: i,
+                tickCount: ticks,
+                format: options.format,
+            });
             visualCount++;
         }
         for (let i = visualCount; i < existingTicks.length; i++) {
@@ -696,6 +701,25 @@ export class Chart extends EventTarget {
         return [root, ...root.childCharts];
     }
 
+    localeNumber(value) {
+        let localeConfig;
+        if (value % 1 && value < 1e4) {
+            localeConfig = {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2,
+                useGrouping: 'min2',
+            };
+        } else if (value < 100) {
+            localeConfig = {maximumFractionDigits: 1};
+        } else {
+            localeConfig = {
+                useGrouping: 'min2',
+                maximumFractionDigits: 0
+            };
+        }
+        return value.toLocaleString(undefined, localeConfig);
+    }
+
     /**
      * The default tooltip formatter
      *
@@ -703,23 +727,48 @@ export class Chart extends EventTarget {
      * @params {TooltipFormatOptions} options
      * @returns {(string|external:Element)} Tooltip contents
      */
-    onTooltip({entry, chart}) {
-        if (this.tooltip.format) {
-            return this.tooltip.format.apply(this, arguments);
-        } else {
-            if (!this._ttEntry) {
-                this._ttEntry = document.createElement('div');
-                this._ttEntry.className = 'sc-tooltip-entry';
-                this._ttEntry.dataset.chartId = this.id;
-                this._ttKey = document.createElement('key');
-                this._ttValue = document.createElement('value');
-                this._ttEntry.append(this._ttKey, this._ttValue);
-            }
-            this._ttEntry.style.setProperty('--color', entry.color ?? chart.getColor());
-            this._ttKey.textContent = entry.index;
-            this._ttValue.textContent = entry.y.toFixed(2);
-            return this._ttEntry;
+    onTooltip({entry}) {
+        if (!this._ttEntry) {
+            this._ttEntry = document.createElement('div');
+            this._ttEntry.className = 'sc-tooltip-entry';
+            this._ttEntry.dataset.chartId = this.id;
+            this._ttKey = document.createElement('key');
+            this._ttValue = document.createElement('value');
+            this._ttEntry.append(this._ttKey, this._ttValue);
         }
+        this._ttEntry.style.setProperty('--color', entry.color ?? this.getColor());
+        let key, value;
+        if (this.tooltip.formatKey) {
+            key = this.tooltip.formatKey({
+                value: entry.x,
+                index: entry.index,
+                entry,
+                chart: this
+            });
+        } else if (!isNaN(entry.x) && entry.x !== null) {
+            if (this.xAxis.format) {
+                key = this.xAxis.format({value: entry.x, chart: this});
+            } else {
+                key = this.localeNumber(entry.x);
+            }
+        }
+        if (this.tooltip.format) {
+            value = this.tooltip.format({
+                value: entry.y,
+                index: entry.index,
+                entry,
+                chart: this
+            });
+        } else if (!isNaN(entry.y) && entry.y !== null) {
+            if (this.yAxis.format) {
+                value = this.yAxis.format({value: entry.y, chart: this});
+            } else {
+                value = this.localeNumber(entry.y);
+            }
+        }
+        this._ttKey.textContent = key ?? '';
+        this._ttValue.textContent = value ?? '';
+        return this._ttEntry;
     }
 
     /**
@@ -729,7 +778,7 @@ export class Chart extends EventTarget {
      * @params {AxisLabelOptions} options
      * @returns {string} Label contents
      */
-    onAxisLabel({orientation, index, ticks}) {
+    onAxisLabel({orientation, tick, tickCount, format}) {
         let range;
         let start;
         if (orientation === 'vertical') {
@@ -739,16 +788,28 @@ export class Chart extends EventTarget {
             start = this._xMin;
             range = this._xMax - this._xMin;
         }
-        const number = start + (range * (index / (ticks - 1)));
-        if (isNaN(number)) {
+        const value = start + (range * (tick / (tickCount - 1)));
+        if (isNaN(value) || value === null) {
             return '';
         }
-        if (range <= 1) {
-            return number.toLocaleString(undefined, {maximumFractionDigits: 2, minimumFractionDigits: 2});
-        } else if (range < 100) {
-            return number.toLocaleString(undefined, {maximumFractionDigits: 1});
+        if (format) {
+            return format({value, chart: this});
         } else {
-            return number.toLocaleString(undefined, {useGrouping: 'min2', maximumFractionDigits: 0});
+            let localeConfig;
+            if (range <= 1) {
+                localeConfig = {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2
+                };
+            } else if (range < 100) {
+                localeConfig = {maximumFractionDigits: 1};
+            } else {
+                localeConfig = {
+                    useGrouping: 'min2',
+                    maximumFractionDigits: 0
+                };
+            }
+            return value.toLocaleString(undefined, localeConfig);
         }
     }
 
@@ -948,14 +1009,8 @@ export class Chart extends EventTarget {
             if (entry === undefined || entry.x < chart._xMin || entry.x > chart._xMax) {
                 continue;
             }
-            let contents;  // Can be text or Node
-            if (entry.tooltip) {
-                contents = entry.tooltip({entry, chart});
-            } else if (chart.onTooltip) {
-                contents = chart.onTooltip({entry, chart});
-            }
             const coordinates = [chart.xValueToCoord(entry.x), chart.yValueToCoord(entry.y)];
-            tooltips.push({chart, entry, coordinates, contents});
+            tooltips.push({chart, entry, coordinates, contents: chart.onTooltip({entry})});
             drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
         }
         if (drawSig !== state.lastDrawSig) {
@@ -1079,7 +1134,7 @@ export class Chart extends EventTarget {
      * @returns {DataObject}
      */
     findNearestFromXCoord(searchX) {
-        if (isNaN(searchX) || !this._renderData || !this._renderData.length) {
+        if (isNaN(searchX) || searchX === null || !this._renderData || !this._renderData.length) {
             return;
         }
         const targetX = this.xCoordToValue(searchX);
@@ -1105,20 +1160,22 @@ export class Chart extends EventTarget {
 
     /**
      * @param {object} options
-     * @param {("data"|"visual")} options.type - What coordinate scheme to use and how to keep this
-     *                                           zoom anchored when data is updated
+     * @param {("data"|"visual")} [options.type="data"] - What coordinate scheme to use and how to keep this
+     *                                                    zoom anchored when data is updated
      * @param {XRange} [options.xRange] - [start, end] coordinates (type=data only)
      * @param {YRange} [options.yRange] - [start, end] coordinates (type=data only)
      * @param {Coords} [options.translate] - [x, y] coordinate offsets (type=visual only)
      * @param {number} [options.scale] - Scaling factor (type=visual only)
      */
-    setZoom({xRange, yRange, translate, scale, type, _internal=false}={}) {
+    setZoom(options) {
         this._zoomState.rev++;
-        if (type == null) {
+        if (!options || options.type === null) {
             this._zoomState.active = false;
+            this._zoomState.type = null;
             this._zoomState.translate = this._zoomState.scale = null;
             this._zoomState.xRange = this._zoomState.yRange = null;
         } else {
+            const {xRange, yRange, translate, scale, type='data'} = options;
             if (type === 'data') {
                 this._zoomState.translate = this._zoomState.scale = null;
                 this._zoomState.xRange = xRange ?? null;
@@ -1131,13 +1188,13 @@ export class Chart extends EventTarget {
                 throw new TypeError("invalid zoom type");
             }
             this._zoomState.active = true;
+            this._zoomState.type = type;
         }
-        this._zoomState.type = type;
         this.render();
         queueMicrotask(() => this.dispatchEvent(new CustomEvent('zoom', {
             detail: {
                 ...this._zoomState,
-                internal: _internal,
+                internal: !!options?._internal,
                 chart: this,
             }
         })));
