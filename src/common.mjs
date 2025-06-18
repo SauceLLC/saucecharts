@@ -72,7 +72,10 @@ import * as colorMod from './color.mjs';
  * @typedef AxisOptions
  * @type {object}
  * @property {boolean} [disabled]
- * @property {("left"|"right")} [align="left"] - Placement of vertical axis elements
+ * @property {("left"|"right"|"top"|"bottom")} [align=("left"|"bottom")] - Horizontal or vertical alignment
+ *                                                                         of the Axis depending on the type
+ * @property {("inside"|"outside")} [position="outside"] - Position of axis labels and ticks relative to the
+ *                                                         axis line
  * @property {number} [ticks] - Number of ticks/labels to draw
  * @property {boolean} [showFirst] - Render the first (low) value of the axis
  * @property {number} [tickLength=6] - Size of the tick marks
@@ -467,38 +470,53 @@ export class Chart extends EventTarget {
         const vert = orientation === 'vertical';
         const baseline = el.querySelector('line.sc-baseline');
         const [top, right, bottom, left] = this._plotBox;
+        const inside = (options.position ?? 'outside') === 'inside';
+        let align;
         if (vert) {
-            el.classList.toggle('sc-right', !!options.right);
-            baseline.setAttribute('x1', options.align === 'right' ? right : left);
-            baseline.setAttribute('x2', options.align === 'right' ? right : left);
+            align = options.align ?? 'left';
+            el.classList.toggle('sc-right', align === 'right');
+            baseline.setAttribute('x1', align === 'right' ? right : left);
+            baseline.setAttribute('x2', align === 'right' ? right : left);
             baseline.setAttribute('y1', top);
             baseline.setAttribute('y2', bottom);
         } else {
+            align = options.align ?? 'bottom';
+            el.classList.toggle('sc-top', align !== 'bottom');
             baseline.setAttribute('x1', left);
             baseline.setAttribute('x2', right);
-            baseline.setAttribute('y1', bottom);
-            baseline.setAttribute('y2', bottom);
+            baseline.setAttribute('y1', align === 'bottom' ? bottom : top);
+            baseline.setAttribute('y2', align === 'bottom' ? bottom : top);
         }
+        el.classList.toggle('sc-inside', inside);
         let ticks = options.ticks;
         const trackLength = vert ? this._plotHeight : this._plotWidth;
         if (ticks == null) {
             ticks = 2 + Math.floor((trackLength / devicePixelRatio) / (vert ? 100 : 200));
         }
-        const gap = trackLength / (ticks - 1);
         const tickLen = options.tickLength ?? 6;
         const existingTicks = el.querySelectorAll('line.sc-tick');
         const existingLabels = el.querySelectorAll('text.sc-label');
         let visualCount = 0;
-        for (let i = options.showFirst ? 0 : 1; i < ticks; i++) {
+        const steps = options.showFirst ? ticks : ticks + 1;
+        const gap = trackLength / (steps - 1);
+        for (let i = options.showFirst ? 0 : 1; i < steps; i++) {
             let x1, x2, y1, y2;
             if (vert) {
-                x1 = options.align === 'right' ? right : left;
-                x2 = x1 + tickLen * (options.align === 'right' ? -1 : 1);
+                x1 = align === 'right' ? right : left;
+                if (inside) {
+                    x2 = x1 + tickLen * (align === 'right' ? -1 : 1);
+                } else {
+                    x2 = x1 - tickLen * (align === 'right' ? -1 : 1);
+                }
                 y1 = y2 = bottom - i * gap;
             } else {
                 x1 = x2 = left + i * gap;
-                y1 = bottom;
-                y2 = bottom - tickLen;
+                y1 = align === 'bottom' ? bottom : top;
+                if ((inside && align === 'bottom') || (!inside && align !== 'bottom')) {
+                    y2 = y1 - tickLen;
+                } else {
+                    y2 = y1 + tickLen;
+                }
             }
             let tick = existingTicks[visualCount];
             if (!tick) {
@@ -514,13 +532,13 @@ export class Chart extends EventTarget {
                 label = createSVG({name: 'text', class: 'sc-label'});
                 el.append(label);
             }
+            const position = i / (steps - 1);
             label.setAttribute('x', x1);
             label.setAttribute('y', y1);
-            label.setAttribute('data-pct', i / (ticks - 1));
+            label.setAttribute('data-position', position);
             label.textContent = this.onAxisLabel({
                 orientation,
-                tick: i,
-                tickCount: ticks,
+                position,
                 format: options.format,
             });
             visualCount++;
@@ -780,7 +798,7 @@ export class Chart extends EventTarget {
      * @params {AxisLabelOptions} options
      * @returns {string} Label contents
      */
-    onAxisLabel({orientation, tick, tickCount, format}) {
+    onAxisLabel({orientation, position, format}) {
         let range;
         let start;
         if (orientation === 'vertical') {
@@ -790,7 +808,7 @@ export class Chart extends EventTarget {
             start = this._xMin;
             range = this._xMax - this._xMin;
         }
-        const value = start + (range * (tick / (tickCount - 1)));
+        const value = start + (range * position);
         if (isNaN(value) || value === null) {
             return '';
         }
