@@ -2,8 +2,13 @@
  * @see {@link https://github.com/jsdoc3/jsdoc/issues/101|issue #101}
  */
 
+const {registerLink} = require('jsdoc/util/templateHelper');
+
+
 let modulePrefix = '';
-const builtins = new Set([
+
+// builtins that that map to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Global_Objects/<name>
+const globalBuiltins = new Set([
     'undefined',
     'number',
     'Number',
@@ -23,25 +28,16 @@ const builtins = new Set([
     'RegExp',
     'Proxy',
     'Iterator',
-    'Event',
-    'CustomEvent',
-    'EventTarget',
     'Promise',
-    'Element',
     'Error',
     'TypeError',
     'ReferenceError',
     'EvalError',
     'SyntaxError',
     'RangeError',
-    'DOMException',
-    'URL',
-    'URLSearchParams',
     'WeakMap',
     'WeakSet',
     'WeakRef',
-    'WebSocket',
-    'WriteableStream',
     'Uint8Array',
     'Uint16Array',
     'Uint32Array',
@@ -55,15 +51,43 @@ const builtins = new Set([
     'ArrayBuffer',
     'BigInt',
     'DataView',
+]);
+
+
+// builtins that that map to https://developer.mozilla.org/en-US/docs/Web/API/<name>
+const webBuiltins = new Set([
+    'Event',
+    'CustomEvent',
+    'EventTarget',
+    'Element',
+    'DOMException',
+    'URL',
+    'URLSearchParams',
+    'WebSocket',
+    'Response',
+    'Request',
+    'ReadableStream',
+    'WritableStream',
     'Blob',
     'File',
     'AbortController',
     'TextDecoder',
     'TextEncoder',
-    'Response',
-    'Request',
-    'WebAssembly',
 ]);
+
+const builtins = globalBuiltins.union(webBuiltins);
+
+
+for (const x of globalBuiltins) {
+    const url = `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${x}`;
+    registerLink(x, url);
+}
+for (const x of webBuiltins) {
+    const url = `https://developer.mozilla.org/en-US/docs/Web/API/${x}`;
+    registerLink(x, url);
+}
+
+
 const symbols = new Map();
 const revisitFixLongnames = [];
 
