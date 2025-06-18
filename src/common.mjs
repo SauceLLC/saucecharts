@@ -39,20 +39,6 @@ import * as colorMod from './color.mjs';
  */
 
 /**
- * Chart Tooltip options
- *
- * @typedef TooltipOptions
- * @type {object}
- * @property {boolean} [disabled]
- * @property {BoxArray} [padding] - Padding offsets for tooltip box
- * @property {number} [linger=800] - Milliseconds to linger before hiding
- * @property {TooltipPosition} [position="leftright"] - Relative positioning of tooltip with
- *                                                      respect to the pointer
- * @property {function} [format] - Custom callback function for tooltip value
- * @property {function} [formatKey] - Custom callback function for tooltip key
- */
-
-/**
  * Chart Tooltip positions
  *
  * A string containing horizontal and/or veritical placement hints.
@@ -80,6 +66,20 @@ import * as colorMod from './color.mjs';
  * @property {boolean} [showFirst] - Render the first (low) value of the axis
  * @property {number} [tickLength=6] - Size of the tick marks
  * @property {function} [format] - Custom callback function for label values
+ */
+
+/**
+ * Chart Tooltip options
+ *
+ * @typedef TooltipOptions
+ * @type {object}
+ * @property {boolean} [disabled]
+ * @property {BoxArray} [padding] - Padding offsets for tooltip box
+ * @property {number} [linger=800] - Milliseconds to linger before hiding
+ * @property {TooltipPosition} [position="leftright"] - Relative positioning of tooltip with
+ *                                                      respect to the pointer
+ * @property {function} [format] - Custom callback function for tooltip value
+ * @property {function} [formatKey] - Custom callback function for tooltip key
  */
 
 /**
@@ -348,7 +348,7 @@ export class Chart extends EventTarget {
     /**
      * Add a color gradient which can be used in SVG contexts
      *
-     * @param {(module:color.Gradient|module:color.GradientOptions)} gradient
+     * @param {(module:color.Gradient|module:color~GradientOptions)} gradient
      * @returns {module:color.Gradient}
      */
     addGradient(gradient) {
