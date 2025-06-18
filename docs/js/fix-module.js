@@ -126,6 +126,7 @@ exports.handlers = {
         if (!modulePrefix) {
             return;
         }
+        // TBD handle {Array<FooBar>}  currently not working
         if (!doclet.longname) {
             debugger;
             throw new Error("unhandled");
@@ -150,8 +151,8 @@ exports.handlers = {
                 }
             }
         }
-        if (doclet.params || doclet.returns) {
-            for (const p of [].concat(doclet.params || [], doclet.returns || [])) {
+        if (doclet.params || doclet.returns || doclet.properties) {
+            for (const p of [].concat(doclet.params || [], doclet.returns || [], doclet.properties || [])) {
                 if (p.type && p.type.names) {
                     for (const [i, n] of p.type.names.entries()) {
                         try {

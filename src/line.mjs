@@ -13,19 +13,19 @@ import * as colorMod from './color.mjs';
  * @property {number} x1
  * @property {number} x2
  * @property {boolean} internal - Was the event triggered internally by pointer events
- * @property {Chart} chart
+ * @property {module:common.Chart} chart
  */
 
 /**
  * @typedef {object} LineChartOptions
  * @property {boolean} [hidePoints] - Hide the data marker points on the line
  * @property {object} [brush] - Brush (i.e. selection) options
- * @property {boolean} [brush.disabled=false]
+ * @property {boolean} [brush.disabled]
  * @property {"data"|"visual"} [brush.type="data"] - Brush selection will anchor to data or visual coordinates
- * @property {boolean} [brush.showTooltip=false] - Allow showing tooltip when actively brushing
- * @property {boolean} [brush.disableZoom=false] - Disable auto-zoom when brush finishes
- * @property {boolean} [brush.clipMask=false] - Visually clip the brush selection to the data area
- * @property {boolean} [brush.passive=false] - Do not allow pointer interaction
+ * @property {boolean} [brush.showTooltip] - Allow showing tooltip when actively brushing
+ * @property {boolean} [brush.disableZoom] - Disable auto-zoom when brush finishes
+ * @property {boolean} [brush.clipMask] - Visually clip the brush selection to the data area
+ * @property {boolean} [brush.passive] - Do not allow pointer interaction
  */
 
 /**

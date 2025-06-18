@@ -14,20 +14,6 @@ import * as colorMod from './color.mjs';
  */
 
 /**
- * @typedef EventTarget
- * @type {EventTarget}
- * @external
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/EventTarget}
- */
-
-/**
- * @typedef Element
- * @type {Element}
- * @external
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element}
- */
-
-/**
  * Coordinate box [top, right, bottom, left]
  *
  * @typedef BoxArray
@@ -113,6 +99,24 @@ import * as colorMod from './color.mjs';
  */
 
 /**
+ * X, Y coordinate values
+ *
+ * @typedef CoordTuple
+ * @type Array<number>
+ * @property {number} 0 - X coordinate
+ * @property {number} 1 - Y coordinate
+ */
+
+/**
+ * Coordinate range tuple
+ *
+ * @typedef CoordRange
+ * @type Array<number>
+ * @property {number} 0 - start value
+ * @property {number} 1 - end value
+ */
+
+/**
  * Tooltip position event
  *
  * @event tooltip
@@ -130,9 +134,9 @@ import * as colorMod from './color.mjs';
  * @event zoom
  * @type {object}
  * @property {("data"|"visual")} type
- * @property {XRange} [xRange]
- * @property {YRange} [yRange]
- * @property {Coords} [translate]
+ * @property {CoordRange} [xRange]
+ * @property {CoordRange} [yRange]
+ * @property {CoordTuple} [translate]
  * @property {number} [scale]
  * @property {boolean} internal - Was the event triggered internally by pointer events
  * @property {Chart} chart
@@ -263,7 +267,7 @@ const resample = largestTriangleThreeBuckets;
 /**
  * @typedef ChartOptions
  * @type {object}
- * @property {external:Element} [el] - DOM Element to insert chart into
+ * @property {Element} [el] - DOM Element to insert chart into
  * @property {boolean} [merge] - Merge with existing Chart using this same element
  * @property {ChartData} [data] - Initial data to use for chart rendering
  * @property {number} [xMin] - Minimum X data value
@@ -287,7 +291,7 @@ const resample = largestTriangleThreeBuckets;
  * Base class for charts subclasses.
  *
  * @abstract
- * @extends external:EventTarget
+ * @extends {EventTarget}
  * @param {ChartOptions} [options] - Common chart options
  * @emits zoom
  * @emits tooltip
@@ -554,7 +558,7 @@ export class Chart extends EventTarget {
     /**
      * Set the DOM element to be used by this chart
      *
-     * @param {external:Element} el
+     * @param {Element} el
      */
     setElement(el) {
         this.beforeSetElement(el);
@@ -714,7 +718,7 @@ export class Chart extends EventTarget {
     }
 
     /**
-     * @returns {Array<module:common.Chart>} All the charts sharing this chart's `el` property
+     * @returns {Array<Chart>} All the charts sharing this chart's `el` property
      */
     getAllCharts() {
         const root = this.isParentChart() ? this : this.parentChart;
@@ -745,7 +749,7 @@ export class Chart extends EventTarget {
      *
      * @protected
      * @params {TooltipFormatOptions} options
-     * @returns {(string|external:Element)} Tooltip contents
+     * @returns {(string|Element)} Tooltip contents
      */
     onTooltip({entry}) {
         if (!this._ttEntry) {
@@ -978,8 +982,8 @@ export class Chart extends EventTarget {
      * Place the tooltip at specific data value coordinates or by data index
      *
      * @param {object} options
-     * @param {XValue} [options.x]
-     * @param {YValue} [options.y]
+     * @param {number} [options.x]
+     * @param {number} [options.y]
      * @param {number} [options.index] - Data index
      */
     setTooltipPosition(options) {
@@ -1148,7 +1152,7 @@ export class Chart extends EventTarget {
     /**
      * Binary search for nearest data entry using a visual X coordinate
      *
-     * @param {XCoord} searchX
+     * @param {number} searchX
      * @returns {DataObject}
      */
     findNearestFromXCoord(searchX) {
@@ -1180,9 +1184,9 @@ export class Chart extends EventTarget {
      * @param {object} options
      * @param {("data"|"visual")} [options.type="data"] - What coordinate scheme to use and how to keep this
      *                                                    zoom anchored when data is updated
-     * @param {XRange} [options.xRange] - [start, end] coordinates (type=data only)
-     * @param {YRange} [options.yRange] - [start, end] coordinates (type=data only)
-     * @param {Coords} [options.translate] - [x, y] coordinate offsets (type=visual only)
+     * @param {CoordRange} [options.xRange] - x axis coordinates (type=data only)
+     * @param {CoordRange} [options.yRange] - y axis coordinates (type=data only)
+     * @param {CoordTuple} [options.translate] - [x, y] coordinate offsets (type=visual only)
      * @param {number} [options.scale] - Scaling factor (type=visual only)
      */
     setZoom(options) {
@@ -1382,64 +1386,64 @@ export class Chart extends EventTarget {
     }
 
     /**
-     * @param {XValue} value
-     * @returns {XCoord}
+     * @param {number} value
+     * @returns {number}
      */
     xValueScale(value) {
         return value * (this._plotWidth / (this._xMax - this._xMin));
     }
 
     /**
-     * @param {YValue} value
-     * @returns {YCoord}
+     * @param {number} value
+     * @returns {number}
      */
     yValueScale(value) {
         return value * (this._plotHeight / (this._yMax - this._yMin));
     }
 
     /**
-     * @param {XValue} value
-     * @returns {XCoord}
+     * @param {number} value
+     * @returns {number}
      */
     xValueToCoord(value) {
         return (value - this._xMin) * (this._plotWidth / (this._xMax - this._xMin)) + this._plotBox[3];
     }
 
     /**
-     * @param {YValue} value
-     * @returns {YCoord}
+     * @param {number} value
+     * @returns {number}
      */
     yValueToCoord(value) {
         return this._plotBox[2] - ((value - this._yMin) * (this._plotHeight / (this._yMax - this._yMin)));
     }
 
     /**
-     * @param {XCoord} coord
-     * @returns {XValue}
+     * @param {number} coord
+     * @returns {number}
      */
     xCoordScale(coord) {
         return coord / (this._plotWidth / (this._xMax - this._xMin));
     }
 
     /**
-     * @param {YCoord} coord
-     * @returns {YValue}
+     * @param {number} coord
+     * @returns {number}
      */
     yCoordScale(coord) {
         return coord / (this._plotHeight / (this._yMax - this._yMin));
     }
 
     /**
-     * @param {XCoord} coord
-     * @returns {XValue}
+     * @param {number} coord
+     * @returns {number}
      */
     xCoordToValue(coord) {
         return (coord - this._plotBox[3]) / (this._plotWidth / (this._xMax - this._xMin)) + this._xMin;
     }
 
     /**
-     * @param {YCoord} coord
-     * @returns {YValue}
+     * @param {number} coord
+     * @returns {number}
      */
     yCoordToValue(coord) {
         return (this._plotBox[2] - coord) / (this._plotHeight / (this._yMax - this._yMin)) + this._yMin;
@@ -1466,7 +1470,7 @@ export class Chart extends EventTarget {
     /**
      * Create an SVG or CSS path
      *
-     * @param {Coords} coords
+     * @param {Array<CoordTuple>} coords
      * @param {object} [options]
      * @param {boolean} [options.css] - CSS compatible output
      * @param {boolean} [options.closed] - Close the Path so it can be filled
