@@ -378,8 +378,10 @@ export class Chart extends EventTarget {
             if (!this._tooltipState.visible) {
                 return;
             }
+            const {x, y} = this.el.getBoundingClientRect();
+            this._tooltipState.chartOffsets = [x, y];
             this._updateTooltip({disableAnimation: true});
-        }, {passive: true});
+        }, {passive: true, capture: true});
     }
 
     /**
@@ -885,10 +887,10 @@ export class Chart extends EventTarget {
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            const x = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+            const x = (ev.x - state.chartOffsets[0]) * this.devicePixelRatio;
             af = requestAnimationFrame(() => this._setTooltipPosition({x, internal: true}));
         }, {signal});
-        const x = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+        const x = (ev.x - state.chartOffsets[0]) * this.devicePixelRatio;
         this._setTooltipPosition({x, disableAnimation: true, internal: true});
         this.showTooltip();
     }
@@ -973,7 +975,6 @@ export class Chart extends EventTarget {
 
     _establishTooltipState() {
         const charts = this.getAllCharts();
-        const chartRect = this.el.getBoundingClientRect();
         let positionCallback, hAlign, vAlign;
         if (typeof this.tooltip.position === 'function') {
             positionCallback = this.tooltip.position;
@@ -991,9 +992,10 @@ export class Chart extends EventTarget {
                 }[vAlign] || 'leftright';
             }
         }
+        const chartRect = this.el.getBoundingClientRect();
         Object.assign(this._tooltipState, {
             charts,
-            chartOffsets: [chartRect.x + scrollX, chartRect.y + scrollY],
+            chartOffsets: [chartRect.x, chartRect.y],
             positionCallback,
             hAlign,
             vAlign,
@@ -1043,7 +1045,7 @@ export class Chart extends EventTarget {
     _updateTooltip(options={}) {
         const tooltips = [];
         const state = this._tooltipState;
-        let drawSig = `${scrollX},${scrollY}`;
+        let drawSig = state.chartOffsets.join();
         for (let i = 0; i &lt; state.charts.length; i++) {
             const chart = state.charts[i];
             let xRef = state.index != null ?
@@ -1164,9 +1166,7 @@ export class Chart extends EventTarget {
         posEl.dataset.hAlign = hAlign;
         posEl.dataset.vAlign = vAlign;
         const f = 1 / this.devicePixelRatio;
-        // The positioner element uses fixed position, so remove scroll offsets...
-        const offtX = state.chartOffsets[0] - scrollX;
-        const offtY = state.chartOffsets[1] - scrollY;
+        const [offtX, offtY] = state.chartOffsets;
         posEl.style.setProperty('--x-left', `${minX * f + offtX}px`);
         posEl.style.setProperty('--x-right', `${maxX * f + offtX}px`);
         posEl.style.setProperty('--x-center', `${centerX * f + offtX}px`);
