@@ -25,11 +25,25 @@ Compatibility
 
 Examples
 --------
+Simple Line Chart
 ```javascript
 import {LineChart} from '../src/index.mjs';
 const sl = new LineChart({
-    el: document.querySelector(".graph"),
+    el: document.body,
+    padding: [10, 10, 20, 40],
 });
 sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
 ```
-<iframe frameborder="0" src="/examples/simple-line.html"></iframe>
+[Try it](/examples/simple-line.html)
+
+
+Simple Bar Chart
+```javascript
+import {BarChart} from '../src/index.mjs';
+const sl = new BarChart({
+    el: document.body,
+    padding: [10, 10, 20, 40],
+});
+sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
+```
+[Try it](/examples/simple-bar.html)
