@@ -25,6 +25,11 @@ Compatibility
 
 Examples
 --------
-```html
-TBD
+```javascript
+import {LineChart} from '../src/index.mjs';
+const sl = new LineChart({
+    el: document.querySelector(".graph"),
+});
+sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
 ```
+<iframe frameborder="0" src="/examples/simple-line.html"></iframe>

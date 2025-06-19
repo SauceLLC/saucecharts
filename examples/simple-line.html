@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html class="" tabindex="0" autofocus>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+        <link href="../css/line.css" rel="stylesheet"/>
+        <script type="module">
+            import {LineChart} from '../src/index.mjs';
+            const sl = new LineChart({
+                el: document.body,
+                padding: [10, 10, 20, 40],
+            });
+            sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
+        </script>
+    </head>
+    <body style="height: 100vh; margin: 0; overflow: hidden;"></body>
+</html>
