@@ -1150,7 +1150,7 @@ export class Chart extends EventTarget {
     }
 
     /**
-     * Binary search for nearest data entry using a visual X coordinate
+     * Binary search for nearest data entry using an X coordinate
      *
      * @param {number} searchX
      * @returns {DataObject}
@@ -1178,6 +1178,17 @@ export class Chart extends EventTarget {
                 return this._renderData[lDist < rDist ? left : right];
             }
         }
+    }
+
+    /**
+     * Binary search for nearest data index using an X coordinate
+     *
+     * @param {number} searchX
+     * @returns {DataObject}
+     */
+    findNearestIndexFromXCoord(searchX) {
+        const entry = this.findNearestFromXCoord(searchX);
+        return entry ? this.normalizedData.indexOf(entry) : -1;
     }
 
     /**
