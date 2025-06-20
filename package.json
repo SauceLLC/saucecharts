@@ -12,7 +12,7 @@
     "eslint": "8.57.1"
   },
   "dependencies": {
-    "docdash-tweaked": "https://github.com/mayfield/docdash-tweaked.git#09feb4e41d35d51dccf938dadca4d2f0e6531baf",
+    "docdash-tweaked": "https://github.com/mayfield/docdash-tweaked.git#ecdfdd5d80c119126e9de874f7ea9653223d182d",
     "jsdoc": "4.0.4"
   }
 }

@@ -69,9 +69,9 @@ import * as colorMod from './color.mjs';
  */
 
 /**
- * Chart type specific data object
+ * Chart type specific normalized data entry
  *
- * @typedef DataObject
+ * @typedef DataEntry
  * @type object
  */
 
@@ -79,23 +79,23 @@ import * as colorMod from './color.mjs';
  * Chart data array - Chart specific meaning
  *
  * @typedef ChartData
- * @type {Array<DataObject|DataValue|DataTuple>}
+ * @type {Array<DataEntry|DataValue|DataTuple>}
  */
 
 /**
- * Y value of data.  X is infered by array index
+ * Value only for data entry.  The X position is inferred by array index
  *
  * @typedef DataValue
  * @type number
  */
 
 /**
- * X, Y data values
+ * An array with the position/size and value components
  *
  * @typedef DataTuple
  * @type Array<number>
- * @property {number} 0 - X value
- * @property {number} 1 - Y value
+ * @property {number} 0 - position/size
+ * @property {number} 1 - value
  */
 
 /**
@@ -298,6 +298,7 @@ const resample = largestTriangleThreeBuckets;
  */
 export class Chart extends EventTarget {
 
+    /** testing desc */
     constructor(options={}) {
         super();
         this.init(options);
@@ -703,7 +704,7 @@ export class Chart extends EventTarget {
 
     /**
      * @protected
-     * @params {Chart} chart
+     * @param {Chart} chart
      */
     addChart(chart) {
         if (!this.isParentChart()) {
@@ -748,8 +749,9 @@ export class Chart extends EventTarget {
      * The default tooltip formatter
      *
      * @protected
-     * @params {TooltipFormatOptions} options
-     * @returns {(string|Element)} Tooltip contents
+     * @param {object} options
+     * @param {DataEntry} [options.entry]
+     * @returns {Element} Tooltip contents
      */
     onTooltip({entry}) {
         if (!this._ttEntry) {
@@ -790,8 +792,8 @@ export class Chart extends EventTarget {
                 value = this.localeNumber(entry.y);
             }
         }
-        this._ttKey.textContent = key ?? '';
-        this._ttValue.textContent = value ?? '';
+        this._ttKey.replaceChildren(key ?? '');
+        this._ttValue.replaceChildren(value ?? '');
         return this._ttEntry;
     }
 
@@ -799,7 +801,10 @@ export class Chart extends EventTarget {
      * The default Axis Label formatter
      *
      * @protected
-     * @params {AxisLabelOptions} options
+     * @param {object} options
+     * @param {string} options.orientation - "vertical" or "horizontal" orientation
+     * @param {number} options.position - Normalized percentage of label, i.e. 0 -> 1
+     * @param {function} [options.format] - Optional format callback
      * @returns {string} Label contents
      */
     onAxisLabel({orientation, position, format}) {
@@ -851,6 +856,9 @@ export class Chart extends EventTarget {
                     this.hideTooltip();
                 }
             }, this.tooltip.linger);
+            this.dispatchEvent(new CustomEvent('tooltip', {
+                detail: {internal: true, chart: this}
+            }));
         });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
         addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
@@ -1153,7 +1161,7 @@ export class Chart extends EventTarget {
      * Binary search for nearest data entry using an X coordinate
      *
      * @param {number} searchX
-     * @returns {DataObject}
+     * @returns {DataEntry}
      */
     findNearestFromXCoord(searchX) {
         if (isNaN(searchX) || searchX === null || !this._renderData || !this._renderData.length) {
@@ -1184,7 +1192,7 @@ export class Chart extends EventTarget {
      * Binary search for nearest data index using an X coordinate
      *
      * @param {number} searchX
-     * @returns {DataObject}
+     * @returns {DataEntry}
      */
     findNearestIndexFromXCoord(searchX) {
         const entry = this.findNearestFromXCoord(searchX);
@@ -1249,7 +1257,7 @@ export class Chart extends EventTarget {
      * @protected
      *
      * @param {ChartData} data
-     * @returns {Array<DataObject>}
+     * @returns {Array<DataEntry>}
      */
     normalizeData(data) {
         const norm = new Array(data.length);
