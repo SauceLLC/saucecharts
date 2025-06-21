@@ -6,13 +6,13 @@
   "author": "Sauce, LLC",
   "license": "MIT",
   "scripts": {
-    "docs": "jsdoc -c .jsdoc.conf -P package.json -R README.md"
+    "docs": "jsdoc -c .jsdoc.conf"
   },
   "devDependencies": {
     "eslint": "8.57.1"
   },
   "dependencies": {
-    "docdash-tweaked": "https://github.com/mayfield/docdash-tweaked.git#ecdfdd5d80c119126e9de874f7ea9653223d182d",
+    "docdash-tweaked": "https://github.com/mayfield/docdash-tweaked.git#de6291344db88ac0131ce6f18c2c89890801a9ee",
     "jsdoc": "4.0.4"
   }
 }

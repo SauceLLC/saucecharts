@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>line.mjs - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="page-contents">
+    <nav >
+        
+        <input type="text" id="nav-search" placeholder="Search" />
+        
+        
+        <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-bar.BarChart.html">BarChart</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#normalizeData">normalizeData</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#doReset">doReset</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#init">init</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#beforeSetElement">beforeSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#afterSetElement">afterSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#doLayout">doLayout</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setData">setData</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#findNearestFromXCoord">findNearestFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#findNearestIndexFromXCoord">findNearestIndexFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xValueToCoord">xValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yValueToCoord">yValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xCoordScale">xCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yCoordScale">yCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xValueScale">xValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yValueScale">yValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#isTooltipAvailable">isTooltipAvailable</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xCoordToValue">xCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yCoordToValue">yCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#adjustSize">adjustSize</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#isTooltipPointing">isTooltipPointing</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#makePath">makePath</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#onAxisLabel">onAxisLabel</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setZoom">setZoom</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setTooltipPosition">setTooltipPosition</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#suspendTooltip">suspendTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#hideTooltip">hideTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#updateVisibleTooltip">updateVisibleTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#resumeTooltip">resumeTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#onTooltip">onTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#showTooltip">showTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#beforeRender">beforeRender</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#afterRender">afterRender</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#render">render</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#getColor">getColor</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#getAllCharts">getAllCharts</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#reset">reset</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#addGradient">addGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#removeGradient">removeGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setElement">setElement</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#addChart">addChart</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#isParentChart">isParentChart</a></li></ul></li><li><a href="module-color.Color.html">Color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.Color.html#.fromRGB">fromRGB</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustAlpha">adjustAlpha</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#alpha">alpha</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#clone">clone</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustHue">adjustHue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#hue">hue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#toString">toString</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustSaturation">adjustSaturation</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#saturation">saturation</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustLight">adjustLight</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#light">light</a></li>
+<li data-type="method" class="static" style="display: none;"><a href="module-color.Color.html#.fromHex">fromHex</a></li></ul></li><li><a href="module-color.Gradient.html">Gradient</a><ul class='methods'><li data-type="method" class="" style="display: none;"><a href="module-color.Gradient.html#addColor">addColor</a></li>
+<li data-type="method" class="static" style="display: none;"><a href="module-color.Gradient.html#.fromObject">fromObject</a></li></ul></li><li><a href="module-color.LinearGradient.html">LinearGradient</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-color.LinearGradient.html#addColor">addColor</a></li></ul></li><li><a href="module-common.Chart.html">Chart</a><ul class='methods'><li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#normalizeData">normalizeData</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setData">setData</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#findNearestFromXCoord">findNearestFromXCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#findNearestIndexFromXCoord">findNearestIndexFromXCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xValueToCoord">xValueToCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yValueToCoord">yValueToCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xCoordScale">xCoordScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yCoordScale">yCoordScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xValueScale">xValueScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yValueScale">yValueScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#isTooltipAvailable">isTooltipAvailable</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xCoordToValue">xCoordToValue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yCoordToValue">yCoordToValue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#adjustSize">adjustSize</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#isTooltipPointing">isTooltipPointing</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#makePath">makePath</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#onAxisLabel">onAxisLabel</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setZoom">setZoom</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setTooltipPosition">setTooltipPosition</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#suspendTooltip">suspendTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#hideTooltip">hideTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#updateVisibleTooltip">updateVisibleTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#resumeTooltip">resumeTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#onTooltip">onTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#showTooltip">showTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#beforeRender">beforeRender</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#afterRender">afterRender</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#render">render</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#getColor">getColor</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#getAllCharts">getAllCharts</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#doReset">doReset</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#reset">reset</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#init">init</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#addGradient">addGradient</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#removeGradient">removeGradient</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#beforeSetElement">beforeSetElement</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#afterSetElement">afterSetElement</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setElement">setElement</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#addChart">addChart</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#isParentChart">isParentChart</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#doLayout">doLayout</a></li></ul></li><li><a href="module-line.LineChart.html">LineChart</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#adjustSize">adjustSize</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#hideBrush">hideBrush</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#setBrush">setBrush</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#showBrush">showBrush</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#afterRender">afterRender</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#setSegments">setSegments</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#doReset">doReset</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#init">init</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#beforeSetElement">beforeSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#afterSetElement">afterSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#doLayout">doLayout</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#normalizeData">normalizeData</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setData">setData</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#findNearestFromXCoord">findNearestFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#findNearestIndexFromXCoord">findNearestIndexFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xValueToCoord">xValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yValueToCoord">yValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xCoordScale">xCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yCoordScale">yCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xValueScale">xValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yValueScale">yValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#isTooltipAvailable">isTooltipAvailable</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xCoordToValue">xCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yCoordToValue">yCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#isTooltipPointing">isTooltipPointing</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#makePath">makePath</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#onAxisLabel">onAxisLabel</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setZoom">setZoom</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setTooltipPosition">setTooltipPosition</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#suspendTooltip">suspendTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#hideTooltip">hideTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#updateVisibleTooltip">updateVisibleTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#resumeTooltip">resumeTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#onTooltip">onTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#showTooltip">showTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#beforeRender">beforeRender</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#render">render</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#getColor">getColor</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#getAllCharts">getAllCharts</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#reset">reset</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#addGradient">addGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#removeGradient">removeGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setElement">setElement</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#addChart">addChart</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#isParentChart">isParentChart</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-bar.html">bar</a></li><li><a href="module-color.html">color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.html#.parse">parse</a></li></ul></li><li><a href="module-common.html">common</a></li><li><a href="module-line.html">line</a></li></ul><h3>Externals</h3><ul><li><a href="external-CSS_Color.html">CSS_Color</a></li></ul><h3>Events</h3><ul><li><a href="module-common.html#~event:tooltip">tooltip</a></li><li><a href="module-common.html#~event:zoom">zoom</a></li><li><a href="module-line.html#~event:brush">brush</a></li></ul>
+        
+    </nav>
+
+    <div id="main">
+        
+        <h1 class="page-title">line.mjs</h1>
+        
+
+        
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module line
+ */
+import * as common from './common.mjs';
+import * as colorMod from './color.mjs';
+
+
+/**
+ * Brush event
+ *
+ * @event brush
+ * @type {object}
+ * @property {number} x1
+ * @property {number} x2
+ * @property {boolean} internal - Was the event triggered internally by pointer events
+ * @property {module:common.Chart} chart
+ */
+
+/**
+ * @typedef {object} LineChartOptions
+ * @property {boolean} [hidePoints] - Hide the data marker points on the line
+ * @property {object} [brush] - Brush (i.e. selection) options
+ * @property {boolean} [brush.disabled]
+ * @property {"data"|"visual"} [brush.type="data"] - Brush selection will anchor to data or visual coordinates
+ * @property {boolean} [brush.showTooltip] - Allow showing tooltip when actively brushing
+ * @property {boolean} [brush.disableZoom] - Disable auto-zoom when brush finishes
+ * @property {boolean} [brush.clipMask] - Visually clip the brush selection to the data area
+ * @property {boolean} [brush.passive] - Do not allow pointer interaction
+ */
+
+/**
+ * A Line Chart
+ *
+ * @extends module:common.Chart
+ * @param {LineChartOptions|module:common~ChartOptions} [options]
+ * @emits brush
+ */
+export class LineChart extends common.Chart {
+
+    init(options={}) {
+        this.hidePoints = options.hidePoints;
+        this.brush = options.brush ?? {};
+        this.brush.type ??= 'data';
+        this.segments = [];
+        this._segmentEls = new Map();
+        this._segmentFills = new Map();
+        this._gcQueue = [];
+        this._brushState = {};
+        this._onPointerDownBound = this.onPointerDown.bind(this);
+    }
+
+    /**
+     * Set the horizontal segments for this data.  A segment is data clipped `rect` that can be
+     * stylized independently to give special meaning to a data range.
+     *
+     * @param {Array&lt;Segment>} segments
+     * @param {object} [options]
+     * @param {boolean} [options.render=true] - Force a render
+     */
+    setSegments(segments, options={}) {
+        this.segments = segments;
+        if (options.render !== false) {
+            this.render();
+        }
+    }
+
+    beforeSetElement(el) {
+        const old = this.el;
+        if (old) {
+            old.removeEventListener('pointerdown', this._onPointerDownBound);
+        }
+        el.classList.add('sc-linechart');
+    }
+
+    afterSetElement(el) {
+        if (this._bgGradient) {
+            this.removeGradient(this._bgGradient);
+        }
+        const fill = colorMod.parse(this.getColor());
+        this._bgGradient = this.addGradient({
+            type: 'linear',
+            colors: [
+                fill.adjustAlpha(-0.7).adjustLight(-0.2),
+                fill.adjustAlpha(-0.14),
+            ]
+        });
+        const areaClipId = `clip-${this.id}`;
+        const lineClipId = `line-clip-${this.id}`;
+        const markerLineClipId = `marker-line-clip-${this.id}`;
+        const markerId = `marker-${this.id}`;
+        const markerSize = 40; // Abstract units
+        const defs = common.createSVG({
+            name: 'defs',
+            children: [{
+                name: 'clipPath',
+                id: lineClipId,
+                children: [{
+                    name: 'rect',
+                    class: ['sc-line-clip']
+                }]
+            }, {
+                name: 'clipPath',
+                id: markerLineClipId,
+                children: [{
+                    name: 'rect',
+                    class: ['sc-marker-line-clip']
+                }]
+            }, {
+                name: 'clipPath',
+                id: areaClipId,
+                children: [{
+                    name: 'path',
+                    class: ['sc-data', 'sc-area']
+                }]
+            }, this.hidePoints ? undefined : {
+                name: 'marker',
+                id: markerId,
+                class: 'sc-line-marker',
+                attrs: {
+                    markerUnits: 'userSpaceOnUse',
+                    refX: markerSize / 2,
+                    refY: markerSize / 2,
+                    markerHeight: markerSize,
+                    markerWidth: markerSize,
+                },
+                children: [{
+                    name: 'circle',
+                    class: 'sc-dot',
+                    attrs: {
+                        cx: markerSize / 2,
+                        cy: markerSize / 2,
+                    }
+                }]
+            }].filter(x => x)
+        });
+        this._backgroundEl = common.createSVG({
+            name: 'g',
+            class: 'sc-background',
+            attrs: {
+                'clip-path': `url(#${areaClipId})`,
+            },
+            children: [{
+                name: 'rect',
+                class: 'sc-visual-data-area',
+                attrs: {
+                    fill: `url(#${this._bgGradient.id})`,
+                },
+            }]
+        });
+        this._lineEl = common.createSVG({
+            name: 'path',
+            class: ['sc-data', 'sc-line', 'sc-visual-data-line'],
+            attrs: {
+                'clip-path': `url(#${lineClipId})`,
+            }
+        });
+        const plotRegionChildren = [defs, this._backgroundEl, this._lineEl];
+        if (!this.hidePoints) {
+            this._markerLineEl = common.createSVG({
+                name: 'path',
+                class: ['sc-data', 'sc-line', 'sc-visual-data-line-markers'],
+                attrs: {
+                    'clip-path': `url(#${markerLineClipId})`,
+                    'marker-start': `url(#${markerId})`,
+                    'marker-mid': `url(#${markerId})`,
+                    'marker-end': `url(#${markerId})`,
+                }
+            });
+            plotRegionChildren.push(this._markerLineEl);
+        } else {
+            this._markerLineEl = undefined;
+        }
+        if (!this.brush.disabled) {
+            const groupEl = common.createSVG({name: 'g', class: ['sc-brush']});
+            const maskAttrs = {};
+            if (this.brush.clipMask) {
+                maskAttrs['clip-path'] = `url(#${areaClipId})`;
+            }
+            this._brushMaskEl = common.createSVG({
+                name: 'rect',
+                class: ['sc-brush-mask'],
+                attrs: maskAttrs,
+            });
+            groupEl.append(this._brushMaskEl);
+            if (!this.brush.passive) {
+                this._brushHandleStartEl = common.createSVG({
+                    name: 'rect',
+                    class: ['sc-brush-handle', 'sc-brush-start']
+                });
+                this._brushHandleEndEl = common.createSVG({
+                    name: 'rect',
+                    class: ['sc-brush-handle', 'sc-brush-end']
+                });
+                groupEl.append(this._brushHandleStartEl, this._brushHandleEndEl);
+                el.addEventListener('pointerdown', this._onPointerDownBound);
+            } else {
+                groupEl.classList.add('sc-passive');
+            }
+            plotRegionChildren.push(groupEl);
+        }
+        this._plotRegionEl.append(...plotRegionChildren);
+        this._areaEl = defs.querySelector('path.sc-area');
+        this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
+    }
+
+    doReset() {
+        this._lineEl.removeAttribute('d');
+        if (this._markerLineEl) {
+            this._markerLineEl.removeAttribute('d');
+        }
+        this._areaEl.removeAttribute('d');
+        this._prevCoords = null;
+        this._prevData = null;
+        this.segments.length = 0;
+        this._segmentEls.clear();
+        for (const x of this._segmentFills.values()) {
+            this.removeGradient(x.gradient);
+        }
+        this._segmentFills.clear();
+    }
+
+    adjustScale(manifest) {
+        super.adjustScale(manifest);
+        const data = manifest.data;
+        this._xMin ??= data[0].x;
+        this._xMax ??= data[data.length - 1].x;
+        if (this._xMax === this._xMin) {
+            this._xMin -= 0.5;
+            this._xMax += 0.5;
+        }
+        if (this._yMax === this._yMin) {
+            this._yMin -= 0.5;
+            this._yMax += 0.5;
+        }
+    }
+
+    doLayout(manifest) {
+        const layouts = this._renderBeforeLayout(manifest);
+        this._renderDoLayout(layouts);
+        this._prevCoords = layouts.coords;
+        this._prevData = manifest.data;
+    }
+
+    _renderBeforeLayout({data, disableAnimation}) {
+        const coords = data.map(o => [this.xValueToCoord(o.x), this.yValueToCoord(o.y)]);
+        let forceLayout = false;
+        if (!disableAnimation &amp;&amp; this._prevCoords) {
+            // We can use CSS to animate the transition but we have to use a little hack
+            // because it only animates when the path has the same number (or more) points.
+            if (this._prevCoords.length !== coords.length) {
+                const identityIdx = data.length / 2 | 0;
+                const identity = data[identityIdx];
+                const prevIdentityIdx = this._prevData.findIndex(o =>
+                    o.x === identity.x &amp;&amp; o.y === identity.y);
+                const ltr = prevIdentityIdx === -1 || identityIdx &lt;= prevIdentityIdx;
+                const prev = Array.from(this._prevCoords);
+                if (ltr) {
+                    while (prev.length > coords.length) {
+                        prev.shift();
+                    }
+                    while (prev.length &lt; coords.length) {
+                        prev.push(prev[prev.length - 1]);
+                    }
+                } else {
+                    while (prev.length > coords.length) {
+                        prev.pop();
+                    }
+                    while (prev.length &lt; coords.length) {
+                        prev.unshift(prev[0]);
+                    }
+                }
+                const pathLine = this.makePath(prev);
+                this._lineEl.setAttribute('d', pathLine);
+                if (this._markerLineEl) {
+                    this._markerLineEl.setAttribute('d', pathLine);
+                }
+                this._areaEl.setAttribute('d', this.makePath(prev, {closed: true}));
+                forceLayout = true;
+            }
+        }
+        const plotCenterX = this._plotWidth / 2 + this._plotBox[3];
+        const unclaimedSegmentEls = new Map(this._segmentEls);
+        const unclaimedFills = new Map(this._segmentFills);
+        const segmentAdds = [];
+        const segmentUpdates = [];
+        for (let i = 0; i &lt; this.segments.length; i++) {
+            const s = this.segments[i];
+            const x = s.x != null ? this.xValueToCoord(s.x) : this._plotBox[3];
+            const y = s.y != null ? this.yValueToCoord(s.y) : this._plotBox[0];
+            const width = s.width != null ?
+                this.xValueScale(s.width) :
+                this._plotWidth - (x - this._plotBox[3]);
+            const height = s.height != null ?
+                this.yValueScale(s.height) :
+                this._plotHeight - (y - this._plotBox[0]);
+            let el = this._segmentEls.get(s);
+            if (!el) {
+                el = common.createSVG({
+                    name: 'rect',
+                    class: ['sc-visual-data-segment'],
+                    attrs: {
+                        x: (x + width / 2 > plotCenterX) ? x + width : x,
+                        y,
+                        width: 0,
+                        height,
+                    }
+                });
+                this._segmentEls.set(s, el);
+                forceLayout = true;
+                segmentAdds.push({el});
+            } else {
+                unclaimedSegmentEls.delete(s);
+            }
+            let gradient;
+            if (s.color) {
+                if (!this._segmentFills.has(s.color)) {
+                    const fill = colorMod.parse(s.color);
+                    gradient = this.addGradient((fill instanceof colorMod.Gradient) ? fill : {
+                        type: 'linear',
+                        colors: [
+                            fill.adjustAlpha(-0.7).adjustLight(-0.2),
+                            fill.adjustAlpha(-0.14),
+                        ]
+                    });
+                    this._segmentFills.set(s.color, {gradient});
+                } else {
+                    unclaimedFills.delete(s.color);
+                    gradient = this._segmentFills.get(s.color).gradient;
+                }
+            }
+            segmentUpdates.push({el, x, y, width, height, gradient});
+        }
+        const segmentRemoves = [];
+        if (unclaimedSegmentEls.size) {
+            for (const [k, el] of unclaimedSegmentEls) {
+                let x = Number(el.getAttribute('x'));
+                const width = Number(el.getAttribute('width'));
+                if (x + width / 2 > plotCenterX) {
+                    x += width;
+                }
+                this._segmentEls.delete(k);
+                segmentRemoves.push({el, x});
+            }
+        }
+        const gradientRemoves = [];
+        if (unclaimedFills.size) {
+            for (const [k, {gradient}] of unclaimedFills) {
+                this._segmentFills.delete(k);
+                gradientRemoves.push(gradient);
+            }
+        }
+        return {forceLayout, coords, segmentAdds, segmentUpdates, segmentRemoves, gradientRemoves};
+    }
+
+    _renderDoLayout({coords, forceLayout, segmentAdds, segmentUpdates, segmentRemoves, gradientRemoves}) {
+        for (let i = 0; i &lt; segmentAdds.length; i++) {
+            this._backgroundEl.append(segmentAdds[i].el);
+        }
+        if (forceLayout) {
+            this._plotRegionEl.clientWidth;
+        }
+        const linePath = this.makePath(coords);
+        this._lineEl.setAttribute('d', linePath);
+        if (this._markerLineEl) {
+            this._markerLineEl.setAttribute('d', linePath);
+        }
+        this._areaEl.setAttribute('d', this.makePath(coords, {closed: true}));
+        for (let i = 0; i &lt; segmentUpdates.length; i++) {
+            const o = segmentUpdates[i];
+            o.el.setAttribute('x', o.x);
+            o.el.setAttribute('y', o.y);
+            o.el.setAttribute('width', o.width);
+            o.el.setAttribute('height', o.height);
+            if (o.gradient) {
+                o.el.setAttribute('fill', `url(#${o.gradient.id})`);
+            }
+        }
+        if (segmentRemoves.length) {
+            for (const {el, x} of segmentRemoves) {
+                el.setAttribute('x', x);
+                el.setAttribute('width', 0);
+            }
+            this._gcQueue.push(
+                [document.timeline.currentTime, () => segmentRemoves.forEach(({el}) => el.remove())]);
+        }
+        if (gradientRemoves.length) {
+            this._gcQueue.push(
+                [document.timeline.currentTime, () => gradientRemoves.forEach(x => this.removeGradient(x))]);
+        }
+        if (this._gcQueue.length) {
+            this._schedGC();
+        }
+    }
+
+    /**
+     * Show the current brush
+     */
+    showBrush() {
+        const state = this._brushState;
+        if (state.visible) {
+            return;
+        }
+        this._plotRegionEl.classList.add('sc-brush-visible');
+        state.visible = true;
+    }
+
+    /**
+     * Hide the current brush.  Any active pointer interaction will be cancelled.
+     */
+    hideBrush() {
+        const state = this._brushState;
+        if (state.pointerAborter &amp;&amp; !state.pointerAborter.signal.aborted) {
+            state.pointerAborter.abort();
+        }
+        if (!state.visible) {
+            return;
+        }
+        this._plotRegionEl.classList.remove('sc-brush-visible');
+        state.visible = false;
+    }
+
+    /**
+     * Set the brush parameters.  I.e. Mark a selection on the chart.
+     * Will also show the brush if not currently visible.
+     *
+     * @param {object} options
+     * @param {"data"|"visual"} [options.type="data"] - Indicate what unit type the x1 and x2 options are
+     * @param {number} [options.x1] - Starting x value/coordinate
+     * @param {number} [options.x2] - Ending x value/coordinate
+     */
+    setBrush(options) {
+        this._establishBrushState();
+        this._setBrush(options);
+        if (this._brushState.x1 != null || this._brushState.x2 != null) {
+            this.showBrush();
+        } else {
+            this.hideBrush();
+        }
+    }
+
+    _setBrush({x1, x2, type=this.brush.type, _internal=false}) {
+        const state = this._brushState;
+        if (x1 !== undefined) {
+            state.x1 = (type === this.brush.type || x1 === null) ? x1 :
+                type === 'data' ?
+                    this.xValueToCoord(x1) :
+                    this.xCoordToValue(x1);
+        } else if (state.x1 == null) {
+            throw new Error('missing x1 state');
+        }
+        if (x2 != null) {
+            state.x2 = (type === this.brush.type || x1 === null) ? x2 :
+                type === 'data' ?
+                    this.xValueToCoord(x2) :
+                    this.xCoordToValue(x2);
+        } else if (state.x2 == null) {
+            throw new Error('missing x1 state');
+        }
+        this._updateBrush();
+        queueMicrotask(() => this.dispatchEvent(new CustomEvent('brush', {
+            detail: {
+                x1: state.x1,
+                x2: state.x2,
+                type: this.brush.type,
+                internal: _internal,
+                chart: this,
+            }
+        })));
+    }
+
+    onPointerDown(ev) {
+        const state = this._establishBrushState();
+        if (state.active) {
+            return;
+        }
+        const xCoord = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+        const yCoord = (ev.pageY - state.chartOffsets[1]) * this.devicePixelRatio;
+        if (xCoord &lt; this._plotBox[3] || xCoord > this._plotBox[1] ||
+            yCoord &lt; this._plotBox[0] || yCoord > this._plotBox[2]) {
+            return;
+        }
+        const charts = this.brush.shared ? this.getAllCharts()
+            .filter(x => x.brush &amp;&amp; x.brush.shared) : [this];
+        for (const x of charts) {
+            x._establishBrushState({active: true});
+        }
+        if (!this.brush.showTooltip) {
+            (this.parentChart || this).suspendTooltip();
+        }
+        this.el.classList.add('sc-brushing');
+        let handle;
+        let isNew;
+        if (ev.target.classList.contains('sc-brush-mask')) {
+            this.el.classList.add('sc-moving');
+            handle = '*';
+        } else {
+            this.el.classList.add('sc-sizing');
+            if (ev.target.classList.contains('sc-brush-start')) {
+                handle = 'start';
+            } else {
+                handle = 'end';
+                isNew = !ev.target.classList.contains('sc-brush-end');
+            }
+        }
+        for (const chart of charts) {
+            const s = chart._brushState;
+            s.handle = handle;
+            s.xAnchor = xCoord;
+            if (isNew) {
+                // Reset brush to 0 width on our pointer position
+                s.x1 = s.x2 = (chart.brush.type === 'data' ? chart.xCoordToValue(xCoord) : xCoord);
+            }
+            // While brushing with an active pointer our brush is always visual...
+            if (chart.brush.type === 'data') {
+                s.pointerX1 = chart.xValueToCoord(s.x1);
+                s.pointerX2 = chart.xValueToCoord(s.x2);
+            } else {
+                s.pointerX1 = s.x1;
+                s.pointerX2 = s.x2;
+            }
+            if (handle === 'start') {
+                s.pointerX1 = xCoord;
+            } else if (handle === 'end') {
+                s.pointerX2 = xCoord;
+            }
+        }
+        const pointerAborter = state.pointerAborter = new AbortController();
+        const signal = pointerAborter.signal;
+        signal.addEventListener('abort', () => {
+            this.el.classList.remove('sc-brushing', 'sc-sizing', 'sc-moving');
+            const hide = state.x1 === state.x2;
+            for (const chart of charts) {
+                const s = chart._brushState;
+                s.active = false;
+                if (!chart.brush.disableZoom) {
+                    chart.hideBrush();
+                    if (hide) {
+                        chart.setZoom();
+                    } else {
+                        const xMin = s.x2 > s.x1 ? s.x1 : s.x2;
+                        const xMax = s.x1 &lt; s.x2 ? s.x2 : s.x1;
+                        if (chart.brush.type === 'data') {
+                            chart.setZoom({xRange: [xMin, xMax], type: 'data', _internal: true});
+                        } else if (chart.brush.type === 'visual') {
+                            const scale = [1, 1];
+                            const translate = [0, 0];
+                            if (chart._zoomState.active &amp;&amp; chart._zoomState.type === 'visual') {
+                                if (chart._zoomState.scale) {
+                                    scale[0] = chart._zoomState.scale[0];
+                                    scale[1] = chart._zoomState.scale[1];
+                                }
+                                if (chart._zoomState.translate) {
+                                    translate[0] = chart._zoomState.translate[0];
+                                    translate[1] = chart._zoomState.translate[1];
+                                }
+                            }
+                            // Translate is always in pre-scaled coordinates coordinates..
+                            translate[0] += (xMin - chart._plotBox[3]) / scale[0];
+                            scale[0] *= this._plotWidth / (xMax - xMin);
+                            chart.setZoom({scale, translate, type: 'visual', _internal: true});
+                        } else {
+                            throw new TypeError("invalid brush type");
+                        }
+                    }
+                } else if (hide) {
+                    chart.hideBrush();
+                }
+            }
+            if (!this.brush.showTooltip) {
+                (this.parentChart || this).resumeTooltip();
+            }
+        });
+        // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
+        addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
+        addEventListener('pointerup', () => pointerAborter.abort(), {signal});
+        let af;
+        addEventListener('pointermove', ev => {
+            const xCoord = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
+            for (const chart of charts) {
+                const s = chart._brushState;
+                if (s.handle === '*') {
+                    const minX = Math.min(s.pointerX1, s.pointerX2);
+                    const maxX = Math.max(s.pointerX1, s.pointerX2);
+                    let d = xCoord - s.xAnchor;
+                    if (d &lt; 0) {
+                        if (minX + d &lt; chart._plotBox[3]) {
+                            d = chart._plotBox[3] - minX;
+                        }
+                    } else if (maxX + d > chart._plotBox[1]) {
+                        d = chart._plotBox[1] - maxX;
+                    }
+                    s.pointerX1 += d;
+                    s.pointerX2 += d;
+                    s.xAnchor += d;
+                } else {
+                    const boundXCoord = Math.max(chart._plotBox[3], Math.min(chart._plotBox[1], xCoord));
+                    if (s.handle === 'start') {
+                        s.pointerX1 = boundXCoord;
+                    } else {
+                        s.pointerX2 = boundXCoord;
+                    }
+                }
+            }
+            cancelAnimationFrame(af);
+            af = requestAnimationFrame(() => {
+                for (const chart of charts) {
+                    const s = chart._brushState;
+                    chart._setBrush({
+                        x1: s.handle !== 'end' ? s.pointerX1 : undefined,
+                        x2: s.handle !== 'start' ? s.pointerX2 : undefined,
+                        type: 'visual',
+                        _internal: true
+                    });
+                }
+            });
+        }, {signal});
+        for (const chart of charts) {
+            const s = chart._brushState;
+            chart._setBrush({
+                x1: s.pointerX1,
+                x2: s.pointerX2,
+                type: 'visual',
+                _internal: true
+            });
+            chart.showBrush();
+        }
+    }
+
+    _updateBrush() {
+        let {x1, x2} = this._brushState;
+        if (x1 == null || x2 == null) {
+            return;
+        }
+        if (this.brush.type === 'data') {
+            x1 = this.xValueToCoord(x1);
+            x2 = this.xValueToCoord(x2);
+        }
+        if (this.brush.snap) {
+            x1 = this.xValueToCoord(this.findNearestFromXCoord(x1)?.x);
+            x2 = this.xValueToCoord(this.findNearestFromXCoord(x2)?.x);
+        }
+        if (x1 === null || x2 === null || isNaN(x1) || isNaN(x2)) {
+            return;
+        }
+        const reversed = x1 > x2;
+        if (reversed) {
+            [x1, x2] = [x2, x1];
+        }
+        if (x1 &lt; this._plotBox[3]) {
+            x1 = this._plotBox[3];
+        } else if (x1 > this._plotBox[1]) {
+            x1 = this._plotBox[1];
+        }
+        if (x2 > this._plotBox[1]) {
+            x2 = this._plotBox[1];
+        } else if (x2 &lt; this._plotBox[3]) {
+            x2 = this._plotBox[3];
+        }
+        const top = this._plotBox[0];
+        const height = this._plotBox[2] - top;
+        const handleWidth = Math.max(1, Math.min(this.brush.handleWidth ?? 4, x2 - x1));
+        this._brushMaskEl.setAttribute('height', height);
+        this._brushMaskEl.setAttribute('width', x2 - x1);
+        this._brushMaskEl.setAttribute('y', top);
+        this._brushMaskEl.setAttribute('x', x1);
+        if (!this.brush.passive) {
+            this._brushHandleStartEl.setAttribute('height', height);
+            this._brushHandleEndEl.setAttribute('height', height);
+            this._brushHandleStartEl.setAttribute('width', handleWidth);
+            this._brushHandleEndEl.setAttribute('width', handleWidth);
+            this._brushHandleStartEl.setAttribute('y', top);
+            this._brushHandleEndEl.setAttribute('y', top);
+            this._brushHandleStartEl.setAttribute('x', !reversed ? x1 : x2 - handleWidth);
+            this._brushHandleEndEl.setAttribute('x', !reversed ? x2 - handleWidth : x1);
+        }
+    }
+
+    _establishBrushState(extra) {
+        const chartRect = this.el.getBoundingClientRect();
+        Object.assign(this._brushState, {
+            chartOffsets: [chartRect.x + scrollX, chartRect.y + scrollY],
+        }, extra);
+        return this._brushState;
+    }
+
+    afterRender(...args) {
+        super.afterRender(...args);
+        if (this._brushState.active) {
+            this._setBrush({
+                x1: this._brushState.handle !== 'end' ? this._brushState.pointerX1 : undefined,
+                x2: this._brushState.handle !== 'start' ? this._brushState.pointerX2 : undefined,
+                type: 'visual',
+                _internal: true
+            });
+        } else if (this._brushState.visible) {
+            this._updateBrush();
+        }
+    }
+
+    adjustSize(...args) {
+        super.adjustSize(...args);
+        if (this._brushState.visible) {
+            this._updateBrush();
+        }
+    }
+
+    _schedGC() {
+        if (this._gcTimeout) {
+            return;
+        }
+        this._gcTimeout = setTimeout(() => {
+            common.requestIdle(() => {
+                this._gcTimeout = null;
+                this._gc();
+            });
+        }, 1100);
+    }
+
+    _gc() {
+        const animDur = common.getStyleValue(this.el, '--transition-duration', 'time') || 0;
+        const expiration = document.timeline.currentTime - animDur - 100;
+        for (const [ts, cb] of Array.from(this._gcQueue)) {
+            if (ts > expiration) {
+                break;
+            }
+            this._gcQueue.shift();
+            try {
+                cb();
+            } catch(e) {
+                console.error('Garbage collection error:', e);
+            }
+        }
+        if (this._gcQueue.length) {
+            setTimeout(() => this._schedGC(), this._gcQueue[0][0] - expiration);
+        }
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+        
+        
+
+        <footer>
+            Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> using the <a href="https://github.com/mayfield/docdash-tweaked">docdash-tweaked</a> theme.
+        </footer>
+    </div>
+</div>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
+
+<link type="text/css" rel="stylesheet" href="overrides.css"/>
+<script src="overrides.js"></script>

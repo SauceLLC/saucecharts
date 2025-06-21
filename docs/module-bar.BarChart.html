@@ -1,0 +1,6551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>BarChart - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="page-contents">
+    <nav >
+        
+        <input type="text" id="nav-search" placeholder="Search" />
+        
+        
+        <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-bar.BarChart.html">BarChart</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#normalizeData">normalizeData</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#doReset">doReset</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#init">init</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#beforeSetElement">beforeSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#afterSetElement">afterSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#doLayout">doLayout</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setData">setData</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#findNearestFromXCoord">findNearestFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#findNearestIndexFromXCoord">findNearestIndexFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xValueToCoord">xValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yValueToCoord">yValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xCoordScale">xCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yCoordScale">yCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xValueScale">xValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yValueScale">yValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#isTooltipAvailable">isTooltipAvailable</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#xCoordToValue">xCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#yCoordToValue">yCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#adjustSize">adjustSize</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#isTooltipPointing">isTooltipPointing</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#makePath">makePath</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#onAxisLabel">onAxisLabel</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setZoom">setZoom</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setTooltipPosition">setTooltipPosition</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#suspendTooltip">suspendTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#hideTooltip">hideTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#updateVisibleTooltip">updateVisibleTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#resumeTooltip">resumeTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#onTooltip">onTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#showTooltip">showTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#beforeRender">beforeRender</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#afterRender">afterRender</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#render">render</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#getColor">getColor</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#getAllCharts">getAllCharts</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#reset">reset</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#addGradient">addGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#removeGradient">removeGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setElement">setElement</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#addChart">addChart</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#isParentChart">isParentChart</a></li></ul></li><li><a href="module-color.Color.html">Color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.Color.html#.fromRGB">fromRGB</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustAlpha">adjustAlpha</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#alpha">alpha</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#clone">clone</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustHue">adjustHue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#hue">hue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#toString">toString</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustSaturation">adjustSaturation</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#saturation">saturation</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustLight">adjustLight</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#light">light</a></li>
+<li data-type="method" class="static" style="display: none;"><a href="module-color.Color.html#.fromHex">fromHex</a></li></ul></li><li><a href="module-color.Gradient.html">Gradient</a><ul class='methods'><li data-type="method" class="" style="display: none;"><a href="module-color.Gradient.html#addColor">addColor</a></li>
+<li data-type="method" class="static" style="display: none;"><a href="module-color.Gradient.html#.fromObject">fromObject</a></li></ul></li><li><a href="module-color.LinearGradient.html">LinearGradient</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-color.LinearGradient.html#addColor">addColor</a></li></ul></li><li><a href="module-common.Chart.html">Chart</a><ul class='methods'><li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#normalizeData">normalizeData</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setData">setData</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#findNearestFromXCoord">findNearestFromXCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#findNearestIndexFromXCoord">findNearestIndexFromXCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xValueToCoord">xValueToCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yValueToCoord">yValueToCoord</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xCoordScale">xCoordScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yCoordScale">yCoordScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xValueScale">xValueScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yValueScale">yValueScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#isTooltipAvailable">isTooltipAvailable</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#xCoordToValue">xCoordToValue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#yCoordToValue">yCoordToValue</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#adjustSize">adjustSize</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#isTooltipPointing">isTooltipPointing</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#makePath">makePath</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#onAxisLabel">onAxisLabel</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setZoom">setZoom</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setTooltipPosition">setTooltipPosition</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#suspendTooltip">suspendTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#hideTooltip">hideTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#updateVisibleTooltip">updateVisibleTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#resumeTooltip">resumeTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#onTooltip">onTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#showTooltip">showTooltip</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#beforeRender">beforeRender</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#afterRender">afterRender</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#render">render</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#getColor">getColor</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#getAllCharts">getAllCharts</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#doReset">doReset</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#reset">reset</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#init">init</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#addGradient">addGradient</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#removeGradient">removeGradient</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#beforeSetElement">beforeSetElement</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#afterSetElement">afterSetElement</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setElement">setElement</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#addChart">addChart</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#isParentChart">isParentChart</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#doLayout">doLayout</a></li></ul></li><li><a href="module-line.LineChart.html">LineChart</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#adjustSize">adjustSize</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#hideBrush">hideBrush</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#setBrush">setBrush</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#showBrush">showBrush</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#afterRender">afterRender</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#setSegments">setSegments</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#doReset">doReset</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#init">init</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#beforeSetElement">beforeSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#afterSetElement">afterSetElement</a></li>
+<li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#doLayout">doLayout</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#normalizeData">normalizeData</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setData">setData</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#findNearestFromXCoord">findNearestFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#findNearestIndexFromXCoord">findNearestIndexFromXCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xValueToCoord">xValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yValueToCoord">yValueToCoord</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xCoordScale">xCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yCoordScale">yCoordScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xValueScale">xValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yValueScale">yValueScale</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#isTooltipAvailable">isTooltipAvailable</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#xCoordToValue">xCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#yCoordToValue">yCoordToValue</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#isTooltipPointing">isTooltipPointing</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#makePath">makePath</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#onAxisLabel">onAxisLabel</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setZoom">setZoom</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setTooltipPosition">setTooltipPosition</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#suspendTooltip">suspendTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#hideTooltip">hideTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#updateVisibleTooltip">updateVisibleTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#resumeTooltip">resumeTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#onTooltip">onTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#showTooltip">showTooltip</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#beforeRender">beforeRender</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#render">render</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#getColor">getColor</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#getAllCharts">getAllCharts</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#reset">reset</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#addGradient">addGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#removeGradient">removeGradient</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setElement">setElement</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#addChart">addChart</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#isParentChart">isParentChart</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-bar.html">bar</a></li><li><a href="module-color.html">color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.html#.parse">parse</a></li></ul></li><li><a href="module-common.html">common</a></li><li><a href="module-line.html">line</a></li></ul><h3>Externals</h3><ul><li><a href="external-CSS_Color.html">CSS_Color</a></li></ul><h3>Events</h3><ul><li><a href="module-common.html#~event:tooltip">tooltip</a></li><li><a href="module-common.html#~event:zoom">zoom</a></li><li><a href="module-line.html#~event:brush">brush</a></li></ul>
+        
+    </nav>
+
+    <div id="main">
+        
+        <h1 class="page-title">BarChart</h1>
+        
+
+        
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="module-bar.html">bar</a>.</span>
+        
+        
+            BarChart
+        
+        </h2>
+        
+    
+</header>
+
+<article>
+    
+        <h3 class="subsection-title">Extends</h3>
+        
+
+
+    <ul>
+        
+            <li>
+                
+                    <a href="module-common.Chart.html">common.Chart</a>
+                
+            </li>
+        
+    </ul>
+
+
+    
+
+    
+        <div class="container-overview">
+        
+            
+<div class="section-wrap">
+    
+        <h4 class="name" id="BarChart"><span class="type-signature"></span>new BarChart<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-bar.html#~BarChartOptions">BarChartOptions</a></span>
+|
+
+<span class="param-type"><a href="module-common.html#~ChartOptions">ChartOptions</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="bar.mjs.html">bar.mjs</a>, <a href="bar.mjs.html#line19">line 19</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+        
+        </div>
+    
+
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        
+            <h3 class="subsection-title">Methods</h3>
+        
+
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="init"><span class="type-signature type-signature-protected">(protected) </span>init<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-overrides">Overrides:</key>
+        <value class="tag-overrides">
+            <a href="module-common.Chart.html#init">common.Chart#init</a>
+        </value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.html#~ChartOptions">ChartOptions</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line350">line 350</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="addGradient"><span class="type-signature"></span>addGradient<span class="signature">(gradient)</span><span class="type-signature"> &rarr; {<a href="module-color.Gradient.html">Gradient</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Add a color gradient which can be used in SVG contexts</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#addGradient">common.Chart#addGradient</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>gradient</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-color.Gradient.html">Gradient</a></span>
+|
+
+<span class="param-type"><a href="module-color.html#~GradientOptions">GradientOptions</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line359">line 359</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="module-color.Gradient.html">Gradient</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="removeGradient"><span class="type-signature"></span>removeGradient<span class="signature">(gradient)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#removeGradient">common.Chart#removeGradient</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>gradient</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-color.Gradient.html">Gradient</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line373">line 373</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="adjustSize"><span class="type-signature type-signature-protected">(protected) </span>adjustSize<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#adjustSize">common.Chart#adjustSize</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line415">line 415</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="setElement"><span class="type-signature"></span>setElement<span class="signature">(el)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Set the DOM element to be used by this chart</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#setElement">common.Chart#setElement</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>el</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line564">line 564</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="beforeSetElement"><span class="type-signature type-signature-protected">(protected) </span>beforeSetElement<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-overrides">Overrides:</key>
+        <value class="tag-overrides">
+            <a href="module-common.Chart.html#beforeSetElement">common.Chart#beforeSetElement</a>
+        </value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line679">line 679</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="afterSetElement"><span class="type-signature type-signature-protected">(protected) </span>afterSetElement<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-overrides">Overrides:</key>
+        <value class="tag-overrides">
+            <a href="module-common.Chart.html#afterSetElement">common.Chart#afterSetElement</a>
+        </value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line684">line 684</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="getColor"><span class="type-signature"></span>getColor<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="external-CSS_Color.html">external:CSS_Color</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Retrieve the computed CSS color for this chart</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#getColor">common.Chart#getColor</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line691">line 691</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="external-CSS_Color.html">external:CSS_Color</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="isParentChart"><span class="type-signature"></span>isParentChart<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#isParentChart">common.Chart#isParentChart</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line701">line 701</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="addChart"><span class="type-signature type-signature-protected">(protected) </span>addChart<span class="signature">(chart)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#addChart">common.Chart#addChart</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>chart</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.Chart.html">Chart</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line709">line 709</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="getAllCharts"><span class="type-signature"></span>getAllCharts<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;Chart>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#getAllCharts">common.Chart#getAllCharts</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line724">line 724</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+<div class="param-desc">
+    All the charts sharing this chart's `el` property
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;Chart></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="onTooltip"><span class="type-signature type-signature-protected">(protected) </span>onTooltip<span class="signature">(options)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">The default tooltip formatter</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#onTooltip">common.Chart#onTooltip</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object">object</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            
+                <tr>
+                    <td></td>
+                    <td colspan="2">
+                        <h6>Properties</h6>
+                        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>entry</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.html#~DataEntry">DataEntry</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+                    </td>
+                </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line756">line 756</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+<div class="param-desc">
+    Tooltip contents
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element">Element</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="onAxisLabel"><span class="type-signature type-signature-protected">(protected) </span>onAxisLabel<span class="signature">(options)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string">string</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">The default Axis Label formatter</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#onAxisLabel">common.Chart#onAxisLabel</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object">object</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            
+                <tr>
+                    <td></td>
+                    <td colspan="2">
+                        <h6>Properties</h6>
+                        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>orientation</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string">string</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    "vertical" or "horizontal" orientation
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>position</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    Normalized percentage of label, i.e. 0 -> 1
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>format</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function">function</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    Optional format callback
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+                    </td>
+                </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line810">line 810</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+<div class="param-desc">
+    Label contents
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string">string</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="hideTooltip"><span class="type-signature"></span>hideTooltip<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Hide tooltip (if visible)</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#hideTooltip">common.Chart#hideTooltip</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line882">line 882</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="showTooltip"><span class="type-signature"></span>showTooltip<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Show tooltip (if available)</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#showTooltip">common.Chart#showTooltip</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line897">line 897</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="suspendTooltip"><span class="type-signature"></span>suspendTooltip<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Increment the tooltip's suspend reference count by 1.
+While the tooltip suspend reference count is > 0 the tooltip will not be
+available and thus won't be visible.</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#suspendTooltip">common.Chart#suspendTooltip</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line921">line 921</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="resumeTooltip"><span class="type-signature"></span>resumeTooltip<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Decrement the tooltip's suspend reference count by 1</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#resumeTooltip">common.Chart#resumeTooltip</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line931">line 931</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="isTooltipAvailable"><span class="type-signature"></span>isTooltipAvailable<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#isTooltipAvailable">common.Chart#isTooltipAvailable</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line941">line 941</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+<div class="param-desc">
+    Is the tooltip suspended or disabled
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="isTooltipPointing"><span class="type-signature"></span>isTooltipPointing<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#isTooltipPointing">common.Chart#isTooltipPointing</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line948">line 948</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+<div class="param-desc">
+    Is the tooltip actively handling pointer events
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="setTooltipPosition"><span class="type-signature"></span>setTooltipPosition<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Place the tooltip at specific data value coordinates or by data index</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#setTooltipPosition">common.Chart#setTooltipPosition</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object">object</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            
+                <tr>
+                    <td></td>
+                    <td colspan="2">
+                        <h6>Properties</h6>
+                        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>x</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>y</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>index</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    Data index
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+                    </td>
+                </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line997">line 997</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="updateVisibleTooltip"><span class="type-signature type-signature-protected">(protected) </span>updateVisibleTooltip<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#updateVisibleTooltip">common.Chart#updateVisibleTooltip</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1019">line 1019</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="findNearestFromXCoord"><span class="type-signature"></span>findNearestFromXCoord<span class="signature">(searchX)</span><span class="type-signature"> &rarr; {<a href="module-common.html#~DataEntry">DataEntry</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Binary search for nearest data entry using an X coordinate</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#findNearestFromXCoord">common.Chart#findNearestFromXCoord</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>searchX</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1166">line 1166</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="module-common.html#~DataEntry">DataEntry</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="findNearestIndexFromXCoord"><span class="type-signature"></span>findNearestIndexFromXCoord<span class="signature">(searchX)</span><span class="type-signature"> &rarr; {<a href="module-common.html#~DataEntry">DataEntry</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Binary search for nearest data index using an X coordinate</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#findNearestIndexFromXCoord">common.Chart#findNearestIndexFromXCoord</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>searchX</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1197">line 1197</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="module-common.html#~DataEntry">DataEntry</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="setZoom"><span class="type-signature"></span>setZoom<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#setZoom">common.Chart#setZoom</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object">object</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            
+                <tr>
+                    <td></td>
+                    <td colspan="2">
+                        <h6>Properties</h6>
+                        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+                
+                <th class="default">Default</th>
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>type</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type">"data"</span>
+|
+
+<span class="param-type">"visual"</span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+                    <td class="default">
+                        
+                            <code>"data"</code>
+                        
+                    </td>
+                
+
+                <td class="description last">
+                    What coordinate scheme to use and how to keep this
+                                                   zoom anchored when data is updated
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>xRange</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.html#~CoordRange">CoordRange</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+                    <td class="default">
+                        
+                    </td>
+                
+
+                <td class="description last">
+                    x axis coordinates (type=data only)
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>yRange</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.html#~CoordRange">CoordRange</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+                    <td class="default">
+                        
+                    </td>
+                
+
+                <td class="description last">
+                    y axis coordinates (type=data only)
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>translate</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.html#~CoordTuple">CoordTuple</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+                    <td class="default">
+                        
+                    </td>
+                
+
+                <td class="description last">
+                    [x, y] coordinate offsets (type=visual only)
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>scale</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+                    <td class="default">
+                        
+                    </td>
+                
+
+                <td class="description last">
+                    Scaling factor (type=visual only)
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+                    </td>
+                </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1211">line 1211</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="setData"><span class="type-signature"></span>setData<span class="signature">(data<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#setData">common.Chart#setData</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>data</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.html#~ChartData">ChartData</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object">object</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1248">line 1248</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="normalizeData"><span class="type-signature type-signature-protected">(protected) </span>normalizeData<span class="signature">(data)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;DataEntry>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-overrides">Overrides:</key>
+        <value class="tag-overrides">
+            <a href="module-common.Chart.html#normalizeData">common.Chart#normalizeData</a>
+        </value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>data</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-common.html#~ChartData">ChartData</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1262">line 1262</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;DataEntry></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="render"><span class="type-signature"></span>render<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Render the chart</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#render">common.Chart#render</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object">object</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1292">line 1292</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="beforeRender"><span class="type-signature type-signature-protected">(protected) </span>beforeRender<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Called before any visual reflow/painting</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#beforeRender">common.Chart#beforeRender</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1343">line 1343</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="adjustScale"><span class="type-signature type-signature-protected">(protected) </span>adjustScale<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-overrides">Overrides:</key>
+        <value class="tag-overrides">
+            <a href="module-common.Chart.html#adjustScale">common.Chart#adjustScale</a>
+        </value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1356">line 1356</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="doLayout"><span class="type-signature type-signature-abstract, protected">(abstract, protected) </span>doLayout<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-overrides">Overrides:</key>
+        <value class="tag-overrides">
+            <a href="module-common.Chart.html#doLayout">common.Chart#doLayout</a>
+        </value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1396">line 1396</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="afterRender"><span class="type-signature type-signature-protected">(protected) </span>afterRender<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#afterRender">common.Chart#afterRender</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1403">line 1403</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="xValueScale"><span class="type-signature"></span>xValueScale<span class="signature">(value)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#xValueScale">common.Chart#xValueScale</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>value</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1411">line 1411</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="yValueScale"><span class="type-signature"></span>yValueScale<span class="signature">(value)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#yValueScale">common.Chart#yValueScale</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>value</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1419">line 1419</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="xValueToCoord"><span class="type-signature"></span>xValueToCoord<span class="signature">(value)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#xValueToCoord">common.Chart#xValueToCoord</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>value</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1427">line 1427</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="yValueToCoord"><span class="type-signature"></span>yValueToCoord<span class="signature">(value)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#yValueToCoord">common.Chart#yValueToCoord</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>value</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1435">line 1435</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="xCoordScale"><span class="type-signature"></span>xCoordScale<span class="signature">(coord)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#xCoordScale">common.Chart#xCoordScale</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>coord</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1443">line 1443</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="yCoordScale"><span class="type-signature"></span>yCoordScale<span class="signature">(coord)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#yCoordScale">common.Chart#yCoordScale</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>coord</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1451">line 1451</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="xCoordToValue"><span class="type-signature"></span>xCoordToValue<span class="signature">(coord)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#xCoordToValue">common.Chart#xCoordToValue</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>coord</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1459">line 1459</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="yCoordToValue"><span class="type-signature"></span>yCoordToValue<span class="signature">(coord)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#yCoordToValue">common.Chart#yCoordToValue</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>coord</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1467">line 1467</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="reset"><span class="type-signature"></span>reset<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Clear this charts data and rendering</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#reset">common.Chart#reset</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1474">line 1474</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="doReset"><span class="type-signature type-signature-abstract, protected">(abstract, protected) </span>doReset<span class="signature">()</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-overrides">Overrides:</key>
+        <value class="tag-overrides">
+            <a href="module-common.Chart.html#doReset">common.Chart#doReset</a>
+        </value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1487">line 1487</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="makePath"><span class="type-signature"></span>makePath<span class="signature">(coords, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Create an SVG or CSS path</value>
+    
+
+
+    
+
+    
+
+    
+        <key class="inherited-from">Inherited:</key>
+        <value class="inherited-from"><a href="module-common.Chart.html#makePath">common.Chart#makePath</a></value>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>coords</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;CoordTuple></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>options</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object">object</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            
+                <tr>
+                    <td></td>
+                    <td colspan="3">
+                        <h6>Properties</h6>
+                        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+                
+                <th class="attributes"></th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>css</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    CSS compatible output
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>closed</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a></span>
+
+
+
+                    
+                </td>
+
+                
+                    <td class="attributes">
+                        
+                            &lt;optional&gt;
+                        
+                        
+                        
+                    </td>
+                
+
+                
+
+                <td class="description last">
+                    Close the Path so it can be filled
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+                    </td>
+                </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="common.mjs.html">common.mjs</a>, <a href="common.mjs.html#line1497">line 1497</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+            </div>
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+        
+        
+
+        <footer>
+            Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> using the <a href="https://github.com/mayfield/docdash-tweaked">docdash-tweaked</a> theme.
+        </footer>
+    </div>
+</div>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
+
+<link type="text/css" rel="stylesheet" href="overrides.css"/>
+<script src="overrides.js"></script>

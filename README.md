@@ -34,7 +34,7 @@ const sl = new LineChart({
 });
 sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
 ```
-[Try it](/examples/simple-line.html)
+[Try it](examples/simple-line.html)
 
 
 Simple Bar Chart
@@ -46,4 +46,4 @@ const sl = new BarChart({
 });
 sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
 ```
-[Try it](/examples/simple-bar.html)
+[Try it](examples/simple-bar.html)

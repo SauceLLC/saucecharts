@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Home - Documentation</title>
+    <title>bar.mjs - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -170,77 +170,352 @@
 
     <div id="main">
         
+        <h1 class="page-title">bar.mjs</h1>
+        
 
         
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bar
+ */
+import * as common from './common.mjs';
+import * as colorMod from './color.mjs';
 
 
-    <section class="package">
-        <h3> </h3>		
-    </section>
+/**
+ * @typedef {object} BarChartOptions
+ * @property {number} [barSpacing=6]
+ * @property {number} [barRadius=4]
+ */
 
 
+/**
+ * @extends module:common.Chart
+ * @param {BarChartOptions|module:common~ChartOptions} [options]
+ */
+export class BarChart extends common.Chart {
 
+    init(options={}) {
+        this.barSpacing = options.barSpacing ?? 6;
+        this.barRadius = options.barRadius ?? 4;
+        this._bars = new Map();
+        this._barsPendingRemoval = new Map();
+        this._barFills = new Map();
+    }
 
+    beforeSetElement(el) {
+        el.classList.add('sc-barchart');
+    }
 
+    afterSetElement(el) {
+        const barsClipId = `bars-clip-${this.id}`;
+        const defs = common.createSVG({
+            name: 'defs',
+            children: [{
+                name: 'clipPath',
+                id: barsClipId,
+                children: [{
+                    name: 'rect',
+                    class: ['sc-bars-clip']
+                }]
+            }]
+        });
+        this._barsEl = common.createSVG({
+            name: 'g',
+            class: 'sc-bars',
+            attrs: {
+                'clip-path': `url(#${barsClipId})`,
+            }
+        });
+        this._plotRegionEl.append(defs, this._barsEl);
+    }
 
+    doReset() {
+        this._barsEl.replaceChildren();
+        this._bars.clear();
+        this._barsPendingRemoval.clear();
+        for (const x of this._barFills.values()) {
+            this.removeGradient(x.gradient);
+        }
+        this._barFills.clear();
+    }
 
+    doLayout(manifest, options) {
+        this._renderDoLayout(this._renderBeforeLayout(manifest, options), options);
+        this._schedGC();
+    }
 
+    normalizeData(data) {
+        // Convert to width and height to center-x and top-y..
+        const norm = new Array(data.length);
+        if (!data.length) {
+            return norm;
+        }
+        if (Array.isArray(data[0])) {
+            // [[width, y], [width, y], ...]
+            const width = data[0][0] || 0;
+            norm[0] = {index: 0, width, x: width / 2, y: data[0][1] || 0, ref: data[0]};
+            let offt = width;
+            for (let i = 1; i &lt; data.length; i++) {
+                const o = data[i];
+                const width = o[0] || 0;
+                offt += width;
+                norm[i] = {index: i, width, x: offt - (width / 2), y: o[1] || 0, ref: o};
+            }
+        } else if (typeof data[0] === 'object' &amp;&amp; Object.getPrototypeOf(data[0]) === Object.prototype) {
+            // [{width, y, ...}, {width, y, ...}, ...]
+            const width = data[0].width || 0;
+            norm[0] = {...data[0], index: 0, width, x: width / 2, y: data[0].y || 0, ref: data[0]};
+            let offt = width;
+            for (let i = 1; i &lt; data.length; i++) {
+                const o = data[i];
+                const width = o.width || 0;
+                offt += width;
+                norm[i] = {...o, index: i, width, x: offt - (width / 2), y: o.y || 0, ref: o};
+            }
+        } else {
+            // [y, y1, ...]
+            let convWarn = 0;
+            for (let i = 0; i &lt; data.length; i++) {
+                // Importantly, we need unique objects for the data ref and not primatives..
+                // Option 1: do not allow this, throw TypeError
+                // Option 2: alter the users data (they did give it to us)
+                let y;
+                if (typeof data[i] === 'number') {
+                    convWarn++;
+                    y = data[i];
+                    data[i] = new Number(y);
+                } else {
+                    y = +data[i];
+                }
+                norm[i] = {index: i, width: 1, x: i + 0.5, y: y || 0, ref: data[i]};
+            }
+            if (convWarn) {
+                console.warn(`Converted ${convWarn} primative numbers to unique objects.`);
+            }
+        }
+        return norm;
+    }
 
-    
+    adjustScale(manifest) {
+        super.adjustScale(manifest);
+        if (this._yMax === this._yMin) {
+            this._yMin -= 1;
+        }
+        if (this.xMin == null) {
+            this._xMin = 0;
+        }
+        if (this.xMax == null) {
+            this._xMax = manifest.data.reduce((agg, x) => agg + x.width, 0);
+        }
+    }
 
+    _renderBeforeLayout({data, resampling}, options={}) {
+        const unclaimed = new Map(this._bars);
+        const layout = {
+            add: [],
+            remove: [],
+            update: [],
+        };
+        const yMinCoord = this.yValueToCoord(Math.max(0, this._yMin));
+        const adding = [];
+        for (let index = 0; index &lt; data.length; index++) {
+            const entry = data[index];
+            const x1 = this.xValueToCoord(entry.x - entry.width / 2);
+            const x2 = this.xValueToCoord(entry.x + entry.width / 2);
+            const y = this.yValueToCoord(entry.y);
+            const height = yMinCoord - y;
+            const color = entry.color || this.getColor();
+            const fillKey = `${color}-${height &lt; 0 ? 'down' : 'up'}`;
+            let barFill = this._barFills.get(fillKey);
+            if (!barFill) {
+                const fill = colorMod.parse(color);
+                const gradient = this.addGradient((fill instanceof colorMod.Gradient) ? fill : {
+                    rotate: height &lt; 0 ? 180 : 0,
+                    type: 'linear',
+                    colors: [
+                        fill.adjustAlpha(-0.5).adjustLight(-0.2),
+                        fill.adjustAlpha(-0.14),
+                    ]
+                });
+                this._barFills.set(fillKey, barFill = {gradient});
+            }
+            const attrs = {
+                width: x2 - x1,
+                height,
+                x: x1,
+                y,
+                fill: `url(#${barFill.gradient.id})`,
+            };
+            let bar = this._bars.get(entry.ref);
+            if (!bar) {
+                bar = this._barsPendingRemoval.get(entry.ref);
+                if (bar) {
+                    bar.sig = null;
+                    this._barsPendingRemoval.delete(entry.ref);
+                    this._bars.set(entry.ref, bar);
+                }
+            } else {
+                unclaimed.delete(entry.ref);
+            }
+            if (!bar) {
+                bar = {};
+                adding.push({bar, ref: entry.ref});
+            }
+            const sig = `${attrs.width} ${attrs.height} ${attrs.x} ${attrs.y} ${attrs.fill}`;
+            if (bar.sig !== sig) {
+                bar.sig = sig;
+                bar.attrs = attrs;
+                bar.fillKey = fillKey;
+                if (bar.el) {
+                    layout.update.push(bar);
+                }
+            }
+        }
+        let unclaimedIter = adding.length &amp;&amp; resampling &amp;&amp; unclaimed.size &amp;&amp; unclaimed.entries();
+        for (let i = 0; i &lt; adding.length; i++) {
+            const {bar, ref} = adding[i];
+            if (resampling) {
+                if (unclaimedIter) {
+                    const next = unclaimedIter.next().value;
+                    if (next) {
+                        const [oldKey, replace] = next;
+                        unclaimed.delete(oldKey);
+                        this._bars.delete(oldKey);
+                        Object.assign(replace, bar);
+                        this._bars.set(ref, replace);
+                        layout.update.push(replace);
+                        continue;
+                    } else {
+                        unclaimedIter = null;
+                    }
+                }
+                if (this._barsPendingRemoval.size) {
+                    const [oldKey, replace] = this._barsPendingRemoval.entries().next().value;
+                    this._barsPendingRemoval.delete(oldKey);
+                    Object.assign(replace, bar);
+                    this._bars.set(ref, replace);
+                    layout.update.push(replace);
+                    continue;
+                }
+            }
+            bar.el = common.createSVG({name: 'path', class: ['sc-bar', 'sc-visual-data-bar']});
+            this._bars.set(ref, bar);
+            layout.add.push(bar);
+            layout.update.push(bar);
+        }
+        for (const [key, bar] of unclaimed) {
+            bar.lastUsed = document.timeline.currentTime;
+            this._bars.delete(key);
+            this._barsPendingRemoval.set(key, bar);
+            layout.remove.push(bar);
+        }
+        if (options.disableAnimation) {
+            // Terminate any active animations from previously removed bars (test case: aggressive resizing)
+            for (const bar of this._barsPendingRemoval.values()) {
+                layout.remove.push(bar);
+            }
+        }
+        return layout;
+    }
 
+    _renderDoLayout(layout, {disableAnimation}={}) {
+        const plotQuarterX = this._plotWidth / 4 + this._plotBox[3];
+        const baselineY = this.yValueToCoord(Math.max(0, this._yMin));
+        const leftX = this.xValueToCoord(this._xMin);
+        const rightX = this.xValueToCoord(this._xMax);
+        for (let i = 0; i &lt; layout.add.length; i++) {
+            const {el, attrs} = layout.add[i];
+            if (!disableAnimation) {
+                const centerX = attrs.x + attrs.width / 2;
+                const x = centerX &lt; plotQuarterX ? leftX : centerX > plotQuarterX * 3 ? rightX : centerX;
+                el.setAttribute('d', this._makeBarPath(x, baselineY, 0, 0));
+            }
+            this._barsEl.append(el);
+        }
+        if ((!disableAnimation &amp;&amp; layout.add.length) || disableAnimation) {
+            this._rootSvgEl.clientWidth;
+        }
+        for (let i = 0; i &lt; layout.update.length; i++) {
+            const {el, attrs} = layout.update[i];
+            const width = Math.max(0, attrs.width - this.barSpacing);
+            const x = attrs.x + this.barSpacing / 2;
+            el.setAttribute('d', this._makeBarPath(x, attrs.y, width, attrs.height));
+            el.setAttribute('fill', attrs.fill);
+        }
+        for (let i = 0; i &lt; layout.remove.length; i++) {
+            const {attrs, el} = layout.remove[i];
+            if (!disableAnimation) {
+                const centerX = attrs.x + attrs.width / 2;
+                const x = centerX &lt; plotQuarterX ? leftX : centerX > plotQuarterX * 3 ? rightX : centerX;
+                el.setAttribute('d', this._makeBarPath(x, baselineY, 0, 0));
+            } else {
+                el.removeAttribute('d');
+            }
+        }
+    }
 
-    <section class="readme usertext">
-        <article><h1>saucecharts</h1>
-<p>Simple, modern, web chart library</p>
-<p><a href="https://saucellc.github.io/saucecharts"><img src="https://img.shields.io/badge/docs-api-lightgrey.svg" alt="Docs"></a></p>
-<ul>
-<li>Charts:
-<ul>
-<li>Line Chart</li>
-<li>Bar Chart</li>
-</ul>
-</li>
-<li>Renders to SVG</li>
-<li>Dynamic resizing and placement in flexible DOM containers</li>
-<li>CSS transitions</li>
-<li>CSS styling and customization (devicePixelRatio aware)</li>
-<li>High performance data updating</li>
-<li>Large dataset support (lttb resampling)</li>
-<li>Brushing and Zooming by data range or visual ranges</li>
-<li>Customizable HTML tooltips</li>
-</ul>
-<h2>Compatibility</h2>
-<ul>
-<li>Chromium and Firefox: Fully supported</li>
-<li>Safari (webkit): limited animations (as of 05-2025)</li>
-</ul>
-<h2>Examples</h2>
-<p>Simple Line Chart</p>
-<pre class="prettyprint source lang-javascript"><code>import {LineChart} from '../src/index.mjs';
-const sl = new LineChart({
-    el: document.body,
-    padding: [10, 10, 20, 40],
-});
-sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
+    _makeBarPath(x, y, width, height) {
+        const radius = Math.min(this.barRadius, width * 0.5, Math.abs(height));
+        const rCtrl = height &lt; 0 ? -radius : radius;
+        return (
+            `M ${x},${y + height} ` +
+            `v ${-height + rCtrl} ` +
+            `q 0,${-rCtrl} ${radius},${-rCtrl} ` +
+            `h ${width - (2 * radius)} ` +
+            `q ${radius},0 ${radius},${rCtrl} ` +
+            `v ${height - rCtrl} Z`
+        );
+    }
+
+    _schedGC() {
+        if (this._gcTimeout) {
+            return;
+        }
+        this._gcTimeout = setTimeout(() => {
+            common.requestIdle(() => {
+                this._gcTimeout = null;
+                this._gc();
+            });
+        }, 1100);
+    }
+
+    _gc() {
+        const animDur = common.getStyleValue(this.el, '--transition-duration', 'time') || 100;
+        const unclaimedFills = new Set(this._barFills.keys());
+        for (const x of this._bars.values()) {
+            unclaimedFills.delete(x.fillKey);
+        }
+        const expiration = document.timeline.currentTime - animDur - 100;
+        let more;
+        for (const [key, bar] of this._barsPendingRemoval) {
+            if (bar.lastUsed > expiration) {
+                more = true;
+                unclaimedFills.delete(bar.fillKey);
+            } else {
+                this._barsPendingRemoval.delete(key);
+                bar.el.remove();
+                bar.el = null;
+            }
+        }
+        for (const x of unclaimedFills) {
+            const {gradient} = this._barFills.get(x);
+            this.removeGradient(gradient);
+            this._barFills.delete(x);
+        }
+        if (more) {
+            this._schedGC();
+        }
+    }
+}
 </code></pre>
-<p><a href="examples/simple-line.html">Try it</a></p>
-<p>Simple Bar Chart</p>
-<pre class="prettyprint source lang-javascript"><code>import {BarChart} from '../src/index.mjs';
-const sl = new BarChart({
-    el: document.body,
-    padding: [10, 10, 20, 40],
-});
-sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
-</code></pre>
-<p><a href="examples/simple-bar.html">Try it</a></p></article>
+        </article>
     </section>
-
-
 
 
 
