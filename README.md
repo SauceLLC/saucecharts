@@ -1,8 +1,10 @@
-saucecharts
+Sauce Charts
 ========
 Simple, modern, web chart library
 
-[![Docs](https://img.shields.io/badge/docs-api-lightgrey.svg)](https://saucellc.github.io/saucecharts)
+[![Docs](https://img.shields.io/badge/API-documentation-lightgrey)](https://saucellc.github.io/saucecharts/docs)
+[![Version](https://img.shields.io/github/package-json/v/saucellc/saucecharts)](https://github.com/SauceLLC/saucecharts)
+[![GitHub](https://img.shields.io/badge/GitHub-lightblue)](https://github.com/SauceLLC/saucecharts)
 
  * Charts:
     * Line Chart
