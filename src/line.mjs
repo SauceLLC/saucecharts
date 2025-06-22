@@ -448,8 +448,8 @@ export class LineChart extends common.Chart {
         } else if (state.x1 == null) {
             throw new Error('missing x1 state');
         }
-        if (x2 != null) {
-            state.x2 = (type === this.brush.type || x1 === null) ? x2 :
+        if (x2 !== undefined) {
+            state.x2 = (type === this.brush.type || x2 === null) ? x2 :
                 type === 'data' ?
                     this.xValueToCoord(x2) :
                     this.xCoordToValue(x2);
@@ -564,6 +564,13 @@ export class LineChart extends common.Chart {
                     }
                 } else if (hide) {
                     chart.hideBrush();
+                }
+                if (hide) {
+                    chart._setBrush({
+                        x1: null,
+                        x2: null,
+                        _internal: true
+                    });
                 }
             }
             if (!this.brush.showTooltip) {
