@@ -297,8 +297,6 @@ const resample = largestTriangleThreeBuckets;
  * @emits tooltip
  */
 export class Chart extends EventTarget {
-
-    /** testing desc */
     constructor(options={}) {
         super();
         this.init(options);
@@ -995,7 +993,9 @@ export class Chart extends EventTarget {
      * @param {number} [options.index] - Data index
      */
     setTooltipPosition(options) {
-        this._establishTooltipState();
+        if (!this.tooltip.visible) {
+            this._establishTooltipState();
+        }
         return this._setTooltipPosition(options);
     }
 
