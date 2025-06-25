@@ -200,7 +200,6 @@ export class LineChart extends common.Chart {
         }
         this._plotRegionEl.append(...plotRegionChildren);
         this._areaEl = defs.querySelector('path.sc-area');
-        this._tooltipGroupEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip');
     }
 
     doReset() {

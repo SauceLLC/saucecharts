@@ -141,17 +141,26 @@
         }
     }
 
+    .sc-tooltips {
+        display: contents;
+    }
+
     .sc-tooltip-positioner {
         --viewport-margin: 2ch;
         --course-width: 10ch;
-
         pointer-events: none;
         position: fixed;
         z-index: 10;
         top: 0;
         left: 0;
-        transition: translate var(--tooltip-transition-duration) linear;
         translate: var(--x) var(--y);
+        transition: translate var(--tooltip-transition-duration) linear;
+
+        &:not(.sc-active) {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s, visibility 1s;
+        }
 
         &.sc-disable-animation {
             --tooltip-transition-duration: 0 !important;
@@ -220,7 +229,7 @@
         }
     }
 
-    .sc-tooltip {
+    .sc-tooltip-graphics {
         pointer-events: none;
 
         .sc-line {
@@ -304,18 +313,6 @@
             value {
                 font-variant-numeric: tabular-nums;
             }
-        }
-    }
-
-    &:not(.sc-tooltip-active) {
-        .sc-tooltip-positioner {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s, visibility 1s;
-        }
-
-        .sc-tooltip {
-            display: none;
         }
     }
 }
