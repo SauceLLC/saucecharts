@@ -67,8 +67,7 @@
 <li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#addGradient">addGradient</a></li>
 <li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#removeGradient">removeGradient</a></li>
 <li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#setElement">setElement</a></li>
-<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#addChart">addChart</a></li>
-<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#isParentChart">isParentChart</a></li></ul></li><li><a href="module-color.Color.html">Color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.Color.html#.fromRGB">fromRGB</a></li>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-bar.BarChart.html#addChart">addChart</a></li></ul></li><li><a href="module-color.Color.html">Color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.Color.html#.fromRGB">fromRGB</a></li>
 <li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#adjustAlpha">adjustAlpha</a></li>
 <li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#alpha">alpha</a></li>
 <li data-type="method" class="" style="display: none;"><a href="module-color.Color.html#clone">clone</a></li>
@@ -122,7 +121,6 @@
 <li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#afterSetElement">afterSetElement</a></li>
 <li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#setElement">setElement</a></li>
 <li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#addChart">addChart</a></li>
-<li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#isParentChart">isParentChart</a></li>
 <li data-type="method" class="" style="display: none;"><a href="module-common.Chart.html#doLayout">doLayout</a></li></ul></li><li><a href="module-line.LineChart.html">LineChart</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#adjustScale">adjustScale</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-line.LineChart.html#adjustSize">adjustSize</a></li>
 <li data-type="method" class="" style="display: none;"><a href="module-line.LineChart.html#hideBrush">hideBrush</a></li>
@@ -169,8 +167,7 @@
 <li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#addGradient">addGradient</a></li>
 <li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#removeGradient">removeGradient</a></li>
 <li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#setElement">setElement</a></li>
-<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#addChart">addChart</a></li>
-<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#isParentChart">isParentChart</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-bar.html">bar</a></li><li><a href="module-color.html">color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.html#.parse">parse</a></li></ul></li><li><a href="module-common.html">common</a></li><li><a href="module-line.html">line</a></li></ul><h3>Externals</h3><ul><li><a href="external-CSS_Color.html">CSS_Color</a></li></ul><h3>Events</h3><ul><li><a href="module-common.html#~event:tooltip">tooltip</a></li><li><a href="module-common.html#~event:zoom">zoom</a></li><li><a href="module-line.html#~event:brush">brush</a></li></ul>
+<li data-type="method" class="inherited" style="display: none;"><a href="module-line.LineChart.html#addChart">addChart</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-bar.html">bar</a></li><li><a href="module-color.html">color</a><ul class='methods'><li data-type="method" class="static" style="display: none;"><a href="module-color.html#.parse">parse</a></li></ul></li><li><a href="module-common.html">common</a></li><li><a href="module-line.html">line</a></li></ul><h3>Externals</h3><ul><li><a href="external-CSS_Color.html">CSS_Color</a></li></ul><h3>Events</h3><ul><li><a href="module-common.html#~event:tooltip">tooltip</a></li><li><a href="module-common.html#~event:zoom">zoom</a></li><li><a href="module-line.html#~event:brush">brush</a></li></ul>
         
     </nav>
 
@@ -2084,13 +2081,13 @@ A string containing horizontal and/or veritical placement hints.</value>
 
         <tr>
             
-                <td class="name"><code>merge</code></td>
+                <td class="name"><code>parent</code></td>
             
 
             <td class="type">
                 
                     
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean">boolean</a></span>
+<span class="param-type"><a href="module-common.Chart.html">Chart</a></span>
 
 
 
@@ -2109,7 +2106,7 @@ A string containing horizontal and/or veritical placement hints.</value>
 
             
 
-            <td class="description last">Merge with existing Chart using this same element</td>
+            <td class="description last">Make this chart a child chart that shares one svg element</td>
         </tr>
 
     
