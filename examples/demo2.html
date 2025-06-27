@@ -232,22 +232,19 @@
                 const sl2 = new sc.BarChart({
                     ...commonOptions,
                     ...sharedOptions,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [sl1.padding[0] + 30, ...padding.slice(1)],
                 });
                 const sl3 = new sc.BarChart({
                     ...commonOptions,
                     ...sharedOptions,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [sl2.padding[0] + 30, ...padding.slice(1)],
                 });
                 const sl4 = new sc.BarChart({
                     ...commonOptions,
                     ...sharedOptions,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [sl3.padding[0] + 30, ...padding.slice(1)],
                 });
 

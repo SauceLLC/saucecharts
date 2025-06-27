@@ -80,8 +80,7 @@
                 });
                 const c2 = new sc.LineChart({
                     ...commonOptions,
-                    el: document.querySelector(".graph.i1"),
-                    merge: true,
+                    parent: c1,
                     disableAnimation,
                     padding: [2, 2, 22, 42],
                     xAxis: {disabled: true},

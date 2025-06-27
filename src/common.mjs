@@ -267,7 +267,7 @@ const resample = largestTriangleThreeBuckets;
  * @typedef ChartOptions
  * @type {object}
  * @property {Element} [el] - DOM Element to insert chart into
- * @property {boolean} [merge] - Merge with existing Chart using this same element
+ * @property {Chart} [parent] - Make this chart a child chart that shares one svg element
  * @property {ChartData} [data] - Initial data to use for chart rendering
  * @property {number} [xMin] - Minimum X data value
  * @property {number} [xMax] - Maximum X data value
@@ -308,11 +308,10 @@ export class Chart extends EventTarget {
         this.color = options.color;
         this.width = options.width;
         this.height = options.height;
+        this.parent = options.parent;
+        this.isRoot = !this.parent;
+        this._tooltipViews = new Map();
         this._tooltips = new Map();
-        const tooltipOptions = options.tooltip ?? {};
-        if (!tooltipOptions.disabled) {
-            this.addTooltip(defaultTooltipId, {pointerEvents: true, ...tooltipOptions});
-        }
         this.xAxis = options.xAxis ?? {};
         this.yAxis = options.yAxis ?? {};
         this.padding = options.padding;
@@ -343,25 +342,35 @@ export class Chart extends EventTarget {
         this._gradients = new Set();
         this._onPointerEnterBound = this.onPointerEnter.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
-        this._merge = options.merge;
         if (options.el) {
+            if (options.parent) {
+                throw new Error("`parent` and `el` options are mutually exclusive");
+            }
             this.setElement(options.el);
+        } else if (options.parent) {
+            options.parent.addChart(this);
+        }
+        if (this.isRoot) {
+            addEventListener('scroll', ev => {
+                for (const view of this._tooltipViews.values()) {
+                    let rect;
+                    if (view.state.visible) {
+                        if (!rect) {
+                            rect = this.el.getBoundingClientRect();
+                        }
+                        view.state.elOffset = [rect.x, rect.y];
+                        this._updateTooltipView(view, {disableAnimation: true});
+                    }
+                }
+            }, {passive: true, capture: true});
+        }
+        const tooltipOptions = options.tooltip ?? {};
+        if (!tooltipOptions.disabled) {
+            this.addTooltip(defaultTooltipId, {pointerEvents: true, ...tooltipOptions});
         }
         if (options.data) {
             this.setData(options.data);
         }
-        addEventListener('scroll', ev => {
-            for (const tooltip of this._tooltips.values()) {
-                let rect;
-                if (tooltip.state.visible) {
-                    if (!rect) {
-                        rect = this.el.getBoundingClientRect();
-                    }
-                    tooltip.state.chartOffsets = [rect.x, rect.y];
-                    this._updateTooltip(tooltip, {disableAnimation: true});
-                }
-            }
-        }, {passive: true, capture: true});
     }
 
     /**
@@ -386,7 +395,6 @@ export class Chart extends EventTarget {
         this._defsEl.append(gradient.el);
         return gradient;
     }
-
 
     /**
      * @param {module:color.Gradient} gradient
@@ -475,13 +483,13 @@ export class Chart extends EventTarget {
         plotStyle.setProperty('--plot-box-left', `${this._plotBox[3]}px`);
         plotStyle.setProperty('--plot-width', `${this._plotWidth}px`);
         plotStyle.setProperty('--plot-height', `${this._plotHeight}px`);
-        if (this.isParentChart()) {
+        if (this.isRoot) {
             this._rootSvgEl.setAttribute('viewBox', `0 0 ${this._boxWidth} ${this._boxHeight}`);
             this.el.style.setProperty('--dpr', this.devicePixelRatio);
         }
-        for (const tooltip of this._tooltips.values()) {
-            if (tooltip.state.visible) {
-                this._establishTooltipState(tooltip);
+        for (const view of this._tooltipViews.values()) {
+            if (view.state.visible) {
+                this._establishTooltipViewState(view);
             }
         }
     }
@@ -586,27 +594,28 @@ export class Chart extends EventTarget {
      */
     setElement(el) {
         this.beforeSetElement(el);
-        const old = this.el;
+        const old = this.el !== el ? this.el : null;
         this.el = el;
         if (old) {
-            this._resizeObserver.disconnect();
-            old.removeEventListener('pointerenter', this._onPointerEnterBound);
             this.doReset();
-            if (this._plotRegionEl) {
-                this._plotRegionEl.remove();
-                this._plotRegionEl = null;
-            }
-            if (this._xAxisEl) {
-                this._xAxisEl.remove();
-                this._xAxisEl = null;
-            }
-            if (this._yAxisEl) {
-                this._yAxisEl.remove();
-                this._yAxisEl = null;
-            }
         }
-        let tooltipsEl;
-        if (!this._merge) {
+        this._resizeObserver.disconnect();
+        if (this.isRoot) {
+            if (old) {
+                old.removeEventListener('pointerenter', this._onPointerEnterBound);
+                if (this._plotRegionEl) {
+                    this._plotRegionEl.remove();
+                    this._plotRegionEl = null;
+                }
+                if (this._xAxisEl) {
+                    this._xAxisEl.remove();
+                    this._xAxisEl = null;
+                }
+                if (this._yAxisEl) {
+                    this._yAxisEl.remove();
+                    this._yAxisEl = null;
+                }
+            }
             el.classList.add('saucechart', 'sc-wrap');
             el.classList.toggle('sc-disable-animation', !!this.disableAnimation);
             let darkMode = this.darkMode;
@@ -629,19 +638,15 @@ export class Chart extends EventTarget {
                     class: 'sc-plot-regions',
                 }]
             });
-            tooltipsEl = createHTML({
+            const tooltips = createHTML({
                 name: 'div',
                 class: 'sc-tooltips',
             });
-            el.replaceChildren(svg, tooltipsEl);
-            el.parentSauceChart = this;
-            this.childCharts.length = 0;
-        } else {
-            tooltipsEl = el.querySelector('.sc-tooltips');
-            el.parentSauceChart.addChart(this);
+            el.replaceChildren(svg, tooltips);
         }
         this._rootSvgEl = el.querySelector('svg.sc-root');
         this._defsEl = this._rootSvgEl.querySelector(':scope > defs');
+        const plotRegionsEl = this._rootSvgEl.querySelector('.sc-plot-regions');
         this._plotRegionEl = createSVG({name: 'g', class: 'sc-plot-region', data: {id: this.id}});
         if (this.color) {
             this._plotRegionEl.style.setProperty('--color', this.color);
@@ -657,7 +662,7 @@ export class Chart extends EventTarget {
             titleEl.textContent = this.title;
             this._plotRegionEl.append(titleEl);
         }
-        this._rootSvgEl.querySelector('.sc-plot-regions').append(this._plotRegionEl);
+        plotRegionsEl.append(this._plotRegionEl);
         if (!this.xAxis.disabled) {
             this._xAxisEl = createSVG({
                 name: 'g',
@@ -674,15 +679,19 @@ export class Chart extends EventTarget {
             });
             this._rootSvgEl.append(this._yAxisEl);
         }
-        for (const tooltip of this._tooltips.values()) {
-            tooltipsEl.append(tooltip.positioner);
-            this._rootSvgEl.querySelector('.sc-plot-regions').after(tooltip.graphics);
-            this._resizeObserver.observe(tooltip.box);
-        }
-        this._resizeObserver.observe(el);
-        if (this.isParentChart()) {
+        if (this.isRoot) {
+            const tooltipsEl = el.querySelector('.sc-tooltips');
+            for (const view of this._tooltipViews.values()) {
+                tooltipsEl.append(view.positioner);
+                plotRegionsEl.after(view.graphics);
+                this._resizeObserver.observe(view.box);
+            }
+            for (const x of this.childCharts) {
+                x.setElement(el);
+            }
             el.addEventListener('pointerenter', this._onPointerEnterBound);
         }
+        this._resizeObserver.observe(el);
         this.afterSetElement(el);
         this.adjustSize();
         this.render();
@@ -711,79 +720,108 @@ export class Chart extends EventTarget {
     }
 
     /**
-     * @returns {boolean}
-     */
-    isParentChart() {
-        return this.el?.parentSauceChart === this;
-    }
-
-    /**
      * @protected
      * @param {Chart} chart
      */
     addChart(chart) {
-        if (!this.isParentChart()) {
+        if (this.parent) {
             throw new TypeError("only valid on parent");
         }
+        if (this.childCharts.indexOf(chart) !== -1) {
+            throw new Error("Chart already present");
+        }
         this.childCharts.push(chart);
-        chart.parentChart = this;
+        chart.parent = this;
         for (const x of this.childCharts) {
             x._computedColor = null;
         }
         this._computedColor = null;
+        if (this.el) {
+            chart.setElement(this.el);
+        }
     }
 
     /**
      * @returns {Array<Chart>} All the charts sharing this chart's `el` property
      */
     getAllCharts() {
-        const root = this.isParentChart() ? this : this.parentChart;
+        const root = this.parent ?? this;
         return [root, ...root.childCharts];
     }
 
     /**
      * Add a new tooltip to this chart.
      *
-     * @param {string} id - A unique identifier for this tooltip
+     * @param {string} id - Identifier for this tooltip
      * @param {TooltipOptions} - Options for this tooltip
      */
     addTooltip(id, options={}) {
         if (this._tooltips.has(id)) {
             throw new Error('Tooltip already present');
         }
-        options.padding ??= [0, 0, 0, 0];
-        options.position ??= 'leftright';
-        options.linger ??= 800;
-        const positioner = createHTML({
-            name: 'div',
-            class: 'sc-tooltip-positioner',
-            data: {id},
-            children: [{
+        const tooltip = {
+            id,
+            chart: this,
+            options: {
+                format: options.format,
+                formatKey: options.formatKey,
+            },
+            ephemeral: new Map(),
+        };
+        const root = this.parent ?? this;
+        let view = root._tooltipViews.get(id);
+        if (!view) {
+            const positioner = createHTML({
                 name: 'div',
-                class: 'sc-tooltip-box-wrap',
+                class: 'sc-tooltip-positioner',
+                data: {id},
                 children: [{
                     name: 'div',
-                    class: 'sc-tooltip-box',
+                    class: 'sc-tooltip-box-wrap',
+                    children: [{
+                        name: 'div',
+                        class: 'sc-tooltip-box',
+                    }]
                 }]
-            }]
-        });
-        const box = positioner.querySelector('.sc-tooltip-box');
-        box._positioner = positioner;
-        const graphics = createSVG({name: 'g', class: 'sc-tooltip-graphics', data: {id}});
-        this._tooltips.set(id, {
-            id,
-            state: {suspendRefCnt: 0},
-            options,
-            positioner,
-            box,
-            graphics,
-            ephemeral: new Map(),
-        });
-        if (this.el) {
-            this.el.querySelector('.sc-tooltips').append(positioner);
-            this._rootSvgEl.querySelector('.sc-plot-regions').after(graphics);
-            this._resizeObserver.observe(box);
+            });
+            const box = positioner.querySelector('.sc-tooltip-box');
+            box._positioner = positioner;
+            const graphics = createSVG({name: 'g', class: 'sc-tooltip-graphics', data: {id}});
+            if (root.el) {
+                root.el.querySelector('.sc-tooltips').append(positioner);
+                root._rootSvgEl.querySelector('.sc-plot-regions').after(graphics);
+                root._resizeObserver.observe(box);
+            }
+            view = {
+                id,
+                positioner,
+                box,
+                graphics,
+                options: {
+                    padding: [0, 0, 0, 0],
+                    position: 'leftright',
+                    linger: 800,
+                },
+                tooltips: new Set(),
+                state: {suspendRefCnt: 0},
+            };
+            root._tooltipViews.set(id, view);
         }
+        if (options.padding != null) {
+            view.options.padding = options.padding;
+        }
+        if (options.position != null) {
+            view.options.position = options.position;
+        }
+        if (options.linger != null) {
+            view.options.linger = options.linger;
+        }
+        if (options.pointerEvents != null) {
+            view.options.pointerEvents = options.pointerEvents;
+        }
+        tooltip.view = view;
+        view.tooltips.add(tooltip);
+        this._tooltips.set(id, tooltip);
     }
 
     /**
@@ -795,15 +833,17 @@ export class Chart extends EventTarget {
             throw new Error('Tooltip not found');
         }
         this._tooltips.delete(id);
-        for (const x of tooltip.graphics) {
-            x.remove();
-        }
-        tooltip.graphics.length = 0;
         for (const x of tooltip.ephemeral.values()) {
             x.remove();
         }
         tooltip.ephemeral.clear();
-        tooltip.positioner.remove();
+        tooltip.view.tooltips.delete(tooltip);
+        if (!tooltip.view.tooltips.size) {
+            tooltip.view.positioner.remove();
+            tooltip.view.graphics.remove();
+            const root = this.parent ?? this;
+            root._tooltipViews.delete(id);
+        }
     }
 
     localeNumber(value) {
@@ -933,29 +973,29 @@ export class Chart extends EventTarget {
     }
 
     onPointerEnter(ev) {
-        for (const tooltip of this._tooltips.values()) {
-            if (tooltip.options.pointerEvents) {
-                this._onPointerEnter(tooltip, ev);
+        for (const view of this._tooltipViews.values()) {
+            if (view.options.pointerEvents) {
+                this._onPointerEnter(view, ev);
             }
         }
     }
 
-    _onPointerEnter(tooltip, ev) {
-        if (!this._isTooltipAvailable(tooltip) ||
-            this._isTooltipPointing(tooltip) ||
+    _onPointerEnter(tooltipView, ev) {
+        if (!this._isTooltipViewAvailable(tooltipView) ||
+            this._isTooltipViewPointing(tooltipView) ||
             !this._renderData ||
             !this._renderData.length) {
             return;
         }
-        const state = this._establishTooltipState(tooltip);
+        const state = this._establishTooltipViewState(tooltipView);
         const pointerAborter = state.pointerAborter = new AbortController();
         const signal = pointerAborter.signal;
         signal.addEventListener('abort', () => {
             setTimeout(() => {
-                if (tooltip.state.pointerAborter === pointerAborter) {
-                    this._hideTooltip(tooltip);
+                if (tooltipView.state.pointerAborter === pointerAborter) {
+                    this._hideTooltipView(tooltipView);
                 }
-            }, tooltip.options.linger);
+            }, tooltipView.options.linger);
             this.dispatchEvent(new CustomEvent('tooltip', {
                 detail: {internal: true, chart: this}
             }));
@@ -968,16 +1008,16 @@ export class Chart extends EventTarget {
         let af;
         this.el.addEventListener('pointermove', ev => {
             cancelAnimationFrame(af);
-            const x = (ev.x - state.chartOffsets[0]) * this.devicePixelRatio;
+            const x = (ev.x - state.elOffset[0]) * this.devicePixelRatio;
             af = requestAnimationFrame(() => {
                 if (!pointerAborter.signal.aborted) {
-                    this._setTooltipPosition(tooltip, {x, disableAnimation: true, internal: true});
+                    this._setTooltipViewPosition(tooltipView, {x, disableAnimation: true, internal: true});
                 }
             });
         }, {signal});
-        const x = (ev.x - state.chartOffsets[0]) * this.devicePixelRatio;
-        this._setTooltipPosition(tooltip, {x, disableAnimation: true, internal: true});
-        this._showTooltip(tooltip);
+        const x = (ev.x - state.elOffset[0]) * this.devicePixelRatio;
+        this._setTooltipViewPosition(tooltipView, {x, disableAnimation: true, internal: true});
+        this._showTooltipView(tooltipView);
     }
 
     /**
@@ -986,19 +1026,19 @@ export class Chart extends EventTarget {
      * @param {string} [id] - ID of the tooltip to hide
      */
     hideTooltip(id=defaultTooltipId) {
-        return this._hideTooltip(this._tooltips.get(id));
+        return this._hideTooltipView(this._tooltips.get(id).view);
     }
 
-    _hideTooltip(tooltip) {
-        const state = tooltip.state;
+    _hideTooltipView(view) {
+        const state = view.state;
         if (state.pointerAborter && !state.pointerAborter.signal.aborted) {
             state.pointerAborter.abort();
         }
         if (!state.visible) {
             return;
         }
-        tooltip.positioner.classList.remove('sc-active');
-        tooltip.graphics.classList.remove('sc-active');
+        view.positioner.classList.remove('sc-active');
+        view.graphics.classList.remove('sc-active');
         state.visible = false;
     }
 
@@ -1012,25 +1052,25 @@ export class Chart extends EventTarget {
         if (!tooltip) {
             throw new Error('Tooltip not found');
         }
-        return this._showTooltip(tooltip);
+        return this._showTooltipView(tooltip.view);
     }
 
-    _showTooltip(tooltip) {
-        if (!this._isTooltipAvailable(tooltip) || tooltip.state.visible) {
+    _showTooltipView(view) {
+        if (!this._isTooltipViewAvailable(view) || view.state.visible) {
             return;
         }
-        const state = this._establishTooltipState(tooltip);
-        const hasAnim = !tooltip.positioner.classList.contains('sc-disable-animation') &&
+        const state = this._establishTooltipViewState(view);
+        const hasAnim = !view.positioner.classList.contains('sc-disable-animation') &&
             !this.el.classList.contains('sc-disable-animation');
         if (hasAnim) {
-            tooltip.positioner.classList.add('sc-disable-animation');
+            view.positioner.classList.add('sc-disable-animation');
         }
-        tooltip.positioner.classList.add('sc-active');
-        tooltip.graphics.classList.add('sc-active');
+        view.positioner.classList.add('sc-active');
+        view.graphics.classList.add('sc-active');
         state.visible = true;
         if (hasAnim) {
-            tooltip.positioner.offsetWidth;
-            tooltip.positioner.classList.remove('sc-disable-animation');
+            view.positioner.offsetWidth;
+            view.positioner.classList.remove('sc-disable-animation');
         }
     }
 
@@ -1042,13 +1082,13 @@ export class Chart extends EventTarget {
      * @param {string} [id] - ID of the tooltip to suspend
      */
     suspendTooltip(id=defaultTooltipId) {
-        this._suspendTooltip(this._tooltips.get(id));
+        this._suspendTooltipView(this._tooltips.get(id).view);
     }
 
-    _suspendTooltip(tooltip) {
-        tooltip.state.suspendRefCnt++;
-        if (tooltip.state.visible) {
-            this._hideTooltip(tooltip);
+    _suspendTooltipView(view) {
+        view.state.suspendRefCnt++;
+        if (view.state.visible) {
+            this._hideTooltipView(view);
         }
     }
 
@@ -1058,14 +1098,14 @@ export class Chart extends EventTarget {
      * @param {string} [id] - ID of the tooltip to suspend
      */
     resumeTooltip(id=defaultTooltipId) {
-        this._resumeTooltip(this._tooltips.get(id));
+        this._resumeTooltipView(this._tooltips.get(id).view);
     }
 
-    _resumeTooltip(tooltip) {
-        if (tooltip.state.suspendRefCnt === 0) {
+    _resumeTooltipView(view) {
+        if (view.state.suspendRefCnt === 0) {
             throw new Error("not suspended");
         }
-        tooltip.state.suspendRefCnt--;
+        view.state.suspendRefCnt--;
     }
 
     /**
@@ -1074,35 +1114,34 @@ export class Chart extends EventTarget {
      * @param {string} [id] - ID of the tooltip to check
      */
     isTooltipAvailable(id=defaultTooltipId) {
-        return this._isTooltipAvailable(this._tooltips.get(id));
+        return this._isTooltipViewAvailable(this._tooltips.get(id).view);
     }
 
-    _isTooltipAvailable(tooltip) {
-        return !tooltip.options.disabled && tooltip.state.suspendRefCnt === 0;
+    _isTooltipViewAvailable(view) {
+        return view.state.suspendRefCnt === 0;
     }
 
     /**
      * @returns {boolean} Is the tooltip actively handling pointer events
      */
     isTooltipPointing(id=defaultTooltipId) {
-        return this._isTooltipPointing(this._tooltips.get(id));
+        return this._isTooltipViewPointing(this._tooltips.get(id).view);
     }
 
-    _isTooltipPointing(tooltip) {
+    _isTooltipViewPointing(view) {
         return !!(
-            tooltip.state.visible &&
-            tooltip.state.pointerAborter &&
-            !tooltip.state.pointerAborter.signal.aborted
+            view.state.visible &&
+            view.state.pointerAborter &&
+            !view.state.pointerAborter.signal.aborted
         );
     }
 
-    _establishTooltipState(tooltip) {
-        const charts = this.getAllCharts();
+    _establishTooltipViewState(view) {
         let positionCallback, hAlign, vAlign;
-        if (typeof tooltip.options.position === 'function') {
-            positionCallback = tooltip.options.position;
+        if (typeof view.options.position === 'function') {
+            positionCallback = view.opptions.position;
         } else {
-            let tp = tooltip.options.position;
+            let tp = view.options.position;
             if (typeof tp === 'string') {
                 tp = tp.split(/\s+/);
             }
@@ -1115,17 +1154,16 @@ export class Chart extends EventTarget {
                 }[vAlign] || 'leftright';
             }
         }
-        const chartRect = this.el.getBoundingClientRect();
-        Object.assign(tooltip.state, {
-            charts,
-            chartOffsets: [chartRect.x, chartRect.y],
+        const rect = this.el.getBoundingClientRect();
+        Object.assign(view.state, {
+            elOffset: [rect.x, rect.y],
             positionCallback,
             hAlign,
             vAlign,
             lastDrawSig: undefined,
             hasDrawn: false,
         });
-        return tooltip.state;
+        return view.state;
     }
 
     /**
@@ -1142,18 +1180,18 @@ export class Chart extends EventTarget {
         if (!tooltip) {
             throw new Error('Tooltip not found');
         }
-        if (!tooltip.state.visible) {
-            this._establishTooltipState(tooltip);
+        if (!tooltip.view.state.visible) {
+            this._establishTooltipViewState(tooltip.view);
         }
-        return this._setTooltipPosition(tooltip, options);
+        return this._setTooltipViewPosition(tooltip.view, options);
     }
 
-    _setTooltipPosition(tooltip, {x, y, index, disableAnimation, internal=false}) {
-        Object.assign(tooltip.state, {x, y, index});
-        this._updateTooltip(tooltip, {disableAnimation});
+    _setTooltipViewPosition(view, {x, y, index, disableAnimation, internal=false}) {
+        Object.assign(view.state, {x, y, index});
+        this._updateTooltipView(view, {disableAnimation});
         queueMicrotask(() => this.dispatchEvent(new CustomEvent('tooltip', {
             detail: {
-                id: tooltip.id,
+                id: view.id,
                 x,
                 y,
                 index,
@@ -1167,19 +1205,21 @@ export class Chart extends EventTarget {
      * @protected
      */
     updateVisibleTooltips(options) {
-        for (const tooltip of this._tooltips.values()) {
-            if (tooltip.state.visible && this._isTooltipAvailable(tooltip)) {
-                this._updateTooltip(tooltip, options);
+        // XXX use requestAnimationFrame to debounce this with multiple charts
+        const root = this.parent ?? this;
+        for (const view of root._tooltipViews.values()) {
+            if (view.state.visible && this._isTooltipViewAvailable(view)) {
+                this._updateTooltipView(view, options);
             }
         }
     }
 
-    _updateTooltip(tooltip, options={}) {
+    _updateTooltipView(view, options={}) {
         const contents = [];
-        const state = tooltip.state;
-        let drawSig = state.chartOffsets.join();
-        for (let i = 0; i < state.charts.length; i++) {
-            const chart = state.charts[i];
+        const state = view.state;
+        let drawSig = state.elOffset.join();
+        for (const tooltip of view.tooltips) {
+            const chart = tooltip.chart;
             let xRef = state.index != null ?
                 chart.xValueToCoord(chart.normalizedData?.[state.index]?.x) :
                 state.x;
@@ -1199,36 +1239,36 @@ export class Chart extends EventTarget {
             if (element) {
                 const coordinates = [chart.xValueToCoord(entry.x), chart.yValueToCoord(entry.y)];
                 contents.push({chart, entry, coordinates, element});
-                drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
+                drawSig += ` ${chart.id} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
             }
         }
         if (drawSig !== state.lastDrawSig) {
             state.lastDrawSig = drawSig;
             const disableAnim = (options.disableAnimation || !state.hasDrawn) &&
-                (!tooltip.positioner.classList.contains('sc-disable-animation') &&
+                (!view.positioner.classList.contains('sc-disable-animation') &&
                  !this.el.classList.contains('sc-disable-animation'));
             if (disableAnim) {
-                tooltip.positioner.classList.add('sc-disable-animation');
-                tooltip.graphics.classList.add('sc-disable-animation');
+                view.positioner.classList.add('sc-disable-animation');
+                view.graphics.classList.add('sc-disable-animation');
             }
             try {
-                this._drawTooltip(tooltip, contents);
+                this._drawTooltipView(view, contents);
             } finally {
                 if (disableAnim) {
-                    tooltip.positioner.offsetWidth;
-                    tooltip.positioner.classList.remove('sc-disable-animation');
-                    tooltip.graphics.classList.remove('sc-disable-animation');
+                    view.positioner.offsetWidth;
+                    view.positioner.classList.remove('sc-disable-animation');
+                    view.graphics.classList.remove('sc-disable-animation');
                 }
             }
         }
     }
 
-    _drawTooltip(tooltip, contents) {
+    _drawTooltipView(view, contents) {
         if (!contents.length) {
-            tooltip.box.replaceChildren();
+            view.box.replaceChildren();
             return;
         }
-        const state = tooltip.state;
+        const state = view.state;
         let centerX = 0;
         let top = Infinity;
         let bottom = -Infinity;
@@ -1246,16 +1286,16 @@ export class Chart extends EventTarget {
         }
         centerX /= contents.length;
         const centerY = top + (bottom - top) / 2;
-        if (!tooltip.graphics.childNodes.length) {
+        if (!view.graphics.childNodes.length) {
             const line = createSVG({
                 name: 'path',
                 class: ['sc-line', 'sc-vertical']
             });
-            tooltip.graphics.append(line);
+            view.graphics.append(line);
         }
-        const vertLine = tooltip.graphics.childNodes[0];
-        const existingHLines = tooltip.graphics.querySelectorAll('.sc-line.sc-horizontal');
-        const existingDots = tooltip.graphics.querySelectorAll('circle.sc-highlight-dot');
+        const vertLine = view.graphics.childNodes[0];
+        const existingHLines = view.graphics.querySelectorAll('.sc-line.sc-horizontal');
+        const existingDots = view.graphics.querySelectorAll('circle.sc-highlight-dot');
         let minX = this._boxWidth;
         let minY = this._boxHeight;
         let maxX = 0;
@@ -1266,7 +1306,7 @@ export class Chart extends EventTarget {
             let dot = existingDots[i];
             if (!dot) {
                 dot = createSVG({name: 'circle', class: 'sc-highlight-dot'});
-                tooltip.graphics.append(dot);
+                view.graphics.append(dot);
             }
             dot.setAttribute('cx', x);
             dot.setAttribute('cy', y);
@@ -1302,7 +1342,7 @@ export class Chart extends EventTarget {
         let vAlign, hAlign;
         if (state.positionCallback) {
             [vAlign, hAlign] = state.positionCallback({
-                id: tooltip.id,
+                id: view.id,
                 chart: this,
                 minX,
                 minY,
@@ -1317,17 +1357,17 @@ export class Chart extends EventTarget {
             vAlign = state.vAlign;
         }
         vertLine.setAttribute('d', `M ${centerX}, ${bottom} V ${top}`);
-        tooltip.box.replaceChildren(...contents.map(x => x.element));
-        tooltip.positioner.dataset.hAlign = hAlign;
-        tooltip.positioner.dataset.vAlign = vAlign;
+        view.box.replaceChildren(...contents.map(x => x.element));
+        view.positioner.dataset.hAlign = hAlign;
+        view.positioner.dataset.vAlign = vAlign;
         const f = 1 / this.devicePixelRatio;
-        const [offtX, offtY] = state.chartOffsets;
-        tooltip.positioner.style.setProperty('--x-left', `${minX * f + offtX}px`);
-        tooltip.positioner.style.setProperty('--x-right', `${maxX * f + offtX}px`);
-        tooltip.positioner.style.setProperty('--x-center', `${centerX * f + offtX}px`);
-        tooltip.positioner.style.setProperty('--y-center', `${centerY * f + offtY}px`);
-        tooltip.positioner.style.setProperty('--y-top', `${top * f + offtY}px`);
-        tooltip.positioner.style.setProperty('--y-bottom', `${bottom * f + offtY}px`);
+        const [offtX, offtY] = state.elOffset;
+        view.positioner.style.setProperty('--x-left', `${minX * f + offtX}px`);
+        view.positioner.style.setProperty('--x-right', `${maxX * f + offtX}px`);
+        view.positioner.style.setProperty('--x-center', `${centerX * f + offtX}px`);
+        view.positioner.style.setProperty('--y-center', `${centerY * f + offtY}px`);
+        view.positioner.style.setProperty('--y-top', `${top * f + offtY}px`);
+        view.positioner.style.setProperty('--y-bottom', `${bottom * f + offtY}px`);
         state.hasDrawn = true;
     }
 

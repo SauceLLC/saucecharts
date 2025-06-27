@@ -232,20 +232,17 @@
                 });
                 const sl2 = new sc.LineChart({
                     ...shared,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [sl1.padding[0] + 30, 0, 0, 0],
                 });
                 const sl3 = new sc.LineChart({
                     ...shared,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [sl2.padding[0] + 30, 0, 0, 0],
                 });
                 const sl4 = new sc.LineChart({
                     ...shared,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [sl3.padding[0] + 30, 0, 0, 0],
                 });
 
@@ -303,8 +300,7 @@
                 });
                 const sl2 = new sc.LineChart({
                     ...shared,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [height + 20, 0, 0, 0],
                     height,
                     brush: {
@@ -323,8 +319,7 @@
 
                 const sl3 = new sc.LineChart({
                     ...shared,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [height * 2 + 30, 0, 0, 0],
                     height,
                     brush: {
@@ -334,8 +329,7 @@
                 });
                 const sl4 = new sc.LineChart({
                     ...shared,
-                    el: sl1.el,
-                    merge: true,
+                    parent: sl1,
                     padding: [height * 3 + 40, 0, 0, 0],
                     height,
                     brush: {
