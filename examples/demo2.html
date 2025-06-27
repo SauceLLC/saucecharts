@@ -61,13 +61,11 @@
 
             let paused = false;
             const tests = [1, 2, 3, 4, 5, 6, 7, 8];
-            const speed = 200;
+            const speed = 1000;
             const maxSize = 14;
             let sinFactor = speed / Number(document.querySelector('#freq').value);
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             const commonOptions = {
-                padding: [20, 50, 20, 40],
-                tooltipPadding: [20, 20],
             };
 
             const _setInterval = setInterval;
@@ -293,7 +291,6 @@
                     barSpacing: 0,
                 });
                 sl.setData(data);
-                let showingTooltip;
                 setInterval(() => {
                     if (paused) return;
                     i++;
@@ -302,19 +299,6 @@
                         data.shift();
                     }
                     sl.setData(data);
-                    if (Math.random() > 0.0080) {
-                        //sl.setTooltipPosition({index: Math.random() * size | 0});
-                        sl.setTooltipPosition({index: 100});
-                        if (!showingTooltip) {
-                            sl.showTooltip();
-                            showingTooltip = true;
-                        }
-                    }
-                    if (Math.random() > 0.95) {
-                        console.log("hide tt");
-                        sl.hideTooltip();
-                        showingTooltip = false;
-                    }
                 }, speed);
             }
 
