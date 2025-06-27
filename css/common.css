@@ -1,6 +1,5 @@
 .saucechart {
     --transition-duration: 400ms;
-    --tooltip-transition-duration: 100ms;
     --axis-padding: 0.5em;
     touch-action: none;
     -webkit-touch-callout: none;
@@ -21,7 +20,6 @@
 
     &.sc-disable-animation {
         --transition-duration: 0 !important;
-        --tooltip-transition-duration: 0 !important;
     }
 
     .sc-root {
@@ -154,16 +152,16 @@
         top: 0;
         left: 0;
         translate: var(--x) var(--y);
-        transition: translate var(--tooltip-transition-duration) linear;
+        transition: translate var(--transition-duration) linear;
 
         &:not(.sc-active) {
             opacity: 0;
             visibility: hidden;
-            transition: opacity 1s, visibility 1s;
+            transition: opacity 400ms, visibility 400ms;
         }
 
         &.sc-disable-animation {
-            --tooltip-transition-duration: 0 !important;
+            --transition-duration: 0 !important;
         }
 
         &[data-h-align="left"] {
@@ -232,14 +230,25 @@
     .sc-tooltip-graphics {
         pointer-events: none;
 
+        &.sc-disable-animation {
+            --transition-duration: 0 !important;
+        }
+
+        &:not(.sc-active) {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 400ms, visibility 400ms;
+        }
+
         .sc-line {
-            stroke: hsl(from var(--fg-color) h s l / 0.7);
-            stroke-width: 0.10em;
-            stroke-dasharray: 0.15em;
+            stroke: hsl(from var(--fg-color) h s l / 0.86);
+            stroke-width: 0.08em;
+            stroke-dasharray: 0.15em 0.08em;
+            transition: d var(--transition-duration) linear;
 
             &.sc-horizontal {
                 stroke-width: 0.10em;
-                stroke-dasharray: 0.15em;
+                stroke-dasharray: 0.12em;
             }
         }
 
@@ -247,7 +256,10 @@
             r: 0.22em;
             stroke-width: 0.08em;
             stroke: hsl(from var(--fg-color) h s calc(l + 10 * var(--shade-dir)) / 0.8);
-            fill: hsl(from var(--fg-color) h s calc(l + 80 * var(--shade-dir)) / 0.9);
+            fill: hsl(from var(--bg-color) h s l / 0.8);
+            transition:
+                cx var(--transition-duration) linear,
+                cy var(--transition-duration) linear;
         }
     }
 
@@ -273,7 +285,6 @@
         width: max-content;
         max-width: 22ch;
         overflow: hidden;
-        transition: left var(--tooltip-transition-duration) linear;
 
         &:empty {
             display: none;

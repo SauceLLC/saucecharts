@@ -31,8 +31,7 @@ Simple Line Chart
 ```javascript
 import {LineChart} from '../src/index.mjs';
 const sl = new LineChart({
-    el: document.body,
-    padding: [10, 10, 20, 40],
+    el: document.body
 });
 sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
 ```
@@ -43,8 +42,7 @@ Simple Bar Chart
 ```javascript
 import {BarChart} from '../src/index.mjs';
 const sl = new BarChart({
-    el: document.body,
-    padding: [10, 10, 20, 40],
+    el: document.body
 });
 sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
 ```

@@ -312,6 +312,16 @@
                         shared: false,
                     }
                 });
+                sl2.addTooltip('foo', {
+                    format: options => {
+                        if (options.chart === sl2) {
+                            return 'asdf';
+                        }
+                    }
+                });
+                sl2.setTooltipPosition({index: 2}, 'foo');
+                sl2.showTooltip('foo');
+
                 const sl3 = new sc.LineChart({
                     ...shared,
                     el: sl1.el,
