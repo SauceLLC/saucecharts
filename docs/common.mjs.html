@@ -496,12 +496,12 @@ export class Chart extends EventTarget {
         this.yMax = options.yMax;
         this.title = options.title;
         this.color = options.color;
-        this.padding = options.padding ?? [0, 0, 0, 0];
+        this.padding = options.padding ?? [4, 4, 20, 40];
         this.width = options.width;
         this.height = options.height;
         this._tooltips = new Map();
         const tooltipOptions = options.tooltip ?? {};
-        if (!tooltipOptions.disabled) {
+        if (!tooltipOptions.disabled &amp;&amp; !options.merge) {
             this.addTooltip(defaultTooltipId, {pointerEvents: true, ...tooltipOptions});
         }
         this.xAxis = options.xAxis ?? {};
@@ -774,13 +774,8 @@ export class Chart extends EventTarget {
                 this._yAxisEl.remove();
                 this._yAxisEl = null;
             }
-            for (const tooltip of this._tooltips.values()) {
-                for (const x of tooltip.graphics) {
-                    x.remove();
-                }
-                tooltip.graphics.length = 0;
-            }
         }
+        let tooltipsEl;
         if (!this._merge) {
             el.classList.add('saucechart', 'sc-wrap');
             el.classList.toggle('sc-disable-animation', !!this.disableAnimation);
@@ -802,28 +797,21 @@ export class Chart extends EventTarget {
                 }, {
                     name: 'g',
                     class: 'sc-plot-regions',
-                }, {
-                    name: 'g',
-                    class: 'sc-tooltip-graphics',
                 }]
             });
-            const tooltips = createHTML({
+            tooltipsEl = createHTML({
                 name: 'div',
                 class: 'sc-tooltips',
             });
-            for (const tooltip of this._tooltips.values()) {
-                tooltips.append(tooltip.positioner);
-                this._resizeObserver.observe(tooltip.box);
-            }
-            el.replaceChildren(svg, tooltips);
+            el.replaceChildren(svg, tooltipsEl);
             el.parentSauceChart = this;
             this.childCharts.length = 0;
         } else {
+            tooltipsEl = el.querySelector('.sc-tooltips');
             el.parentSauceChart.addChart(this);
         }
         this._rootSvgEl = el.querySelector('svg.sc-root');
         this._defsEl = this._rootSvgEl.querySelector(':scope > defs');
-        this._tooltipGraphicsEl = this._rootSvgEl.querySelector(':scope > .sc-tooltip-graphics');
         this._plotRegionEl = createSVG({name: 'g', class: 'sc-plot-region', data: {id: this.id}});
         if (this.color) {
             this._plotRegionEl.style.setProperty('--color', this.color);
@@ -855,6 +843,11 @@ export class Chart extends EventTarget {
                 children: [{name: 'line', class: 'sc-baseline'}]
             });
             this._rootSvgEl.append(this._yAxisEl);
+        }
+        for (const tooltip of this._tooltips.values()) {
+            tooltipsEl.append(tooltip.positioner);
+            this._rootSvgEl.querySelector('.sc-plot-regions').after(tooltip.graphics);
+            this._resizeObserver.observe(tooltip.box);
         }
         this._resizeObserver.observe(el);
         if (this.isParentChart()) {
@@ -928,7 +921,7 @@ export class Chart extends EventTarget {
         if (this._tooltips.has(id)) {
             throw new Error('Tooltip already present');
         }
-        options.padding ??= [this.padding[0], this.padding[2]];
+        options.padding ??= [0, 0, 0, 0];
         options.position ??= 'leftright';
         options.linger ??= 800;
         const positioner = createHTML({
@@ -946,17 +939,19 @@ export class Chart extends EventTarget {
         });
         const box = positioner.querySelector('.sc-tooltip-box');
         box._positioner = positioner;
+        const graphics = createSVG({name: 'g', class: 'sc-tooltip-graphics', data: {id}});
         this._tooltips.set(id, {
             id,
             state: {suspendRefCnt: 0},
             options,
             positioner,
             box,
-            graphics: [],
+            graphics,
             ephemeral: new Map(),
         });
         if (this.el) {
             this.el.querySelector('.sc-tooltips').append(positioner);
+            this._rootSvgEl.querySelector('.sc-plot-regions').after(graphics);
             this._resizeObserver.observe(box);
         }
     }
@@ -1055,9 +1050,11 @@ export class Chart extends EventTarget {
                 value = this.localeNumber(entry.y);
             }
         }
-        keyEl.replaceChildren(key ?? '');
-        valueEl.replaceChildren(value ?? '');
-        return entryEl;
+        if (key != null &amp;&amp; value != null) {
+            keyEl.replaceChildren(key);
+            valueEl.replaceChildren(value);
+            return entryEl;
+        }
     }
 
     /**
@@ -1144,7 +1141,7 @@ export class Chart extends EventTarget {
             const x = (ev.x - state.chartOffsets[0]) * this.devicePixelRatio;
             af = requestAnimationFrame(() => {
                 if (!pointerAborter.signal.aborted) {
-                    this._setTooltipPosition(tooltip, {x, internal: true});
+                    this._setTooltipPosition(tooltip, {x, disableAnimation: true, internal: true});
                 }
             });
         }, {signal});
@@ -1171,10 +1168,7 @@ export class Chart extends EventTarget {
             return;
         }
         tooltip.positioner.classList.remove('sc-active');
-        for (const x of tooltip.graphics) {
-            x.remove();
-        }
-        tooltip.graphics.length = 0;
+        tooltip.graphics.classList.remove('sc-active');
         state.visible = false;
     }
 
@@ -1202,6 +1196,7 @@ export class Chart extends EventTarget {
             tooltip.positioner.classList.add('sc-disable-animation');
         }
         tooltip.positioner.classList.add('sc-active');
+        tooltip.graphics.classList.add('sc-active');
         state.visible = true;
         if (hasAnim) {
             tooltip.positioner.offsetWidth;
@@ -1342,12 +1337,9 @@ export class Chart extends EventTarget {
      * @protected
      */
     updateVisibleTooltips(options) {
-        const root = this.isParentChart() ? this : this.parentChart;
-        if (root) {
-            for (const tooltip of root._tooltips.values()) {
-                if (tooltip.state.visible &amp;&amp; root._isTooltipAvailable(tooltip)) {
-                    root._updateTooltip(tooltip, options);
-                }
+        for (const tooltip of this._tooltips.values()) {
+            if (tooltip.state.visible &amp;&amp; this._isTooltipAvailable(tooltip)) {
+                this._updateTooltip(tooltip, options);
             }
         }
     }
@@ -1359,8 +1351,11 @@ export class Chart extends EventTarget {
         for (let i = 0; i &lt; state.charts.length; i++) {
             const chart = state.charts[i];
             let xRef = state.index != null ?
-                chart.xValueToCoord(chart.normalizedData[state.index]?.x) :
+                chart.xValueToCoord(chart.normalizedData?.[state.index]?.x) :
                 state.x;
+            if (isNaN(xRef)) {
+                continue;
+            }
             if (xRef >= chart._plotBox[1]) {
                 xRef = chart._plotBox[1] - 1e-6;
             } else if (xRef &lt;= chart._plotBox[3]) {
@@ -1370,14 +1365,12 @@ export class Chart extends EventTarget {
             if (entry === undefined || entry.x &lt; chart._xMin || entry.x > chart._xMax) {
                 continue;
             }
-            const coordinates = [chart.xValueToCoord(entry.x), chart.yValueToCoord(entry.y)];
-            contents.push({
-                chart,
-                entry,
-                coordinates,
-                element: chart.onTooltip({entry, tooltip})
-            });
-            drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
+            const element = chart.onTooltip({entry, tooltip});
+            if (element) {
+                const coordinates = [chart.xValueToCoord(entry.x), chart.yValueToCoord(entry.y)];
+                contents.push({chart, entry, coordinates, element});
+                drawSig += ` ${i} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
+            }
         }
         if (drawSig !== state.lastDrawSig) {
             state.lastDrawSig = drawSig;
@@ -1386,6 +1379,7 @@ export class Chart extends EventTarget {
                  !this.el.classList.contains('sc-disable-animation'));
             if (disableAnim) {
                 tooltip.positioner.classList.add('sc-disable-animation');
+                tooltip.graphics.classList.add('sc-disable-animation');
             }
             try {
                 this._drawTooltip(tooltip, contents);
@@ -1393,6 +1387,7 @@ export class Chart extends EventTarget {
                 if (disableAnim) {
                     tooltip.positioner.offsetWidth;
                     tooltip.positioner.classList.remove('sc-disable-animation');
+                    tooltip.graphics.classList.remove('sc-disable-animation');
                 }
             }
         }
@@ -1404,34 +1399,44 @@ export class Chart extends EventTarget {
             return;
         }
         const state = tooltip.state;
-        const top = tooltip.options.padding[0] * this.devicePixelRatio;
-        const bottom = this._boxHeight - tooltip.options.padding[1] * this.devicePixelRatio;
-        const centerX = contents.reduce((agg, o) => agg + o.coordinates[0], 0) / contents.length;
+        let centerX = 0;
+        let top = Infinity;
+        let bottom = -Infinity;
+        for (let i = 0; i &lt; contents.length; i++) {
+            const {chart, coordinates} = contents[i];
+            centerX += coordinates[0];
+            const t = chart._plotBox[0];
+            const b = chart._plotBox[2];
+            if (t &lt; top) {
+                top = t;
+            }
+            if (b > bottom) {
+                bottom = b;
+            }
+        }
+        centerX /= contents.length;
         const centerY = top + (bottom - top) / 2;
-        if (!tooltip.graphics.length) {
+        if (!tooltip.graphics.childNodes.length) {
             const line = createSVG({
                 name: 'path',
                 class: ['sc-line', 'sc-vertical']
             });
-            tooltip.graphics.push(line);
-            this._tooltipGraphicsEl.append(line);
+            tooltip.graphics.append(line);
         }
-        const vertLine = tooltip.graphics[0];
-        const existingHLines = tooltip.graphics.filter(x => x._ident === 'horiz-line');
-        const existingDots = tooltip.graphics.filter(x => x._ident === 'highlight-dot');
-        vertLine.setAttribute('d', `M ${centerX}, ${bottom} V ${top}`);
+        const vertLine = tooltip.graphics.childNodes[0];
+        const existingHLines = tooltip.graphics.querySelectorAll('.sc-line.sc-horizontal');
+        const existingDots = tooltip.graphics.querySelectorAll('circle.sc-highlight-dot');
         let minX = this._boxWidth;
         let minY = this._boxHeight;
         let maxX = 0;
         let maxY = 0;
+        let hLinesCount = 0;
         for (let i = 0; i &lt; contents.length; i++) {
             const [x, y] = contents[i].coordinates;
-            let dot = existingDots.pop();
+            let dot = existingDots[i];
             if (!dot) {
                 dot = createSVG({name: 'circle', class: 'sc-highlight-dot'});
-                dot._ident = 'highlight-dot';
-                tooltip.graphics.push(dot);
-                vertLine.after(dot);
+                tooltip.graphics.append(dot);
             }
             dot.setAttribute('cx', x);
             dot.setAttribute('cy', y);
@@ -1448,24 +1453,21 @@ export class Chart extends EventTarget {
                 minY = y;
             }
             if (Math.abs(x - centerX) > 1) {
-                let horizLine = existingHLines.pop();
+                let horizLine = existingHLines[hLinesCount];
                 if (!horizLine) {
                     horizLine = createSVG({name: 'path', class: ['sc-line', 'sc-horizontal']});
-                    horizLine._ident = 'horiz-line';
-                    tooltip.graphics.push(horizLine);
-                    vertLine.before(horizLine);
+                    vertLine.after(horizLine);
                 }
                 horizLine.setAttribute(
                     'd', `M ${x}, ${y} L ${centerX}, ${Math.min(bottom, Math.max(y, top))}`);
+                hLinesCount++;
             }
         }
-        for (const x of existingHLines) {
-            x.remove();
-            tooltip.graphics.splice(tooltip.graphics.indexOf(x), 1);
+        for (let i = hLinesCount; i &lt; existingHLines.length; i++) {
+            existingHLines[i].remove();
         }
-        for (const x of existingDots) {
-            x.remove();
-            tooltip.graphics.splice(tooltip.graphics.indexOf(x), 1);
+        for (let i = contents.length; i &lt; existingDots.length; i++) {
+            existingDots[i].remove();
         }
         let vAlign, hAlign;
         if (state.positionCallback) {
@@ -1484,6 +1486,7 @@ export class Chart extends EventTarget {
                 state.hAlign;
             vAlign = state.vAlign;
         }
+        vertLine.setAttribute('d', `M ${centerX}, ${bottom} V ${top}`);
         tooltip.box.replaceChildren(...contents.map(x => x.element));
         tooltip.positioner.dataset.hAlign = hAlign;
         tooltip.positioner.dataset.vAlign = vAlign;
