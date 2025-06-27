@@ -57,7 +57,6 @@
             let sinFactor = speed / Number(document.querySelector('#freq').value);
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             const commonOptions = {
-                padding: [24, 44, 24, 44],
             };
 
             document.querySelector('#freq').addEventListener('input', ev => {
@@ -73,7 +72,7 @@
                     el: document.querySelector(".graph.i1"),
                     xAxis: {
                         showFirst: true,
-                        align: 'top'
+                        position: 'top'
                     },
                 });
                 sl.setData(data);
@@ -99,7 +98,7 @@
                     el: document.querySelector(".graph.i2"),
                     yAxis: {
                         showFirst: true,
-                        align: 'right'
+                        position: 'right'
                     },
                 });
                 let iterations = 0;
@@ -121,8 +120,8 @@
                     el: document.querySelector(".graph.i3"),
                     xAxis: {
                         showFirst: true,
-                        align: 'top',
-                        position: 'inside'
+                        position: 'top',
+                        align: 'inside'
                     },
                 });
                 let iterations = 0;
@@ -144,8 +143,8 @@
                     el: document.querySelector(".graph.i4"),
                     yAxis: {
                         showFirst: true,
-                        align: 'right',
-                        position: 'inside'
+                        position: 'right',
+                        align: 'inside'
                     },
                 });
                 let iterations = 0;
@@ -167,11 +166,11 @@
                     el: document.querySelector(".graph.i5"),
                     yAxis: {
                         showFirst: true,
-                        position: 'inside'
+                        align: 'inside'
                     },
                     xAxis: {
                         showFirst: true,
-                        position: 'inside'
+                        align: 'inside'
                     },
                 });
                 let iterations = 0;
@@ -198,13 +197,13 @@
             <input type="range" value="0.5" step="any" min="0.1" max="2" id="freq"/>Freq
         </div>
 
-        <b>x axis top align</b>
+        <b>x axis top</b>
         <div class="graph i1"></div>
-        <b>y axis right align</b>
+        <b>y axis right</b>
         <div class="graph i2"></div>
-        <b>x axis top align, inside</b>
+        <b>x axis top, inside</b>
         <div class="graph i3"></div>
-        <b>y axis right align, inside</b>
+        <b>y axis right, inside</b>
         <div class="graph i4"></div>
         <b>* axis inside</b>
         <div class="graph i5"></div>

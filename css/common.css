@@ -72,11 +72,11 @@
             .sc-label {
                 alignment-baseline: middle;
 
-                &[data-position="0"] {
+                &[data-percent="0"] {
                     alignment-baseline: after-edge;
                 }
 
-                &[data-position="1"] {
+                &[data-percent="1"] {
                     alignment-baseline: before-edge;
                 }
             }
@@ -102,10 +102,10 @@
                 text-anchor: middle;
                 alignment-baseline: before-edge;
 
-                &[data-position="0"] {
+                &[data-percent="0"] {
                     text-anchor: start;
                 }
-                &[data-position="1"] {
+                &[data-percent="1"] {
                     text-anchor: end;
                 }
             }
@@ -115,10 +115,10 @@
                 translate: var(--x-offset, 0) calc(var(--axis-padding) - var(--line-height-correction));
                 transform-origin: 80% 100%;
 
-                &[data-position="0"] {
+                &[data-percent="0"] {
                     --x-offset: calc(0.5 * var(--axis-padding));
                 }
-                &[data-position="1"] {
+                &[data-percent="1"] {
                     --x-offset: calc(-0.5 * var(--axis-padding));
                 }
             }
@@ -129,10 +129,10 @@
                 transform-origin: 80% 0%;
                 alignment-baseline: after-edge;
 
-                &[data-position="0"] {
+                &[data-percent="0"] {
                     --x-offset: calc(0.5 * var(--axis-padding));
                 }
-                &[data-position="1"] {
+                &[data-percent="1"] {
                     --x-offset: calc(-0.5 * var(--axis-padding));
                 }
             }

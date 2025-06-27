@@ -58,7 +58,6 @@
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             const commonOptions = {
                 hidePoints: false,
-                padding: [20, 5, 20, 40],
                 disableAnimation: false,
             };
 
@@ -74,14 +73,15 @@
                     ...commonOptions,
                     el: document.querySelector(".graph.i1"),
                     tooltip: {
-                        formatKey: ({value}) => `cust tt k ${value.toFixed(1)}`,
-                        format: ({value}) => `cust tt v ${value.toFixed(1)}`,
+                        formatKey: ({value}) => `cust tt k${value.toFixed(1)}`,
+                        format: ({value}) => `cust tt v${value.toFixed(1)}`,
+                        showFirst: true,
                     },
                     xAxis: {
-                        format: ({value}) => `cust x ${value.toFixed(1)}`,
+                        format: ({value}) => `cust x: ${value.toFixed(1)}`,
                     },
                     yAxis: {
-                        format: ({value}) => `cust y ${value.toFixed(1)}`,
+                        format: ({value}) => `cust y: ${value.toFixed(1)}`,
                     },
                     title: 'ltr, custom tooltip, custom axis',
                     xMin: ts() + 4000,
@@ -297,7 +297,6 @@
                 const sl1 = new sc.LineChart({
                     ...shared,
                     el: document.querySelector(".graph.i8"),
-                    padding: [0, 0, 0, 0],
                     title: 'Multiple graphs, stacked (visual brush)',
                     padding: [10, 0, 0, 0],
                     height,
