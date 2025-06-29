@@ -1483,7 +1483,7 @@ export class Chart extends EventTarget {
             for (let i = 0; i < data.length; i++) {
                 norm[i] = {index: i, x: data[i][0] || 0, y: data[i][1] || 0};
             }
-        } else if (typeof data[0] === 'object') {
+        } else if (typeof data[0] === 'object' && Object.getPrototypeOf(data[0]) === Object.prototype) {
             // [{x, y, ...}, {x, y, ...}, ...]
             for (let i = 0; i < data.length; i++) {
                 const o = data[i];

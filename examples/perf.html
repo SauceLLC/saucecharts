@@ -57,21 +57,14 @@
             //speed = 1000;
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             let disableAnimation = false
-            const commonOptions = {
-                hidePoints: false,
-                //padding: [10, 10, 10, 10],
-            };
-
             const c1 = new sc.BarChart({
-                ...commonOptions,
                 el: document.querySelector(".graph.i1"),
                 title: 'bar',
                 disableAnimation,
-                barSpacing: 0,
+                barPadding: 0,
             });
 
             const c2 = new sc.LineChart({
-                ...commonOptions,
                 el: document.querySelector(".graph.i2"),
                 title: 'line-segments',
                 disableAnimation,

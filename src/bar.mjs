@@ -7,7 +7,7 @@ import * as colorMod from './color.mjs';
 
 /**
  * @typedef {object} BarChartOptions
- * @property {number} [barSpacing=6]
+ * @property {number} [barPadding=6]
  * @property {number} [barRadius=4]
  */
 
@@ -19,7 +19,7 @@ import * as colorMod from './color.mjs';
 export class BarChart extends common.Chart {
 
     init(options={}) {
-        this.barSpacing = options.barSpacing ?? 6;
+        this.barPadding = options.barPadding ?? 6;
         this.barRadius = options.barRadius ?? 4;
         this._bars = new Map();
         this._barsPendingRemoval = new Map();
@@ -131,6 +131,7 @@ export class BarChart extends common.Chart {
         if (this.xMax == null) {
             this._xMax = manifest.data.reduce((agg, x) => agg + x.width, 0);
         }
+        console.log(this);
     }
 
     _renderBeforeLayout({data, resampling}, options={}) {
@@ -261,8 +262,8 @@ export class BarChart extends common.Chart {
         }
         for (let i = 0; i < layout.update.length; i++) {
             const {el, attrs} = layout.update[i];
-            const width = Math.max(0, attrs.width - this.barSpacing);
-            const x = attrs.x + this.barSpacing / 2;
+            const width = Math.max(0, attrs.width - this.barPadding);
+            const x = attrs.x + this.barPadding / 2;
             el.setAttribute('d', this._makeBarPath(x, attrs.y, width, attrs.height));
             el.setAttribute('fill', attrs.fill);
         }
