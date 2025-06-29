@@ -129,9 +129,9 @@ export class BarChart extends common.Chart {
             this._xMin = 0;
         }
         if (this.xMax == null) {
-            this._xMax = manifest.data.reduce((agg, x) => agg + x.width, 0);
+            const last = manifest.data[manifest.data.length - 1];
+            this._xMax = last.x + last.width / 2;
         }
-        console.log(this);
     }
 
     _renderBeforeLayout({data, resampling}, options={}) {
