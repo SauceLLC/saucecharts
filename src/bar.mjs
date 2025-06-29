@@ -125,11 +125,11 @@ export class BarChart extends common.Chart {
         if (this._yMax === this._yMin) {
             this._yMin -= 1;
         }
-        if (this.xMin == null) {
+        if (this._xMin == null) {
             this._xMin = 0;
         }
-        if (this.xMax == null) {
-            const last = manifest.data[manifest.data.length - 1];
+        if (this._xMax == null) {
+            const last = this.normalizedData[this.normalizedData.length - 1];
             this._xMax = last.x + last.width / 2;
         }
     }

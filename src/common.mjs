@@ -1374,43 +1374,67 @@ export class Chart extends EventTarget {
     /**
      * Binary search for nearest data entry using an X coordinate
      *
-     * @param {number} searchX
+     * @param {number} coord - X coord
+     * @param {Array<DataEntry>} [data=this._renderData]
      * @returns {DataEntry}
      */
-    findNearestFromXCoord(searchX) {
-        if (isNaN(searchX) || searchX === null || !this._renderData || !this._renderData.length) {
-            return;
-        }
-        const targetX = this.xCoordToValue(searchX);
-        const len = this._renderData.length;
-        let left = 0;
-        let right = len - 1;
-        for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
-            const x = this._renderData[i].x;
-            if (x > targetX) {
-                right = i;
-            } else if (x < targetX) {
-                left = i;
-            } else {
-                return this._renderData[i];
-            }
-            if (right - left <= 1) {
-                const lDist = targetX - this._renderData[left].x;
-                const rDist = this._renderData[right].x - targetX;
-                return this._renderData[lDist < rDist ? left : right];
-            }
-        }
+    findNearestFromXCoord(coord, data=this._renderData) {
+        const index = this.findNearestIndexFromXCoord(coord, data);
+        return index !== undefined ? data[index] : undefined;
+    }
+
+    /**
+     * Binary search for nearest data entry using an X value
+     *
+     * @param {number} value - X value
+     * @param {Array<DataEntry>} [data=this._renderData]
+     * @returns {DataEntry}
+     */
+    findNearestFromXValue(value, data=this._renderData) {
+        const index = this.findNearestIndexFromXValue(value, data);
+        return index !== undefined ? data[index] : undefined;
     }
 
     /**
      * Binary search for nearest data index using an X coordinate
      *
-     * @param {number} searchX
-     * @returns {DataEntry}
+     * @param {number} coord - X coord
+     * @param {Array<DataEntry>} [data=this.normalizedData]
+     * @returns {number}
      */
-    findNearestIndexFromXCoord(searchX) {
-        const entry = this.findNearestFromXCoord(searchX);
-        return entry ? this.normalizedData.indexOf(entry) : -1;
+    findNearestIndexFromXCoord(coord, data=this.normalizedData) {
+        return this.findNearestIndexFromXValue(this.xCoordToValue(coord), data);
+    }
+
+    /**
+     * Binary search for nearest data index using an X value
+     *
+     * @param {number} value - X value
+     * @param {Array<DataEntry>} [data=this.normalizedData]
+     * @returns {number}
+     */
+    findNearestIndexFromXValue(value, data=this.normalizedData) {
+        if (isNaN(value) || value === null || !data || !data.length) {
+            return;
+        }
+        const len = data.length;
+        let left = 0;
+        let right = len - 1;
+        for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
+            const x = data[i].x;
+            if (x > value) {
+                right = i;
+            } else if (x < value) {
+                left = i;
+            } else {
+                return i;
+            }
+            if (right - left <= 1) {
+                const lDist = value - data[left].x;
+                const rDist = data[right].x - value;
+                return lDist < rDist ? left : right;
+            }
+        }
     }
 
     /**
@@ -1511,21 +1535,19 @@ export class Chart extends EventTarget {
             this.doReset();
             return;
         }
-        options.disableAnimation = options.disableAnimation || this.disableAnimation;
+        options.disableAnimation ||= this.disableAnimation;
         const manifest = this.beforeRender(options);
+        this._xMin = this.xMin;
+        this._xMax = this.xMax;
+        this._yMin = this.yMin;
+        this._yMax = this.yMax;
+        const zoomType = this._zoomState.active ? this._zoomState.type : undefined;
+        if (zoomType === 'data') {
+            this.applyDataZoom();
+        }
         this.adjustScale(manifest);
-        if (this._zoomState.active && this._zoomState.type === 'visual') {
-            // Get offsets and size before transforms...
-            const xOfft = this._zoomState.translate ? this.xCoordScale(this._zoomState.translate[0]) : 0;
-            const yOfft = this._zoomState.translate ? this.yCoordScale(this._zoomState.translate[1]) : 0;
-            if (this._zoomState.scale) {
-                this._xMax = this._xMin + (this._xMax - this._xMin) / this._zoomState.scale[0];
-                this._yMax = this._yMin + (this._yMax - this._yMin) / this._zoomState.scale[1];
-            }
-            this._xMin += xOfft;
-            this._xMax += xOfft;
-            this._yMin += yOfft;
-            this._yMax += yOfft;
+        if (zoomType === 'visual') {
+            this.applyVisualZoom();
         }
         this.doLayout(manifest, options);
         const axisSig = [
@@ -1550,12 +1572,58 @@ export class Chart extends EventTarget {
     }
 
     /**
+     * @protected
+     */
+    applyDataZoom() {
+        if (!this._zoomState.active || this._zoomState.type !== 'data') {
+            throw new TypeError('data zoom not active');
+        }
+        if (this._zoomState.xRange) {
+            this._xMin = this._zoomState.xRange[0];
+            this._xMax = this._zoomState.xRange[1];
+        }
+        if (this._zoomState.yRange) {
+            this._yMin = this._zoomState.yRange[0];
+            this._yMax = this._zoomState.yRange[1];
+        }
+    }
+
+    /**
+     * @protected
+     */
+    applyVisualZoom() {
+        if (!this._zoomState.active || this._zoomState.type !== 'visual') {
+            throw new TypeError('visual zoom not active');
+        }
+        // Get offsets and size before transforms...
+        const xOfft = this._zoomState.translate ? this.xCoordScale(this._zoomState.translate[0]) : 0;
+        const yOfft = this._zoomState.translate ? this.yCoordScale(this._zoomState.translate[1]) : 0;
+        if (this._zoomState.scale) {
+            this._xMax = this._xMin + (this._xMax - this._xMin) / this._zoomState.scale[0];
+            this._yMax = this._yMin + (this._yMax - this._yMin) / this._zoomState.scale[1];
+        }
+        this._xMin += xOfft;
+        this._xMax += xOfft;
+        this._yMin += yOfft;
+        this._yMax += yOfft;
+    }
+
+    /**
      * Called before any visual reflow/painting
      *
      * @protected
+     * @param {object} [options] - Render options
      */
     beforeRender(options) {
         let data = this.normalizedData;
+        if (this._zoomState.active && this._zoomState.type === 'data' && this._zoomState.xRange) {
+            const [start, end] = this._zoomState.xRange;
+            const startIndex = this.findNearestIndexFromXValue(start, data) - 1;
+            const endIndex = this.findNearestIndexFromXValue(end, data) + 1;
+            if (startIndex != null && endIndex != null) {
+                data = data.slice(Math.max(0, startIndex), Math.max(0, endIndex));
+            }
+        }
         const resampling = data.length > this._plotWidth * 1.5;
         if (resampling) {
             data = resample(data, this._plotWidth | 0);
@@ -1568,20 +1636,6 @@ export class Chart extends EventTarget {
      * @protected
      */
     adjustScale({data}) {
-        this._xMin = this.xMin;
-        this._xMax = this.xMax;
-        this._yMin = this.yMin;
-        this._yMax = this.yMax;
-        if (this._zoomState.active && this._zoomState.type === 'data') {
-            if (this._zoomState.xRange) {
-                this._xMin = this._zoomState.xRange[0];
-                this._xMax = this._zoomState.xRange[1];
-            }
-            if (this._zoomState.yRange) {
-                this._yMin = this._zoomState.yRange[0];
-                this._yMax = this._zoomState.yRange[1];
-            }
-        }
         if (this._yMin == null || this._yMax == null) {
             let min = Infinity;
             let max = -Infinity;
