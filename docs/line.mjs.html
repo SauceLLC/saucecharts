@@ -407,7 +407,9 @@ export class LineChart extends common.Chart {
         this._areaEl.removeAttribute('d');
         this._prevCoords = null;
         this._prevData = null;
-        this.segments.length = 0;
+        for (const x of this._segmentEls.values()) {
+            x.remove();
+        }
         this._segmentEls.clear();
         for (const x of this._segmentFills.values()) {
             this.removeGradient(x.gradient);
@@ -474,35 +476,50 @@ export class LineChart extends common.Chart {
                 forceLayout = true;
             }
         }
-        const plotCenterX = this._plotWidth / 2 + this._plotBox[3];
         const unclaimedSegmentEls = new Map(this._segmentEls);
         const unclaimedFills = new Map(this._segmentFills);
         const segmentAdds = [];
         const segmentUpdates = [];
         for (let i = 0; i &lt; this.segments.length; i++) {
             const s = this.segments[i];
+            unclaimedSegmentEls.delete(s);
             const x = s.x != null ? this.xValueToCoord(s.x) : this._plotBox[3];
-            const y = s.y != null ? this.yValueToCoord(s.y) : this._plotBox[0];
             const width = s.width != null ?
                 this.xValueScale(s.width) :
                 this._plotWidth - (x - this._plotBox[3]);
+            let el = this._segmentEls.get(s);
+            if (x >= this._plotBox[1] || x + width &lt;= this._plotBox[3]) {
+                if (el) {
+                    segmentUpdates.push({el, x: x + width / 2, width: 0});
+                }
+                continue;
+            }
+            const y = s.y != null ? this.yValueToCoord(s.y) : this._plotBox[0];
             const height = s.height != null ?
                 this.yValueScale(s.height) :
                 this._plotHeight - (y - this._plotBox[0]);
-            let el = this._segmentEls.get(s);
+            if (y >= this._plotBox[2] || y + height &lt;= this._plotBox[0]) {
+                if (el) {
+                    segmentUpdates.push({el, y: y + height / 2, height: 0});
+                }
+                continue;
+            }
             if (!el) {
+                const constrainedX = Math.max(this._plotBox[3], Math.min(this._plotBox[1], x + width / 2));
+                const constrainedY = Math.max(this._plotBox[0], Math.min(this._plotBox[2], y));
+                const constrainedHeight = Math.max(0, Math.min(this._plotBox[2] - constrainedY, height));
                 el = common.createSVG({
                     name: 'rect',
                     class: ['sc-visual-data-segment'],
                     attrs: {
-                        x: (x + width / 2 > plotCenterX) ? x + width : x,
-                        y,
+                        x: constrainedX,
+                        y: constrainedY,
                         width: 0,
-                        height,
+                        height: constrainedHeight,
                     }
                 });
                 this._segmentEls.set(s, el);
-                forceLayout = true;
+                forceLayout ||= !!this._prevCoords;
                 segmentAdds.push({el});
             } else {
                 unclaimedSegmentEls.delete(s);
@@ -529,13 +546,10 @@ export class LineChart extends common.Chart {
         const segmentRemoves = [];
         if (unclaimedSegmentEls.size) {
             for (const [k, el] of unclaimedSegmentEls) {
-                let x = Number(el.getAttribute('x'));
+                const x = Number(el.getAttribute('x'));
                 const width = Number(el.getAttribute('width'));
-                if (x + width / 2 > plotCenterX) {
-                    x += width;
-                }
+                segmentRemoves.push({el, x: x + width / 2});
                 this._segmentEls.delete(k);
-                segmentRemoves.push({el, x});
             }
         }
         const gradientRemoves = [];
@@ -563,10 +577,24 @@ export class LineChart extends common.Chart {
         this._areaEl.setAttribute('d', this.makePath(coords, {closed: true}));
         for (let i = 0; i &lt; segmentUpdates.length; i++) {
             const o = segmentUpdates[i];
-            o.el.setAttribute('x', o.x);
-            o.el.setAttribute('y', o.y);
-            o.el.setAttribute('width', o.width);
-            o.el.setAttribute('height', o.height);
+            const x = o.x ?? o.el.getAttribute('x');
+            const y = o.y ?? o.el.getAttribute('y');
+            const constrainedX = Math.max(this._plotBox[3], Math.min(this._plotBox[1], x));
+            const constrainedY = Math.max(this._plotBox[0], Math.min(this._plotBox[2], y));
+            if (o.x !== undefined) {
+                o.el.setAttribute('x', constrainedX);
+            }
+            if (o.y !== undefined) {
+                o.el.setAttribute('y', constrainedY);
+            }
+            if (o.width !== undefined) {
+                const width = o.width - (constrainedX - x);
+                o.el.setAttribute('width', Math.max(0, Math.min(this._plotBox[1] - constrainedX, width)));
+            }
+            if (o.height !== undefined) {
+                const height = o.height - (constrainedY - y);
+                o.el.setAttribute('height', Math.max(0, Math.min(this._plotBox[2] - constrainedY, height)));
+            }
             if (o.gradient) {
                 o.el.setAttribute('fill', `url(#${o.gradient.id})`);
             }
