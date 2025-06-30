@@ -39,6 +39,7 @@
                     border: 1px solid #f22a;
                     margin: 0.2em;
                     padding: 0px;
+                    --transition-duration: 2s;
 
                     .sc-visual-data-bar {
                         stroke: none !important;
@@ -68,6 +69,9 @@
                 el: document.querySelector(".graph.i2"),
                 title: 'line-segments',
                 disableAnimation,
+                yMin: 0,
+                yMax: 0.5,
+                padding: [40, 40, 40, 40]
             });
 
             function updateSegments(i, chance) {
@@ -76,8 +80,10 @@
                 }
                 if (Math.random() < chance) {
                     segments.push({
-                        x: data[i][0],
+                        x: i - 200,
+                        y: Math.random(),
                         width: 0,
+                        height: Math.random(),
                         color: ['white', 'blue', 'red', 'green', 'pink', 'orange', 'yellow'][segments.length % 7],
                     });
                 }
@@ -94,8 +100,8 @@
             }
 
             c1.setData(data);
-            c2.setData(data);
             c2.setSegments(segments);
+            c2.setData(data);
 
             let index = data.length;
             setInterval(() => {

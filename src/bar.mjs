@@ -244,7 +244,8 @@ export class BarChart extends common.Chart {
     }
 
     _renderDoLayout(layout, {disableAnimation}={}) {
-        const plotQuarterX = this._plotWidth / 4 + this._plotBox[3];
+        const plot1QuarterX = this._plotWidth / 4 + this._plotBox[3];
+        const plot3QuarterX = this._plotBox[1] - this._plotWidth / 4;
         const baselineY = this.yValueToCoord(Math.max(0, this._yMin));
         const leftX = this.xValueToCoord(this._xMin);
         const rightX = this.xValueToCoord(this._xMax);
@@ -252,7 +253,7 @@ export class BarChart extends common.Chart {
             const {el, attrs} = layout.add[i];
             if (!disableAnimation) {
                 const centerX = attrs.x + attrs.width / 2;
-                const x = centerX < plotQuarterX ? leftX : centerX > plotQuarterX * 3 ? rightX : centerX;
+                const x = centerX < plot1QuarterX ? leftX : centerX > plot3QuarterX ? rightX : centerX;
                 el.setAttribute('d', this._makeBarPath(x, baselineY, 0, 0));
             }
             this._barsEl.append(el);
@@ -271,7 +272,7 @@ export class BarChart extends common.Chart {
             const {attrs, el} = layout.remove[i];
             if (!disableAnimation) {
                 const centerX = attrs.x + attrs.width / 2;
-                const x = centerX < plotQuarterX ? leftX : centerX > plotQuarterX * 3 ? rightX : centerX;
+                const x = centerX < plot1QuarterX ? leftX : centerX > plot3QuarterX ? rightX : centerX;
                 el.setAttribute('d', this._makeBarPath(x, baselineY, 0, 0));
             } else {
                 el.removeAttribute('d');
