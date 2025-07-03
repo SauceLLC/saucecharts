@@ -495,6 +495,10 @@ const resample = largestTriangleThreeBuckets;
  * @emits tooltip
  */
 export class Chart extends EventTarget {
+
+    resampleThreshold = 1.5;
+    resampleTarget = 1.0;
+
     constructor(options={}) {
         super();
         this.init(options);
@@ -1823,9 +1827,9 @@ export class Chart extends EventTarget {
                 data = data.slice(Math.max(0, startIndex), Math.max(0, endIndex));
             }
         }
-        const resampling = data.length > this._plotWidth * 1.5;
+        const resampling = this.resampleThreshold ?? data.length > this._plotWidth * this.resampleThreshold;
         if (resampling) {
-            data = resample(data, this._plotWidth | 0);
+            data = resample(data, this._plotWidth * this.resampleTarget | 0);
         }
         this._renderData = data;
         return {data, resampling};
