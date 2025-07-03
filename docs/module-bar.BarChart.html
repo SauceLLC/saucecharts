@@ -27,6 +27,8 @@
         
         <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-bar.BarChart.html">BarChart</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#normalizeData">normalizeData</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-bar.BarChart.html#xValueToCoordUsing">xValueToCoordUsing</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-bar.BarChart.html#yValueToCoordUsing">yValueToCoordUsing</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#doReset">doReset</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#init">init</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#beforeSetElement">beforeSetElement</a></li>
@@ -400,6 +402,368 @@
             <h3 class="subsection-title">Methods</h3>
         
 
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="xValueToCoordUsing"><span class="type-signature"></span>xValueToCoordUsing<span class="signature">(value, domain)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>value</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>domain</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    [xMin, xMax] to use for coordinate scheme
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="bar.mjs.html">bar.mjs</a>, <a href="bar.mjs.html#line255">line 255</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
+        
+            <div class="subsection-entry subsection-method">
+                
+<div class="section-wrap">
+    
+        <h4 class="name" id="yValueToCoordUsing"><span class="type-signature"></span>yValueToCoordUsing<span class="signature">(value, domain)</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>}</span></h4>
+
+        
+    
+
+
+    
+
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>value</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    
+                </td>
+            </tr>
+            </td>
+        
+            <tr>
+                
+                    <td class="name"><code>domain</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a>></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    [xMin, xMax] to use for coordinate scheme
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="bar.mjs.html">bar.mjs</a>, <a href="bar.mjs.html#line265">line 265</a>
+        </value>
+    
+</div>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5 class="h5-returns">Returns:</h5>
+        
+                
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number">number</a></span>
+
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</div>
+
+            </div>
         
             <div class="subsection-entry subsection-method">
                 

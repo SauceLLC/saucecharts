@@ -27,6 +27,8 @@
         
         <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-bar.BarChart.html">BarChart</a><ul class='methods'><li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#normalizeData">normalizeData</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#adjustScale">adjustScale</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-bar.BarChart.html#xValueToCoordUsing">xValueToCoordUsing</a></li>
+<li data-type="method" class="" style="display: none;"><a href="module-bar.BarChart.html#yValueToCoordUsing">yValueToCoordUsing</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#doReset">doReset</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#init">init</a></li>
 <li data-type="method" class="inherited overrides" style="display: none;"><a href="module-bar.BarChart.html#beforeSetElement">beforeSetElement</a></li>
@@ -400,13 +402,13 @@ export class LineChart extends common.Chart {
     }
 
     doReset() {
+        this._prevCoords = null;
+        this._prevData = null;
         this._lineEl.removeAttribute('d');
         if (this._markerLineEl) {
             this._markerLineEl.removeAttribute('d');
         }
         this._areaEl.removeAttribute('d');
-        this._prevCoords = null;
-        this._prevData = null;
         for (const x of this._segmentEls.values()) {
             x.remove();
         }
@@ -476,87 +478,92 @@ export class LineChart extends common.Chart {
                 forceLayout = true;
             }
         }
-        const unclaimedSegmentEls = new Map(this._segmentEls);
-        const unclaimedFills = new Map(this._segmentFills);
         const segmentAdds = [];
         const segmentUpdates = [];
-        for (let i = 0; i &lt; this.segments.length; i++) {
-            const s = this.segments[i];
-            unclaimedSegmentEls.delete(s);
-            const x = s.x != null ? this.xValueToCoord(s.x) : this._plotBox[3];
-            const width = s.width != null ?
-                this.xValueScale(s.width) :
-                this._plotWidth - (x - this._plotBox[3]);
-            let el = this._segmentEls.get(s);
-            if (x >= this._plotBox[1] || x + width &lt;= this._plotBox[3]) {
-                if (el) {
-                    segmentUpdates.push({el, x: x + width / 2, width: 0});
-                }
-                continue;
-            }
-            const y = s.y != null ? this.yValueToCoord(s.y) : this._plotBox[0];
-            const height = s.height != null ?
-                this.yValueScale(s.height) :
-                this._plotHeight - (y - this._plotBox[0]);
-            if (y >= this._plotBox[2] || y + height &lt;= this._plotBox[0]) {
-                if (el) {
-                    segmentUpdates.push({el, y: y + height / 2, height: 0});
-                }
-                continue;
-            }
-            if (!el) {
-                const constrainedX = Math.max(this._plotBox[3], Math.min(this._plotBox[1], x + width / 2));
-                const constrainedY = Math.max(this._plotBox[0], Math.min(this._plotBox[2], y));
-                const constrainedHeight = Math.max(0, Math.min(this._plotBox[2] - constrainedY, height));
-                el = common.createSVG({
-                    name: 'rect',
-                    class: ['sc-visual-data-segment'],
-                    attrs: {
-                        x: constrainedX,
-                        y: constrainedY,
-                        width: 0,
-                        height: constrainedHeight,
-                    }
-                });
-                this._segmentEls.set(s, el);
-                forceLayout ||= !!this._prevCoords;
-                segmentAdds.push({el});
-            } else {
-                unclaimedSegmentEls.delete(s);
-            }
-            let gradient;
-            if (s.color) {
-                if (!this._segmentFills.has(s.color)) {
-                    const fill = colorMod.parse(s.color);
-                    gradient = this.addGradient((fill instanceof colorMod.Gradient) ? fill : {
-                        type: 'linear',
-                        colors: [
-                            fill.adjustAlpha(-0.7).adjustLight(-0.2),
-                            fill.adjustAlpha(-0.14),
-                        ]
-                    });
-                    this._segmentFills.set(s.color, {gradient});
-                } else {
-                    unclaimedFills.delete(s.color);
-                    gradient = this._segmentFills.get(s.color).gradient;
-                }
-            }
-            segmentUpdates.push({el, x, y, width, height, gradient});
-        }
         const segmentRemoves = [];
-        if (unclaimedSegmentEls.size) {
-            for (const [k, el] of unclaimedSegmentEls) {
-                const x = Number(el.getAttribute('x'));
-                const width = Number(el.getAttribute('width'));
-                segmentRemoves.push({el, x: x + width / 2});
-                this._segmentEls.delete(k);
-            }
-        }
         const gradientRemoves = [];
-        if (unclaimedFills.size) {
-            for (const [k, {gradient}] of unclaimedFills) {
-                this._segmentFills.delete(k);
-                gradientRemoves.push(gradient);
+        if (this.segments.length || this._segmentEls.size || this._segmentFills.size) {
+            const unclaimedSegmentEls = new Map(this._segmentEls);
+            const unclaimedFills = new Map(this._segmentFills);
+            const plot1ThirdX = this._plotWidth / 3 + this._plotBox[3];
+            const plot3ThirdX = this._plotBox[1] - this._plotWidth / 3;
+            for (let i = 0; i &lt; this.segments.length; i++) {
+                const s = this.segments[i];
+                unclaimedSegmentEls.delete(s);
+                const x = s.x != null ? this.xValueToCoord(s.x) : this._plotBox[3];
+                const width = s.width != null ?
+                    this.xValueScale(s.width) :
+                    this._plotWidth - (x - this._plotBox[3]);
+                let el = this._segmentEls.get(s);
+                if (x >= this._plotBox[1] || x + width &lt;= this._plotBox[3]) {
+                    if (el) {
+                        segmentUpdates.push({el, x: x + width / 2, width: 0});
+                    }
+                    continue;
+                }
+                const y = s.y != null ? this.yValueToCoord(s.y) : this._plotBox[0];
+                const height = s.height != null ?
+                    this.yValueScale(s.height) :
+                    this._plotHeight - (y - this._plotBox[0]);
+                if (y >= this._plotBox[2] || y + height &lt;= this._plotBox[0]) {
+                    if (el) {
+                        segmentUpdates.push({el, y: y + height / 2, height: 0});
+                    }
+                    continue;
+                }
+                if (!el) {
+                    const centerX = x + width / 2;
+                    const xOfft = centerX >= plot3ThirdX ? width : centerX &lt;= plot1ThirdX ? 0 : width / 2;
+                    console.log({xOfft, x, width, plot1ThirdX, plot3ThirdX});
+                    const constrainedX = Math.max(this._plotBox[3], Math.min(this._plotBox[1], x + xOfft));
+                    const constrainedY = Math.max(this._plotBox[0], Math.min(this._plotBox[2], y));
+                    const constrainedHeight = Math.max(0, Math.min(this._plotBox[2] - constrainedY, height));
+                    el = common.createSVG({
+                        name: 'rect',
+                        class: ['sc-visual-data-segment'],
+                        attrs: {
+                            x: constrainedX,
+                            y: constrainedY,
+                            width: 0,
+                            height: constrainedHeight,
+                        }
+                    });
+                    this._segmentEls.set(s, el);
+                    forceLayout ||= !!this._prevCoords;
+                    segmentAdds.push({el});
+                }
+                let gradient;
+                if (s.color) {
+                    if (!this._segmentFills.has(s.color)) {
+                        const fill = colorMod.parse(s.color);
+                        gradient = this.addGradient((fill instanceof colorMod.Gradient) ? fill : {
+                            type: 'linear',
+                            colors: [
+                                fill.adjustAlpha(-0.7).adjustLight(-0.2),
+                                fill.adjustAlpha(-0.14),
+                            ]
+                        });
+                        this._segmentFills.set(s.color, {gradient});
+                    } else {
+                        unclaimedFills.delete(s.color);
+                        gradient = this._segmentFills.get(s.color).gradient;
+                    }
+                }
+                segmentUpdates.push({el, x, y, width, height, gradient});
+            }
+            if (unclaimedSegmentEls.size) {
+                for (const [k, el] of unclaimedSegmentEls) {
+                    const x = Number(el.getAttribute('x'));
+                    const width = Number(el.getAttribute('width'));
+                    segmentRemoves.push({el, x: x + width / 2});
+                    this._segmentEls.delete(k);
+                }
+            }
+            if (unclaimedFills.size) {
+                for (const [k, {gradient}] of unclaimedFills) {
+                    this._segmentFills.delete(k);
+                    gradientRemoves.push(gradient);
+                }
             }
         }
         return {forceLayout, coords, segmentAdds, segmentUpdates, segmentRemoves, gradientRemoves};
