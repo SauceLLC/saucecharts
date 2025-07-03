@@ -315,7 +315,6 @@ export class LineChart extends common.Chart {
                 if (!el) {
                     const centerX = x + width / 2;
                     const xOfft = centerX >= plot3ThirdX ? width : centerX <= plot1ThirdX ? 0 : width / 2;
-                    console.log({xOfft, x, width, plot1ThirdX, plot3ThirdX});
                     const constrainedX = Math.max(this._plotBox[3], Math.min(this._plotBox[1], x + xOfft));
                     const constrainedY = Math.max(this._plotBox[0], Math.min(this._plotBox[2], y));
                     const constrainedHeight = Math.max(0, Math.min(this._plotBox[2] - constrainedY, height));
