@@ -18,6 +18,8 @@ import * as colorMod from './color.mjs';
  */
 export class BarChart extends common.Chart {
 
+    resampleThreshold = null;
+
     init(options={}) {
         this.barPadding = options.barPadding ?? 6;
         this.barRadius = options.barRadius ?? 4;
@@ -138,7 +140,7 @@ export class BarChart extends common.Chart {
         }
     }
 
-    _renderBeforeLayout({data, resampling}, options={}) {
+    _renderBeforeLayout({data}, options={}) {
         const unclaimed = new Map(this._bars);
         const layout = {
             add: [],
@@ -200,33 +202,8 @@ export class BarChart extends common.Chart {
                 }
             }
         }
-        let unclaimedIter = adding.length && resampling && unclaimed.size && unclaimed.entries();
         for (let i = 0; i < adding.length; i++) {
             const {bar, ref} = adding[i];
-            if (resampling) {
-                if (unclaimedIter) {
-                    const next = unclaimedIter.next().value;
-                    if (next) {
-                        const [oldKey, replace] = next;
-                        unclaimed.delete(oldKey);
-                        this._bars.delete(oldKey);
-                        Object.assign(replace, bar);
-                        this._bars.set(ref, replace);
-                        layout.update.push(replace);
-                        continue;
-                    } else {
-                        unclaimedIter = null;
-                    }
-                }
-                if (this._barsPendingRemoval.size) {
-                    const [oldKey, replace] = this._barsPendingRemoval.entries().next().value;
-                    this._barsPendingRemoval.delete(oldKey);
-                    Object.assign(replace, bar);
-                    this._bars.set(ref, replace);
-                    layout.update.push(replace);
-                    continue;
-                }
-            }
             bar.el = common.createSVG({name: 'path', class: ['sc-bar', 'sc-visual-data-bar']});
             this._bars.set(ref, bar);
             layout.add.push(bar);
