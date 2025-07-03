@@ -30,7 +30,7 @@
 
             body {
                 .graph {
-                    --transition-duration: 200ms;
+                    --transition-duration: 1.8s;
                     resize: both;
                     width: 1000px;
                     /*max-width: 100%;*/
@@ -61,8 +61,8 @@
 
             let paused = false;
             const tests = [1, 2, 3, 4, 5, 6, 7, 8];
-            const speed = 1000;
-            const maxSize = 14;
+            const speed = 2000;
+            let maxSize = 10;
             let sinFactor = speed / Number(document.querySelector('#freq').value);
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             const commonOptions = {
@@ -97,12 +97,13 @@
                     el: document.querySelector(".graph.i1"),
                     title: 'rtl (below tp)',
                     tooltipPosition: 'below',
-                    xMin: 20,
+                    /*xMin: 20,
                     xMax: 40,
                     yMin: 0.25,
-                    yMax: 0.75,
+                    yMax: 0.75,*/
                 });
                 self.chart1 = sl;
+                const initMaxSize = maxSize;
                 setInterval(() => {
                     if (paused) return;
                     data.push([5, Math.sin(ts() / sinFactor)]);
@@ -110,6 +111,13 @@
                         data.shift();
                     }
                     sl.setData(data);
+                    if (data.length === maxSize) {
+                        if (maxSize >= initMaxSize) {
+                            maxSize = initMaxSize - 5;
+                        } else {
+                            maxSize = initMaxSize;
+                        }
+                    }
                 }, speed);
             }
 

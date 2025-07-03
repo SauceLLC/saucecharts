@@ -31,7 +31,7 @@
 
             body {
                 .graph {
-                    --transition-duration: 1.8s;
+                    --transition-duration: 1.9s;
                     resize: both;
                     width: 1000px;
                     max-width: 100%;
@@ -127,6 +127,7 @@
                         data.shift();
                         segments.shift();
                     }
+                    console.log(data, segments);
                     sl.setSegments(segments, {render: false});
                     sl.setData(data);
                 }, speed);
