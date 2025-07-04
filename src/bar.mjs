@@ -152,15 +152,11 @@ export class BarChart extends common.Chart {
 
     adjustScale(manifest) {
         super.adjustScale(manifest);
+        const data = manifest.data;
+        this._xMin ??= data[0].x;
+        this._xMax ??= data[data.length - 1].x + data[data.length - 1].width;
         if (this._yMax === this._yMin) {
             this._yMin -= 1;
-        }
-        if (this._xMin == null) {
-            this._xMin = 0;
-        }
-        if (this._xMax == null) {
-            const last = this.normalizedData[this.normalizedData.length - 1];
-            this._xMax = last.x + last.width;
         }
     }
 
@@ -305,7 +301,7 @@ export class BarChart extends common.Chart {
     _makeBarPath(x, y, width, height) {
         const radius = Math.min(this.barRadius, width * 0.5, Math.abs(height));
         const rCtrl = height < 0 ? -radius : radius;
-        const a= (
+        return (
             `M ${x},${y + height} ` +
             `v ${-height + rCtrl} ` +
             `q 0,${-rCtrl} ${radius},${-rCtrl} ` +
@@ -313,8 +309,6 @@ export class BarChart extends common.Chart {
             `q ${radius},0 ${radius},${rCtrl} ` +
             `v ${height - rCtrl} Z`
         );
-        if (a.match(/NaN/)) debugger;
-        return a;
     }
 
     _schedGC() {
