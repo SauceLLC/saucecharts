@@ -39,7 +39,6 @@
                     border: 1px solid #f22a;
                     margin: 0.2em;
                     padding: 0px;
-                    --transition-duration: 2s;
 
                     .sc-visual-data-bar {
                         stroke: none !important;
@@ -52,15 +51,14 @@
 
             let count = 0;
             let paused = true;
-            let speed = 1000;
             const maxSize = Number(new URLSearchParams(location.search).get('size')) || 4000;
-            let sinFactor = maxSize / 20;
-            //speed = 1000;
+            let sinFactor = Math.min(maxSize / 10, 10000);
+            let speed = 10000 / maxSize;
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             let disableAnimation = false
             const c1 = new sc.BarChart({
                 el: document.querySelector(".graph.i1"),
-                title: 'bar',
+                title: 'bar (limited to 1000)',
                 disableAnimation,
                 barPadding: 0,
             });
@@ -103,7 +101,7 @@
                 updateSegments(i, chance);
             }
 
-            c1.setData(data);
+            c1.setData(data.slice(-1000));
             c2.setSegments(segments);
             c2.setData(data);
 
@@ -122,7 +120,7 @@
                     segments.shift();
                 }
 
-                c1.setData(data);
+                c1.setData(data.slice(-1000));
                 c2.setSegments(segments, {render: false});
                 c2.setData(data);
             }, speed);
