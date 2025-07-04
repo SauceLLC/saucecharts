@@ -27,6 +27,8 @@ import * as colorMod from './color.mjs';
  */
 export class BarChart extends common.Chart {
 
+    static usesEntryWidths = true;
+
     resampleThreshold = null;
 
     init(options={}) {
@@ -84,32 +86,45 @@ export class BarChart extends common.Chart {
     }
 
     normalizeData(data) {
-        // Convert to width and height to center-x and top-y..
         const norm = new Array(data.length);
         if (!data.length) {
             return norm;
         }
         if (Array.isArray(data[0])) {
             // [[width, y], [width, y], ...]
-            const width = data[0][0] || 0;
-            norm[0] = {index: 0, width, x: width / 2, y: data[0][1] || 0, ref: data[0]};
-            let offt = width;
-            for (let i = 1; i < data.length; i++) {
+            let offt = 0;
+            for (let i = 0; i < data.length; i++) {
                 const o = data[i];
-                const width = o[0] || 0;
-                offt += width;
-                norm[i] = {index: i, width, x: offt - (width / 2), y: o[1] || 0, ref: o};
+                norm[i] = {index: i, width: o[0], x: offt, y: o[1], ref: o};
+                offt += o[0];
             }
         } else if (typeof data[0] === 'object' && Object.getPrototypeOf(data[0]) === Object.prototype) {
-            // [{width, y, ...}, {width, y, ...}, ...]
-            const width = data[0].width || 0;
-            norm[0] = {...data[0], index: 0, width, x: width / 2, y: data[0].y || 0, ref: data[0]};
-            let offt = width;
-            for (let i = 1; i < data.length; i++) {
-                const o = data[i];
-                const width = o.width || 0;
-                offt += width;
-                norm[i] = {...o, index: i, width, x: offt - (width / 2), y: o.y || 0, ref: o};
+            if (data[0].width != null && data[0].y != null && data[0].x === undefined) {
+                // [{width, y, ...}, {width, y, ...}, ...]
+                // x is calculated based on all bars being edge to edge
+                let prev = norm[0] = {...data[0], index: 0, x: 0, ref: data[0]};
+                for (let i = 1; i < data.length; i++) {
+                    const o = data[i];
+                    prev = norm[i] = {...o, index: i, x: prev.x + prev.width, ref: o};
+                }
+            } else if (data[0].x != null && data[0].y != null && data[0].width === undefined) {
+                // [{x, y, ...}, {x, y, ...}, ...]
+                // width becomes the implicit gaps between entries (gap to next, so last entry is a sentinel)
+                for (let i = 0; i < data.length - 1; i++) {
+                    const o = data[i];
+                    norm[i] = {...o, index: i, width: data[i + 1].x - o.x, ref: o};
+                }
+                const end = data.length - 1;
+                norm[end] = {...data[end], index: end, width: 0, ref: data[end]};
+            } else if (data[0].x != null && data[0].y != null && data[0].width != null) {
+                // [{width, x, y, ...}, {width, x, y, ...}, ...]
+                // Full custom placement and size
+                for (let i = 1; 0 < data.length; i++) {
+                    const o = data[i];
+                    norm[i] = {...o, index: i, ref: o};
+                }
+            } else {
+                throw new TypeError('unable to infer data structure');
             }
         } else {
             // [y, y1, ...]
@@ -126,7 +141,7 @@ export class BarChart extends common.Chart {
                 } else {
                     y = +data[i];
                 }
-                norm[i] = {index: i, width: 1, x: i + 0.5, y: y || 0, ref: data[i]};
+                norm[i] = {index: i, width: 1, x: i, y, ref: data[i]};
             }
             if (convWarn) {
                 console.warn(`Converted ${convWarn} primative numbers to unique objects.`);
@@ -145,7 +160,7 @@ export class BarChart extends common.Chart {
         }
         if (this._xMax == null) {
             const last = this.normalizedData[this.normalizedData.length - 1];
-            this._xMax = last.x + last.width / 2;
+            this._xMax = last.x + last.width;
         }
     }
 
@@ -160,8 +175,8 @@ export class BarChart extends common.Chart {
         const adding = [];
         for (let index = 0; index < data.length; index++) {
             const entry = data[index];
-            const x1 = this.xValueToCoord(entry.x - entry.width / 2);
-            const x2 = this.xValueToCoord(entry.x + entry.width / 2);
+            const x1 = this.xValueToCoord(entry.x);
+            const x2 = this.xValueToCoord(entry.x + entry.width);
             const y = this.yValueToCoord(entry.y);
             const height = yMinCoord - y;
             const color = entry.color || this.getColor();
@@ -290,7 +305,7 @@ export class BarChart extends common.Chart {
     _makeBarPath(x, y, width, height) {
         const radius = Math.min(this.barRadius, width * 0.5, Math.abs(height));
         const rCtrl = height < 0 ? -radius : radius;
-        return (
+        const a= (
             `M ${x},${y + height} ` +
             `v ${-height + rCtrl} ` +
             `q 0,${-rCtrl} ${radius},${-rCtrl} ` +
@@ -298,6 +313,8 @@ export class BarChart extends common.Chart {
             `q ${radius},0 ${radius},${rCtrl} ` +
             `v ${height - rCtrl} Z`
         );
+        if (a.match(/NaN/)) debugger;
+        return a;
     }
 
     _schedGC() {
