@@ -50,6 +50,7 @@ import * as colorMod from './color.mjs';
  * @property {boolean} [showFirst] - Render the first (low) value of the axis
  * @property {number} [tickLength=6] - Size of the tick marks
  * @property {function} [format] - Custom callback function for label values
+ * @property {string} [padding] - Custom axis label padding
  */
 
 /**
@@ -297,6 +298,8 @@ const resample = largestTriangleThreeBuckets;
  */
 export class Chart extends EventTarget {
 
+    static usesEntryWidths = false;
+
     resampleThreshold = 1.5;
     resampleTarget = 1.0;
 
@@ -512,6 +515,11 @@ export class Chart extends EventTarget {
         const [top, right, bottom, left] = this._plotBox;
         const inside = (options.align ?? 'outside') === 'inside';
         let position;
+        if (options.padding) {
+            el.style.setProperty('--axis-padding', options.padding);
+        } else {
+            el.style.removeProperty('--axis-padding');
+        }
         if (vert) {
             position = options.position ?? 'left';
             el.classList.toggle('sc-right', position === 'right');
@@ -1241,7 +1249,9 @@ export class Chart extends EventTarget {
             }
             const element = chart.onTooltip({entry, tooltip});
             if (element) {
-                const coordinates = [chart.xValueToCoord(entry.x), chart.yValueToCoord(entry.y)];
+                const coordinates = chart.constructor.usesEntryWidths ?
+                    [chart.xValueToCoord(entry.x + entry.width / 2), chart.yValueToCoord(entry.y)] :
+                    [chart.xValueToCoord(entry.x), chart.yValueToCoord(entry.y)];
                 contents.push({chart, entry, coordinates, element});
                 drawSig += ` ${chart.id} ${entry.index} ${coordinates[0]} ${coordinates[1]}`;
             }
@@ -1421,6 +1431,14 @@ export class Chart extends EventTarget {
         if (isNaN(value) || value === null || !data || !data.length) {
             return;
         }
+        if (this.constructor.usesEntryWidths) {
+            return this._findNearestIndexFromXValueWithWidth(value, data);
+        } else {
+            return this._findNearestIndexFromXValue(value, data);
+        }
+    }
+
+    _findNearestIndexFromXValue(value, data) {
         const len = data.length;
         let left = 0;
         let right = len - 1;
@@ -1436,6 +1454,27 @@ export class Chart extends EventTarget {
             if (right - left <= 1) {
                 const lDist = value - data[left].x;
                 const rDist = data[right].x - value;
+                return lDist < rDist ? left : right;
+            }
+        }
+    }
+
+    _findNearestIndexFromXValueWithWidth(value, data) {
+        const len = data.length;
+        let left = 0;
+        let right = len - 1;
+        for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
+            const xCenter = data[i].x + data[i].width;
+            if (xCenter > value) {
+                right = i;
+            } else if (xCenter < value) {
+                left = i;
+            } else {
+                return i;
+            }
+            if (right - left <= 1) {
+                const lDist = value - (data[left].x + data[left].width / 2);
+                const rDist = (data[right].x + data[right].width / 2) - value;
                 return lDist < rDist ? left : right;
             }
         }
