@@ -255,14 +255,14 @@ export class LineChart extends common.Chart {
         }
     }
 
-    doLayout(manifest) {
-        const layouts = this._renderBeforeLayout(manifest);
+    doLayout(manifest, options) {
+        const layouts = this._renderBeforeLayout(manifest, options);
         this._renderDoLayout(layouts);
         this._prevCoords = layouts.coords;
         this._prevData = manifest.data;
     }
 
-    _renderBeforeLayout({data, disableAnimation}) {
+    _renderBeforeLayout({data}, {disableAnimation}) {
         const coords = data.map(o => [this.xValueToCoord(o.x), this.yValueToCoord(o.y)]);
         let forceLayout = false;
         if (!disableAnimation && this._prevCoords) {
@@ -349,8 +349,10 @@ export class LineChart extends common.Chart {
                         }
                     });
                     this._segmentEls.set(s, el);
-                    forceLayout ||= !!this._prevCoords;
                     segmentAdds.push({el});
+                    if (!disableAnimation && this._prevCoords) {
+                        forceLayout = true;
+                    }
                 }
                 let gradient;
                 if (s.color) {
