@@ -277,7 +277,7 @@ export class BarChart extends common.Chart {
             }
             this._barsEl.append(el);
         }
-        if ((!disableAnimation && layout.add.length) || disableAnimation) {
+        if (!disableAnimation && layout.add.length) {
             this._rootSvgEl.clientWidth;
         }
         for (let i = 0; i < layout.update.length; i++) {
