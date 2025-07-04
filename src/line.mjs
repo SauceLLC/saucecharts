@@ -29,11 +29,31 @@ import * as colorMod from './color.mjs';
  */
 
 /**
+ * A visual block highlight for a line chart.  Essentially a way to colorize regions of
+ * line chart.
+ *
+ * @typedef {object} LineChartSegment
+ * @property {number} x - The left x data value to begin this segment at
+ * @property {number} width - Width in data value units
+ * @property {module:color~ColorParsable} [color] - Fill color or gradient for region
+ * @property {number} [y=yMax] - The top y data value to begin the segment at
+ * @property {number} [height=yMax-yMin] - Height in data value units
+ */
+
+/**
  * A Line Chart
  *
  * @extends module:common.Chart
  * @param {LineChartOptions|module:common~ChartOptions} [options]
  * @emits brush
+ *
+ * @example
+ *
+ * const sl = new line.LineChart({
+ *     el: document.body
+ * });
+ * sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
+ *
  */
 export class LineChart extends common.Chart {
 
@@ -53,9 +73,9 @@ export class LineChart extends common.Chart {
      * Set the horizontal segments for this data.  A segment is data clipped `rect` that can be
      * stylized independently to give special meaning to a data range.
      *
-     * @param {Array<Segment>} segments
+     * @param {Array<module:line~LineChartSegment>} segments
      * @param {object} [options]
-     * @param {boolean} [options.render=true] - Force a render
+     * @param {boolean} [options.render=true] - Set to false to prevent rendering immediately
      */
     setSegments(segments, options={}) {
         this.segments = segments;

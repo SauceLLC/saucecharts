@@ -4,6 +4,7 @@
 import {createSVG} from './common.mjs';
 
 let gradientIdCounter = 0;
+let _colorCanvasCtx;
 
 
 /**
@@ -191,12 +192,15 @@ export class Color {
 
 /**
  * @typedef {object} GradientOptions
- * @property {string} type
- * @property {Array<(string|Color)>} [colors]
+ * @property {string} type - The type of gradient, i.e. "linear"
+ * @property {Array<string|Color>} [colors]
  */
 
 
 /**
+ * Base class for constructing SVG compatible gradients.
+ *
+ * @abstract
  * @param {GradientOptions} options
  */
 export class Gradient {
@@ -205,7 +209,6 @@ export class Gradient {
      * Return a typed gradient subclass based on the `type` option
      *
      * @param {GradientOptions} obj
-     * @param {"linear"} obj.type
      */
     static fromObject(obj) {
         if (obj.type === 'linear') {
@@ -215,10 +218,12 @@ export class Gradient {
         }
     }
 
-    constructor({type, colors}={}) {
-        this.type = type;
+    constructor({colors}={}) {
+        if (!this.constructor.type) {
+            throw new TypeError('Gradient is abstract');
+        }
         this.colors = [];
-        this.id = `color-gradient-${type}-${gradientIdCounter++}`;
+        this.id = `color-gradient-${this.constructor.type}-${gradientIdCounter++}`;
         if (colors) {
             for (const x of colors) {
                 if (typeof x === 'string' || (x instanceof Color)) {
@@ -245,10 +250,13 @@ export class Gradient {
 
 /**
  * @extends {Gradient}
- * @param {GradientOptions|object} options
+ * @param {GradientOptions} options
  * @param {number} options.rotate
  */
 export class LinearGradient extends Gradient {
+
+    static type = 'linear';
+
     constructor(options) {
         super(options);
         this.rotate = options.rotate;
@@ -310,10 +318,18 @@ export class LinearGradient extends Gradient {
     }
 }
 
-
-let _colorCanvasCtx;
 /**
- * @returns {Color}
+ * @typedef {external:CSS_Color|Color|Gradient|GradientOptions} ColorParsable
+ * @example color.parse('#112233ff')
+ * @example color.parse(Color.fromRGB(0.1, 0.2, 0.3))
+ * @example color.parse(new LinearGradient({colors: []}))
+ */
+
+/**
+ * Convert a color or gradient value into the appropriate Color or Gradient object.
+ *
+ * @param {ColorParsable} value - Any color or gradient
+ * @returns {Color|Gradient}
  */
 export function parse(value) {
     if (value == null) {
