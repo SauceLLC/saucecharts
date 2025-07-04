@@ -47,3 +47,17 @@ const sl = new BarChart({
 sl.setData([0,10,20,10,0,-10,-20,-10,0,10,20,10,0]);
 ```
 [Try it](examples/simple-bar.html)
+
+
+Demos...
+--------
+ * [Demo 1](examples/demo1.html) Line charts
+ * [Demo 2](examples/demo2.html) Bar charts
+ * [Demo 3](examples/demo3.html) Composite charts, line chart segments
+ * [Demo 4](examples/demo4.html) Manual y range bar chart
+ * [Demo 5](examples/demo5.html) Axis options
+ * [Performance test - 100](examples/perf.html?size=100) Stress test for large data sizes and fast updating
+ * [Performance test - 1,000](examples/perf.html?size=1000)
+ * [Performance test - 10,000](examples/perf.html?size=10000)
+ * [Performance test - 100,000](examples/perf.html?size=100000)
+ * [Performance test - 1,000,000](examples/perf.html?size=1000000)
