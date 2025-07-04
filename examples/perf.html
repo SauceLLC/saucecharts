@@ -34,7 +34,7 @@
                     resize: both;
                     width: 1000px;
                     max-width: 100%;
-                    height: 100px;
+                    height: 200px;
                     overflow: hidden;
                     border: 1px solid #f22a;
                     margin: 0.2em;
@@ -71,8 +71,12 @@
                 disableAnimation,
                 yMin: 0,
                 yMax: 0.5,
-                padding: [40, 40, 40, 40]
+                padding: [4, 4, 24, 44]
             });
+
+            window.toggleAnimation = function({checked}) {
+                c1.disableAnimation = c2.disableAnimation = !checked;
+            };
 
             function updateSegments(i, chance) {
                 if (segments.length) {
@@ -133,6 +137,7 @@
     <body>
         <div class="controls">
             <label><input type="checkbox" oninput="document.documentElement.classList.toggle('darkmode'); document.querySelectorAll('.saucechart').forEach(x => x.classList.toggle('sc-darkmode'));"/> Dark mode</label>
+            <label><input type="checkbox" checked oninput="toggleAnimation(this)"/> Animation</label>
             <button type="button" id="playpause">Play/Pause</button>
         </div>
         <div class="graph i1"></div>
