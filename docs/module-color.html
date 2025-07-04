@@ -252,7 +252,7 @@
                 
 <div class="section-wrap">
     
-        <h4 class="name" id=".parse"><span class="type-signature type-signature-static">(static) </span>parse<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="module-color.Color.html">Color</a>}</span></h4>
+        <h4 class="name" id=".parse"><span class="type-signature type-signature-static">(static) </span>parse<span class="signature">(value)</span><span class="type-signature"> &rarr; {<a href="module-color.Color.html">Color</a>|<a href="module-color.Gradient.html">Gradient</a>}</span></h4>
 
         
     
@@ -267,6 +267,9 @@
 
 <div class="details">
     
+        <key class="tag-description">Description:</key>
+        <value class="tag-description">Convert a color or gradient value into the appropriate Color or Gradient object.</value>
+    
 
 
     
@@ -286,6 +289,56 @@
     
 
     
+
+    
+        <h4 class="subsection-title">Parameters:</h4>
+        
+
+<table class="params">
+    
+    
+    <thead>
+        <tr>
+            
+                
+                <th class="name">Name</th>
+            
+            <th class="type">Type</th>
+            
+            
+            <th class="description last">Description</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        
+            <tr>
+                
+                    <td class="name"><code>value</code></td>
+                
+
+                <td class="type">
+                    
+                        
+<span class="param-type"><a href="module-color.html#~ColorParsable">ColorParsable</a></span>
+
+
+
+                    
+                </td>
+
+                
+
+                
+
+                <td class="description last">
+                    Any color or gradient
+                </td>
+            </tr>
+            </td>
+        
+    </tbody>
+</table>
 
     
 
@@ -306,7 +359,7 @@
     
         <key class="tag-source">Source:</key>
         <value class="tag-source">
-            <a href="color.mjs.html">color.mjs</a>, <a href="color.mjs.html#line318">line 318</a>
+            <a href="color.mjs.html">color.mjs</a>, <a href="color.mjs.html#line334">line 334</a>
         </value>
     
 </div>
@@ -341,6 +394,9 @@
     <dd>
         
 <span class="param-type"><a href="module-color.Color.html">Color</a></span>
+|
+
+<span class="param-type"><a href="module-color.Gradient.html">Gradient</a></span>
 
 
 
@@ -455,7 +511,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">The type of gradient, i.e. "linear"</td>
         </tr>
 
     
@@ -511,11 +567,104 @@
     
         <key class="tag-source">Source:</key>
         <value class="tag-source">
-            <a href="color.mjs.html">color.mjs</a>, <a href="color.mjs.html#line192">line 192</a>
+            <a href="color.mjs.html">color.mjs</a>, <a href="color.mjs.html#line193">line 193</a>
         </value>
     
 </div>
 
+
+    
+</div>
+
+            
+                
+<div class="section-wrap">
+    <h4 class="name" id="~ColorParsable">ColorParsable</h4>
+
+    
+
+
+    
+        <h5 class="h5-types">Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type"><a href="external-CSS_Color.html">external:CSS_Color</a></span>
+|
+
+<span class="param-type">Color</span>
+|
+
+<span class="param-type">Gradient</span>
+|
+
+<span class="param-type">GradientOptions</span>
+
+
+
+            </li>
+        </ul>
+    
+
+    
+
+    
+
+<div class="details">
+    
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <key class="tag-source">Source:</key>
+        <value class="tag-source">
+            <a href="color.mjs.html">color.mjs</a>, <a href="color.mjs.html#line321">line 321</a>
+        </value>
+    
+</div>
+
+
+    
+        <h5 class="h5-examples">Examples</h5>
+        
+    <pre class="prettyprint"><code>color.parse('#112233ff')</code></pre>
+
+    <pre class="prettyprint"><code>color.parse(Color.fromRGB(0.1, 0.2, 0.3))</code></pre>
+
+    <pre class="prettyprint"><code>color.parse(new LinearGradient({colors: []}))</code></pre>
 
     
 </div>
