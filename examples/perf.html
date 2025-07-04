@@ -69,23 +69,23 @@
                 el: document.querySelector(".graph.i2"),
                 title: 'line-segments',
                 disableAnimation,
-                yMin: 0,
-                yMax: 0.5,
                 padding: [4, 4, 24, 44]
             });
 
             window.toggleAnimation = function({checked}) {
                 c1.disableAnimation = c2.disableAnimation = !checked;
+                c1.setElement(c1.el);
+                c2.setElement(c2.el);
             };
 
-            function updateSegments(i, chance) {
+            function updateSegments(x, chance) {
                 if (segments.length) {
                     segments[segments.length - 1].width++;
                 }
                 if (Math.random() < chance) {
                     segments.push({
-                        x: i - 200,
-                        y: Math.random(),
+                        x,
+                        y: Math.random() * 0.5 + 0.25,
                         width: 0,
                         height: Math.random(),
                         color: ['white', 'blue', 'red', 'green', 'pink', 'orange', 'yellow'][segments.length % 7],
@@ -95,7 +95,7 @@
 
             const data = [];
             for (let i = 0; i < maxSize; i++) {
-                data.push(Math.sin(i / sinFactor));
+                data.push({x: count++, y: Math.sin(count / sinFactor)});
             }
             const segments = [];
             for (let i = 0; i < data.length; i++) {
@@ -107,14 +107,12 @@
             c2.setSegments(segments);
             c2.setData(data);
 
-            let index = data.length;
             setInterval(() => {
                 if (paused) {
                     return;
                 }
-                data.sort((a, b) => Math.random() > 0.95 ? Math.random() > 0.5 ? -1 : 1 : 0);
-                //data.push([index, Math.sin(index / sinFactor)]);
-                updateSegments(data.length - 1);
+                updateSegments(count - 1, 20 / data.length);
+                data.push({x: count++, y: Math.sin(count / sinFactor)});
 
                 while (data.length > maxSize) {
                     data.shift();
@@ -124,11 +122,9 @@
                     segments.shift();
                 }
 
-                index++;
-
                 c1.setData(data);
+                c2.setSegments(segments, {render: false});
                 c2.setData(data);
-                c2.setSegments(segments);
             }, speed);
 
             document.querySelector('#playpause').addEventListener('click', () => paused = !paused);
