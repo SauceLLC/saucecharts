@@ -302,6 +302,7 @@ export class Chart extends EventTarget {
 
     constructor(options={}) {
         super();
+        this.onPointerEnter = this.onPointerEnter.bind(this);
         this.init(options);
         this.id = globalIdCounter++;
         this.xMin = options.xMin;
@@ -344,7 +345,6 @@ export class Chart extends EventTarget {
         this.childCharts = [];
         this._zoomState = {rev: 0};
         this._gradients = new Set();
-        this._onPointerEnterBound = this.onPointerEnter.bind(this);
         this._resizeObserver = new ResizeObserver(this.onResize.bind(this));
         if (options.el) {
             if (options.parent) {
@@ -598,7 +598,7 @@ export class Chart extends EventTarget {
      */
     setElement(el) {
         this.beforeSetElement(el);
-        const old = this.el !== el ? this.el : null;
+        const old = this.el;
         this.el = el;
         if (old) {
             this.doReset();
@@ -606,7 +606,7 @@ export class Chart extends EventTarget {
         this._resizeObserver.disconnect();
         if (this.isRoot) {
             if (old) {
-                old.removeEventListener('pointerenter', this._onPointerEnterBound);
+                old.removeEventListener('pointerenter', this.onPointerEnter);
                 if (this._plotRegionEl) {
                     this._plotRegionEl.remove();
                     this._plotRegionEl = null;
@@ -693,7 +693,7 @@ export class Chart extends EventTarget {
             for (const x of this.childCharts) {
                 x.setElement(el);
             }
-            el.addEventListener('pointerenter', this._onPointerEnterBound);
+            el.addEventListener('pointerenter', this.onPointerEnter);
         }
         this._resizeObserver.observe(el);
         this.afterSetElement(el);
@@ -979,27 +979,27 @@ export class Chart extends EventTarget {
     onPointerEnter(ev) {
         for (const view of this._tooltipViews.values()) {
             if (view.options.pointerEvents) {
-                this._onPointerEnter(view, ev);
+                this.onPointerEnterForTooltip(view, ev);
             }
         }
     }
 
-    _onPointerEnter(tooltipView, ev) {
-        if (!this._isTooltipViewAvailable(tooltipView) ||
-            this._isTooltipViewPointing(tooltipView) ||
+    onPointerEnterForTooltip(view, ev) {
+        if (!this._isTooltipViewAvailable(view) ||
+            this._isTooltipViewPointing(view) ||
             !this._renderData ||
             !this._renderData.length) {
             return;
         }
-        const state = this._establishTooltipViewState(tooltipView);
+        const state = this._establishTooltipViewState(view);
         const pointerAborter = state.pointerAborter = new AbortController();
         const signal = pointerAborter.signal;
         signal.addEventListener('abort', () => {
             setTimeout(() => {
-                if (tooltipView.state.pointerAborter === pointerAborter) {
-                    this._hideTooltipView(tooltipView);
+                if (view.state.pointerAborter === pointerAborter) {
+                    this._hideTooltipView(view);
                 }
-            }, tooltipView.options.linger);
+            }, view.options.linger);
             this.dispatchEvent(new CustomEvent('tooltip', {
                 detail: {internal: true, chart: this}
             }));
@@ -1015,13 +1015,13 @@ export class Chart extends EventTarget {
             const x = (ev.x - state.elOffset[0]) * this.devicePixelRatio;
             af = requestAnimationFrame(() => {
                 if (!pointerAborter.signal.aborted) {
-                    this._setTooltipViewPosition(tooltipView, {x, disableAnimation: true, internal: true});
+                    this._setTooltipViewPosition(view, {x, disableAnimation: true, internal: true});
                 }
             });
         }, {signal});
         const x = (ev.x - state.elOffset[0]) * this.devicePixelRatio;
-        this._setTooltipViewPosition(tooltipView, {x, disableAnimation: true, internal: true});
-        this._showTooltipView(tooltipView);
+        this._setTooltipViewPosition(view, {x, disableAnimation: true, internal: true});
+        this._showTooltipView(view);
     }
 
     /**

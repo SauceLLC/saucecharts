@@ -66,7 +66,7 @@ export class LineChart extends common.Chart {
         this._segmentFills = new Map();
         this._gcQueue = [];
         this._brushState = {};
-        this._onPointerDownBound = this.onPointerDown.bind(this);
+        this.onPointerDownForBrush = this.onPointerDownForBrush.bind(this);
     }
 
     /**
@@ -87,7 +87,7 @@ export class LineChart extends common.Chart {
     beforeSetElement(el) {
         const old = this.el;
         if (old) {
-            old.removeEventListener('pointerdown', this._onPointerDownBound);
+            old.removeEventListener('pointerdown', this.onPointerDownForBrush);
         }
         el.classList.add('sc-linechart');
     }
@@ -212,7 +212,7 @@ export class LineChart extends common.Chart {
                     class: ['sc-brush-handle', 'sc-brush-end']
                 });
                 groupEl.append(this._brushHandleStartEl, this._brushHandleEndEl);
-                el.addEventListener('pointerdown', this._onPointerDownBound);
+                el.addEventListener('pointerdown', this.onPointerDownForBrush);
             } else {
                 groupEl.classList.add('sc-passive');
             }
@@ -521,7 +521,7 @@ export class LineChart extends common.Chart {
         })));
     }
 
-    onPointerDown(ev) {
+    onPointerDownForBrush(ev) {
         const state = this._establishBrushState();
         if (state.active) {
             return;
