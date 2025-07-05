@@ -305,7 +305,7 @@ export class Chart extends EventTarget {
 
     constructor(options={}) {
         super();
-        this.onPointerEnter = this.onPointerEnter.bind(this);
+        this.onPointerOver = this.onPointerOver.bind(this);
         this.init(options);
         this.id = globalIdCounter++;
         this.xMin = options.xMin;
@@ -614,7 +614,7 @@ export class Chart extends EventTarget {
         this._resizeObserver.disconnect();
         if (this.isRoot) {
             if (old) {
-                old.removeEventListener('pointerenter', this.onPointerEnter);
+                old.removeEventListener('pointerover', this.onPointerOver);
                 if (this._plotRegionEl) {
                     this._plotRegionEl.remove();
                     this._plotRegionEl = null;
@@ -701,7 +701,7 @@ export class Chart extends EventTarget {
             for (const x of this.childCharts) {
                 x.setElement(el);
             }
-            el.addEventListener('pointerenter', this.onPointerEnter);
+            el.addEventListener('pointerover', this.onPointerOver);
         }
         this._resizeObserver.observe(el);
         this.afterSetElement(el);
@@ -984,15 +984,15 @@ export class Chart extends EventTarget {
         }
     }
 
-    onPointerEnter(ev) {
+    onPointerOver(ev) {
         for (const view of this._tooltipViews.values()) {
             if (view.options.pointerEvents) {
-                this.onPointerEnterForTooltip(view, ev);
+                this.onPointerStartForTooltip(view, ev);
             }
         }
     }
 
-    onPointerEnterForTooltip(view, ev) {
+    onPointerStartForTooltip(view, ev) {
         if (!this._isTooltipViewAvailable(view) ||
             this._isTooltipViewPointing(view) ||
             !this._renderData ||
