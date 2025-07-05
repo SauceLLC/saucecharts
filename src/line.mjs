@@ -537,8 +537,15 @@ export class LineChart extends common.Chart {
         for (const x of charts) {
             x._establishBrushState({active: true});
         }
+        const suspendedTooltips = [];
         if (!this.brush.showTooltip) {
-            (this.parentChart || this).suspendTooltip();
+            const root = this.parent ?? this;
+            for (const view of root._tooltipViews.values()) {
+                if (view.options.pointerEvents) {
+                    this._suspendTooltipView(view);
+                    suspendedTooltips.push(view);
+                }
+            }
         }
         this.el.classList.add('sc-brushing');
         let handle;
@@ -626,8 +633,8 @@ export class LineChart extends common.Chart {
                     });
                 }
             }
-            if (!this.brush.showTooltip) {
-                (this.parentChart || this).resumeTooltip();
+            for (const x of suspendedTooltips) {
+                this._resumeTooltipView(x);
             }
         });
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...

@@ -1217,11 +1217,15 @@ export class Chart extends EventTarget {
      * @protected
      */
     updateVisibleTooltips(options) {
-        // XXX use requestAnimationFrame to debounce this with multiple charts
         const root = this.parent ?? this;
         for (const view of root._tooltipViews.values()) {
+            cancelAnimationFrame(view.state.pendingUpdateAnimFrame);
             if (view.state.visible && this._isTooltipViewAvailable(view)) {
-                this._updateTooltipView(view, options);
+                view.state.pendingUpdateAnimFrame = requestAnimationFrame(() => {
+                    if (view.state.visible && this._isTooltipViewAvailable(view)) {
+                        this._updateTooltipView(view, options);
+                    }
+                });
             }
         }
     }
