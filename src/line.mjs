@@ -218,7 +218,7 @@ export class LineChart extends common.Chart {
             }
             plotRegionChildren.push(groupEl);
         }
-        this._plotRegionEl.append(...plotRegionChildren);
+        this._plotRegionEl.prepend(...plotRegionChildren);
         this._areaEl = defs.querySelector('path.sc-area');
     }
 
