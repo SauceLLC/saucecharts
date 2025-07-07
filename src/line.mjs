@@ -509,7 +509,8 @@ export class LineChart extends common.Chart {
         } else if (state.x2 == null) {
             throw new Error('missing x2 state');
         }
-        this._updateBrush();
+        cancelAnimationFrame(state.updateBrushAnimFrame);
+        state.updateBrushAnimFrame = requestAnimationFrame(() => this._updateBrush());
         queueMicrotask(() => this.dispatchEvent(new CustomEvent('brush', {
             detail: {
                 x1: state.x1,
@@ -640,10 +641,10 @@ export class LineChart extends common.Chart {
         // Cancel-esc pointer events are sloppy and unreliable (proven).  Kitchen sink...
         addEventListener('pointercancel', () => pointerAborter.abort(), {signal});
         addEventListener('pointerup', () => pointerAborter.abort(), {signal});
-        let af;
         addEventListener('pointermove', ev => {
             const xCoord = (ev.pageX - state.chartOffsets[0]) * this.devicePixelRatio;
-            for (const chart of charts) {
+            for (let i = 0; i < charts.length; i++) {
+                const chart = charts[i];
                 const s = chart._brushState;
                 if (s.handle === '*') {
                     const minX = Math.min(s.pointerX1, s.pointerX2);
@@ -667,19 +668,13 @@ export class LineChart extends common.Chart {
                         s.pointerX2 = boundXCoord;
                     }
                 }
+                chart._setBrush({
+                    x1: s.handle !== 'end' ? s.pointerX1 : undefined,
+                    x2: s.handle !== 'start' ? s.pointerX2 : undefined,
+                    type: 'visual',
+                    _internal: true
+                });
             }
-            cancelAnimationFrame(af);
-            af = requestAnimationFrame(() => {
-                for (const chart of charts) {
-                    const s = chart._brushState;
-                    chart._setBrush({
-                        x1: s.handle !== 'end' ? s.pointerX1 : undefined,
-                        x2: s.handle !== 'start' ? s.pointerX2 : undefined,
-                        type: 'visual',
-                        _internal: true
-                    });
-                }
-            });
         }, {signal});
         for (const chart of charts) {
             const s = chart._brushState;
