@@ -507,7 +507,7 @@ export class LineChart extends common.Chart {
                     this.xValueToCoord(x2) :
                     this.xCoordToValue(x2);
         } else if (state.x2 == null) {
-            throw new Error('missing x1 state');
+            throw new Error('missing x2 state');
         }
         this._updateBrush();
         queueMicrotask(() => this.dispatchEvent(new CustomEvent('brush', {

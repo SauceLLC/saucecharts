@@ -1665,10 +1665,11 @@ export class Chart extends EventTarget {
         let data = this.normalizedData;
         if (this._zoomState.active && this._zoomState.type === 'data' && this._zoomState.xRange) {
             const [start, end] = this._zoomState.xRange;
-            const startIndex = this.findNearestIndexFromXValue(start, data) - 1;
-            const endIndex = this.findNearestIndexFromXValue(end, data) + 1;
+            const dataPad = 2; // allow some basic regression analysis on data slice.
+            const startIndex = this.findNearestIndexFromXValue(start, data) - 1 - dataPad;
+            const endIndex = this.findNearestIndexFromXValue(end, data) + 1 + dataPad;
             if (startIndex != null && endIndex != null) {
-                data = data.slice(Math.max(0, startIndex), Math.max(0, endIndex));
+                data = data.slice(Math.max(0, startIndex), Math.max(0, endIndex) + 1);
             }
         }
         const resampling = this.resampleThreshold ?? data.length > this._plotWidth * this.resampleThreshold;
