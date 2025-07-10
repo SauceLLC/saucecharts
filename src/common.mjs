@@ -1443,45 +1443,64 @@ export class Chart extends EventTarget {
     }
 
     _findNearestIndexFromXValue(value, data) {
-        const len = data.length;
         let left = 0;
-        let right = len - 1;
-        for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
-            const x = data[i].x;
-            if (x > value) {
-                right = i;
-            } else if (x < value) {
-                left = i;
-            } else {
-                return i;
+        let right = data.length - 1;
+        let i;
+        if (value > data[0].x && value < data[right].x) {
+            while (right >= left) {
+                i = left + ((right - left) * 0.5 | 0);
+                const x = data[i].x;
+                if (x > value) {
+                    right = i - 1;
+                } else if (x < value) {
+                    left = i + 1;
+                } else {
+                    return i;
+                }
             }
-            if (right - left <= 1) {
-                const lDist = value - data[left].x;
-                const rDist = data[right].x - value;
-                return lDist < rDist ? left : right;
-            }
+        } else if (value <= data[0].x) {
+            console.count('before low');
+            right = 0;
+        } else if (value >= data[right].x) {
+            left = right;
+            console.count('after high');
         }
+        if (Math.abs(right - left) > 1) {
+            console.error("Internal error"); // XXX remove after validation
+        }
+        const lDist = Math.abs(data[left].x - value);
+        const rDist = Math.abs(data[right].x - value);
+        return rDist <= lDist ? right : left;
     }
 
     _findNearestIndexFromXValueWithWidth(value, data) {
-        const len = data.length;
         let left = 0;
-        let right = len - 1;
-        for (let i = (len * 0.5) | 0;; i = ((right - left) * 0.5 + left) | 0) {
-            const xCenter = data[i].x + data[i].width;
-            if (xCenter > value) {
-                right = i;
-            } else if (xCenter < value) {
-                left = i;
-            } else {
-                return i;
+        let right = data.length - 1;
+        let i;
+        if (value > data[0].x + data[0].width / 2 &&
+            value < data[right].x + data[right].width / 2) {
+            while (right >= left) {
+                i = left + ((right - left) * 0.5 | 0);
+                const x = data[i].x + data[i].width / 2;
+                if (x > value) {
+                    right = i - 1;
+                } else if (x < value) {
+                    left = i + 1;
+                } else {
+                    return i;
+                }
             }
-            if (right - left <= 1) {
-                const lDist = value - (data[left].x + data[left].width / 2);
-                const rDist = (data[right].x + data[right].width / 2) - value;
-                return lDist < rDist ? left : right;
-            }
+        } else if (value <= data[0].x + data[0].width / 2) {
+            right = 0;
+        } else if (value >= data[right].x + data[right].width / 2) {
+            left = right;
         }
+        if (Math.abs(right - left) > 1) {
+            console.error("Internal error"); // XXX remove after validation
+        }
+        const lDist = Math.abs(data[left].x + data[left].width / 2 - value);
+        const rDist = Math.abs(data[right].x + data[right].width / 2 - value);
+        return rDist <= lDist ? right : left;
     }
 
     /**
