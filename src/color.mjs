@@ -32,10 +32,11 @@ export class Color {
         } else if (maxC === r) {
             h = ((g - b) / d) % 6;
         } else if (maxC === g) {
-            h = (b - r) / d + 2; } else {
+            h = (b - r) / d + 2;
+        } else {
             h = (r - g) / d + 4;
         }
-        h = Math.round(h * 60);
+        h *= 60;
         if (h < 0) {
             h += 360;
         }
@@ -178,13 +179,29 @@ export class Color {
     }
 
     /**
+     * @param {object} options
+     * @param {boolean} options.rgb - Return an RGB CSS color string
      * @returns {external:CSS_Color}
      */
     toString(options={}) {
+        if (options.rgb) {
+            const sl = this.s * Math.min(this.l, 1 - this.l);
+            const f = n => {
+                const k = (n + (this.h * 360) / 30) % 12;
+                const color = this.l - sl * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            const a = (this.a !== undefined && this.a !== 1) ?
+                Math.round(255 * this.a).toString(16).padStart(2, '0') :
+                '';
+            return `#${f(0)}${f(8)}${f(4)}${a}`;
+        }
         const h = Number((this.h * 360).toFixed(3));
         const s = Number((this.s * 100).toFixed(3));
         const l = Number((this.l * 100).toFixed(3));
-        const a = this.a !== undefined ? ` / ${Number((this.a * 100).toFixed(3))}%` : '';
+        const a = (this.a !== undefined && this.a !== 1) ?
+            ` / ${Number((this.a * 100).toFixed(3))}%` :
+            '';
         return `hsl(${h} ${s} ${l}%${a})`;
     }
 }
