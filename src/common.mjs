@@ -546,7 +546,7 @@ export class Chart extends EventTarget {
         const existingLabels = el.querySelectorAll('text.sc-label');
         let visualCount = 0;
         const steps = options.showFirst ? ticks : ticks + 1;
-        const gap = trackLength / (steps - 1);
+        const gap = steps > 1 ? trackLength / (steps - 1) : trackLength;
         for (let i = options.showFirst ? 0 : 1; i < steps; i++) {
             let x1, x2, y1, y2;
             if (vert) {
