@@ -38,7 +38,15 @@
                     border: 1px solid #f22a;
                     margin: 0.2em;
                     padding: 0;
+
+                    &.i6,
+                    &.i7 {
+                        .sc-axis {
+                            --rotate: 15deg;
+                        }
+                    }
                 }
+
             }
         </style>
         <script type="module">
@@ -123,6 +131,9 @@
                         position: 'top',
                         align: 'inside'
                     },
+                    yAxis: {
+                        showFirst: true,
+                    }
                 });
                 let iterations = 0;
                 setInterval(() => {
@@ -183,6 +194,56 @@
                 }, speed);
             }
 
+            if (tests.includes(6)) {
+                const data = [];
+                const sl = new sc.LineChart({
+                    ...commonOptions,
+                    el: document.querySelector(".graph.i6"),
+                    yAxis: {
+                        showFirst: true,
+                    },
+                    xAxis: {
+                        showFirst: true,
+                    },
+                });
+                let iterations = 0;
+                setInterval(() => {
+                    if (paused) return;
+                    if (iterations++ > maxIterations) return;
+                    data.push([ts(), Math.sin(ts() / sinFactor)]);
+                    while (data.length > maxSize) {
+                        data.shift();
+                    }
+                    sl.setData(data);
+                }, speed);
+            }
+
+            if (tests.includes(7)) {
+                const data = [];
+                const sl = new sc.LineChart({
+                    ...commonOptions,
+                    el: document.querySelector(".graph.i7"),
+                    yAxis: {
+                        showFirst: true,
+                        align: 'inside'
+                    },
+                    xAxis: {
+                        showFirst: true,
+                        align: 'inside'
+                    },
+                });
+                let iterations = 0;
+                setInterval(() => {
+                    if (paused) return;
+                    if (iterations++ > maxIterations) return;
+                    data.push([ts(), Math.sin(ts() / sinFactor)]);
+                    while (data.length > maxSize) {
+                        data.shift();
+                    }
+                    sl.setData(data);
+                }, speed);
+            }
+
             document.querySelector('#playpause').addEventListener('click', () => {
                 paused = !paused;
             });
@@ -205,5 +266,9 @@
         <div class="graph i4"></div>
         <b>* axis inside</b>
         <div class="graph i5"></div>
+        <b>* rotate</b>
+        <div class="graph i6"></div>
+        <b>* rotate axis inside</b>
+        <div class="graph i7"></div>
     </body>
 </html>

@@ -35,7 +35,7 @@
         translate:
             calc(var(--plot-box-left) + var(--padding-left))
             calc(var(--plot-box-top) + var(--padding-top));
-        alignment-baseline: before-edge;
+        dominant-baseline: text-before-edge;
         font-size: 0.76em;
         font-weight: 500;
         stroke: hsl(from var(--bg-color) h s l / 0.86);
@@ -49,7 +49,7 @@
         --rotate: none;
         --rotate-dir: -1;
 
-        &.sc-inside .sc-label {
+        &.sc-inside .sc-label text {
             stroke: hsl(from var(--bg-color) h s l / 0.86);
             stroke-width: 0.12em;
             paint-order: stroke;
@@ -68,23 +68,23 @@
             stroke-linecap: round;
         }
 
-        .sc-label {
+        .sc-label text {
             font-size: 0.72em;
             fill: hsl(from var(--fg-color) h s l / 0.86);
-            transform-box: border-box;
+            /*transform-box: border-box;*/
             rotate: calc(var(--rotate) * var(--rotate-dir));
         }
 
         &.sc-y-axis {
             .sc-label {
-                alignment-baseline: middle;
+                dominant-baseline: middle;
 
                 &[data-percent="0"] {
-                    alignment-baseline: after-edge;
+                    dominant-baseline: text-after-edge;
                 }
 
                 &[data-percent="1"] {
-                    alignment-baseline: before-edge;
+                    dominant-baseline: text-before-edge;
                 }
             }
 
@@ -106,7 +106,7 @@
             .sc-label {
                 --line-height-correction: 0.28em;
                 text-anchor: middle;
-                alignment-baseline: before-edge;
+                dominant-baseline: text-before-edge;
 
                 &[data-percent="0"] {
                     text-anchor: start;
@@ -129,7 +129,7 @@
                 --rotate-dir: 1;
                 translate: var(--x-offset, 0) calc(-1 * var(--axis-padding) + var(--line-height-correction));
                 transform-origin: 80% 0%;
-                alignment-baseline: after-edge;
+                dominant-baseline: text-after-edge;
             }
         }
     }
