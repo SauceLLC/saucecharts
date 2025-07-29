@@ -38,15 +38,7 @@
                     border: 1px solid #f22a;
                     margin: 0.2em;
                     padding: 0;
-
-                    &.i6,
-                    &.i7 {
-                        .sc-axis {
-                            --rotate: 15deg;
-                        }
-                    }
                 }
-
             }
         </style>
         <script type="module">
@@ -62,15 +54,16 @@
             const speed = 1000;
             const maxSize = 40;
             const maxIterations = 100;
-            let sinFactor = speed / Number(document.querySelector('#freq').value);
+            let sinFactor = speed / Number(document.querySelector('#rotate').value);
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             const commonOptions = {
             };
 
-            document.querySelector('#freq').addEventListener('input', ev => {
-                const f = Number(ev.currentTarget.value);
-                console.log('freq', f, maxSize / f);
-                sinFactor = speed / f;
+            document.querySelector('#rotate').addEventListener('input', ev => {
+                const d = Number(ev.currentTarget.value);
+                console.log('rotate', d);
+                document.querySelectorAll('.sc-axis').forEach(x =>
+                    x.style.setProperty('--rotate', `${d}deg`, 'important'));
             });
 
             if (tests.includes(1)) {
@@ -84,9 +77,6 @@
                     },
                 });
                 sl.setData(data);
-                sl.addTooltip('foo');
-                sl.setTooltipPosition({index: 2}, 'foo');
-                sl.showTooltip('foo');
                 let iterations = 0;
                 setInterval(() => {
                     if (paused) return;
@@ -106,6 +96,7 @@
                     el: document.querySelector(".graph.i2"),
                     yAxis: {
                         showFirst: true,
+                        ticks: 4,
                         position: 'right'
                     },
                 });
@@ -133,6 +124,7 @@
                     },
                     yAxis: {
                         showFirst: true,
+                        ticks: 3,
                     }
                 });
                 let iterations = 0;
@@ -194,56 +186,6 @@
                 }, speed);
             }
 
-            if (tests.includes(6)) {
-                const data = [];
-                const sl = new sc.LineChart({
-                    ...commonOptions,
-                    el: document.querySelector(".graph.i6"),
-                    yAxis: {
-                        showFirst: true,
-                    },
-                    xAxis: {
-                        showFirst: true,
-                    },
-                });
-                let iterations = 0;
-                setInterval(() => {
-                    if (paused) return;
-                    if (iterations++ > maxIterations) return;
-                    data.push([ts(), Math.sin(ts() / sinFactor)]);
-                    while (data.length > maxSize) {
-                        data.shift();
-                    }
-                    sl.setData(data);
-                }, speed);
-            }
-
-            if (tests.includes(7)) {
-                const data = [];
-                const sl = new sc.LineChart({
-                    ...commonOptions,
-                    el: document.querySelector(".graph.i7"),
-                    yAxis: {
-                        showFirst: true,
-                        align: 'inside'
-                    },
-                    xAxis: {
-                        showFirst: true,
-                        align: 'inside'
-                    },
-                });
-                let iterations = 0;
-                setInterval(() => {
-                    if (paused) return;
-                    if (iterations++ > maxIterations) return;
-                    data.push([ts(), Math.sin(ts() / sinFactor)]);
-                    while (data.length > maxSize) {
-                        data.shift();
-                    }
-                    sl.setData(data);
-                }, speed);
-            }
-
             document.querySelector('#playpause').addEventListener('click', () => {
                 paused = !paused;
             });
@@ -253,7 +195,7 @@
         <div class="controls">
             <label><input type="checkbox" oninput="document.documentElement.classList.toggle('darkmode'); document.querySelectorAll('.saucechart').forEach(x => x.classList.toggle('sc-darkmode'));"/> Dark mode</label>
             <button type="button" id="playpause">Play/Pause</button>
-            <input type="range" value="0.5" step="any" min="0.1" max="2" id="freq"/>Freq
+            <input type="range" value="0" step="any" min="-180" max="180" id="rotate"/>Label Angle
         </div>
 
         <b>x axis top</b>
@@ -266,9 +208,5 @@
         <div class="graph i4"></div>
         <b>* axis inside</b>
         <div class="graph i5"></div>
-        <b>* rotate</b>
-        <div class="graph i6"></div>
-        <b>* rotate axis inside</b>
-        <div class="graph i7"></div>
     </body>
 </html>

@@ -48,7 +48,7 @@ import * as colorMod from './color.mjs';
  * @property {("inside"|"outside")} [align="outside"] - Alignment axis labels and ticks
  * @property {number} [ticks] - Number of ticks/labels to draw
  * @property {boolean} [showFirst] - Render the first (low) value of the axis
- * @property {number} [tickLength=6] - Size of the tick marks
+ * @property {number} [tickLength=5] - Size of the tick marks
  * @property {function} [format] - Custom callback function for label values
  * @property {string} [padding] - Custom axis label padding
  */
@@ -541,12 +541,12 @@ export class Chart extends EventTarget {
         if (ticks == null) {
             ticks = 1 + Math.floor((trackLength / devicePixelRatio) / (vert ? 100 : 200));
         }
-        const tickLen = options.tickLength ?? 6;
+        const tickLen = options.tickLength ?? 5;
         const existingTicks = el.querySelectorAll('line.sc-tick');
         const existingLabels = el.querySelectorAll('text.sc-label');
         let visualCount = 0;
         const steps = options.showFirst ? ticks : ticks + 1;
-        const gap = steps > 1 ? trackLength / (steps - 1) : trackLength;
+        const gap = trackLength / (steps - 1);
         for (let i = options.showFirst ? 0 : 1; i < steps; i++) {
             let x1, x2, y1, y2;
             if (vert) {
@@ -583,6 +583,8 @@ export class Chart extends EventTarget {
             const percent = i / (steps - 1);
             label.setAttribute('x', x1);
             label.setAttribute('y', y1);
+            label.style.setProperty('--x', `${x1}px`);
+            label.style.setProperty('--y', `${y1}px`);
             label.setAttribute('data-percent', percent);
             label.textContent = this.onAxisLabel({
                 orientation,
