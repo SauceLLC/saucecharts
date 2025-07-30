@@ -38,21 +38,14 @@
         dominant-baseline: text-before-edge;
         font-size: 0.76em;
         font-weight: 500;
-        stroke: hsl(from var(--bg-color) h s l / 0.86);
-        stroke-width: 0.12em;
-        paint-order: stroke;
+        text-shadow: 0 0 4px hsl(from var(--bg-color) h s l / 0.86);
         opacity: 0.7;
         pointer-events: none;
     }
 
     .sc-axis {
-        --rotate: 0;
-        --rotate-dir: -1;
-
         &.sc-inside .sc-label {
-            stroke: hsl(from var(--bg-color) h s l / 0.86);
-            stroke-width: 0.12em;
-            paint-order: stroke;
+            text-shadow: 0 0 4px hsl(from var(--bg-color) h s l / 0.86);
         }
 
         .sc-baseline,
@@ -72,11 +65,11 @@
             font-size: 0.72em;
             fill: hsl(from var(--fg-color) h s l / 0.86);
             transform-origin: var(--x) var(--y);
-            rotate: calc(var(--rotate) * var(--rotate-dir));
+            rotate: var(--axis-angle);
         }
 
         &.sc-y-axis {
-            --start-end-y-offset: 0.4em;
+            --start-end-y-offset: 0.9cap;
 
             .sc-label {
                 dominant-baseline: middle;
@@ -86,12 +79,9 @@
                 }
                 &[data-percent="0"] {
                     --int-y-offset: calc(-1 * (var(--start-end-y-offset)));
-                    NOdominant-baseline: text-after-edge;
                 }
-
                 &[data-percent="1"] {
                     --int-y-offset: var(--start-end-y-offset);
-                    NOdominant-baseline: text-before-edge;
                 }
             }
 
@@ -99,44 +89,51 @@
             &:not(.sc-right):not(.sc-inside) .sc-label {
                 translate: calc(-1 * var(--axis-padding)) var(--int-y-offset);
                 text-anchor: end;
-                NOtransform-origin: 60% 70%;
             }
             &:not(.sc-right).sc-inside .sc-label,
             &.sc-right:not(.sc-inside) .sc-label {
-                --rotate-dir: 1;
                 translate: var(--axis-padding) var(--int-y-offset);
-                NOtransform-origin: 20% 70%;
             }
         }
 
         &.sc-x-axis {
-            .sc-label {
-                --line-height-correction: 0.28em;
-                text-anchor: middle;
-                dominant-baseline: text-before-edge;
+            &:not(.axis-rotate) {
+                .sc-label {
+                    --line-height-correction: 0.28lh;
+                    dominant-baseline: text-before-edge;
+                    text-anchor: middle;
 
-                &[data-percent="0"] {
-                    text-anchor: start;
-                    --x-offset: 0.5ch;
+                    &[data-percent="0"] {
+                        text-anchor: start;
+                        --x-offset: 0.5ch;
+                    }
+                    &[data-percent="1"] {
+                        text-anchor: end;
+                        --x-offset: -0.5ch;
+                    }
                 }
-                &[data-percent="1"] {
-                    text-anchor: end;
-                    --x-offset: -0.5ch;
+
+                &:not(.sc-top):not(.sc-inside),
+                &.sc-top.sc-inside {
+                    .sc-label {
+                        translate: var(--x-offset, 0) calc(var(--axis-padding) - var(--line-height-correction));
+                    }
+                }
+                &.sc-top:not(.sc-inside),
+                &:not(.sc-top).sc-inside {
+                    .sc-label {
+                        translate: var(--x-offset, 0) calc(-1 * var(--axis-padding) + var(--line-height-correction));
+                        dominant-baseline: text-after-edge;
+                    }
                 }
             }
-
-            &:not(.sc-top):not(.sc-inside) .sc-label,
-            &.sc-top.sc-inside .sc-label {
-                translate: var(--x-offset, 0) calc(var(--axis-padding) - var(--line-height-correction));
-                NOtransform-origin: 80% 100%;
-
-            }
-            &.sc-top:not(.sc-inside) .sc-label,
-            &:not(.sc-top).sc-inside .sc-label {
-                --rotate-dir: 1;
-                translate: var(--x-offset, 0) calc(-1 * var(--axis-padding) + var(--line-height-correction));
-                NOtransform-origin: 80% 0%;
-                dominant-baseline: text-after-edge;
+            &.axis-rotate {
+                &:not(.axis-rotate-invert) {
+                    &.sc-top:not(.sc-inside),
+                    &:not(.sc-top).sc-inside {
+                        text-anchor: end;
+                    }
+                }
             }
         }
     }
