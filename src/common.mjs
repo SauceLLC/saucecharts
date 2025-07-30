@@ -46,11 +46,13 @@ import * as colorMod from './color.mjs';
  * @property {boolean} [disabled]
  * @property {("left"|"right"|"top"|"bottom")} [position=("left"|"bottom")] - Where to place the axis
  * @property {("inside"|"outside")} [align="outside"] - Alignment axis labels and ticks
- * @property {number} [ticks] - Number of ticks/labels to draw
- * @property {boolean} [showFirst] - Render the first (low) value of the axis
+ * @property {number} [ticks] - Number of labeled ticks to draw.
+ * @property {boolean} [showFirst] - Show the first (visual-low) label of the axis
+ * @property {boolean} [hideLast] - Hide the last (visual-high) label of the axis
  * @property {number} [tickLength=5] - Size of the tick marks
  * @property {function} [format] - Custom callback function for label values
  * @property {string} [padding] - Custom axis label padding
+ * @property {number} [rotate] - Degrees of rotation.  Negative values on an xAxis will invert the alignment.
  */
 
 /**
@@ -513,13 +515,7 @@ export class Chart extends EventTarget {
         const vert = orientation === 'vertical';
         const baseline = el.querySelector('line.sc-baseline');
         const [top, right, bottom, left] = this._plotBox;
-        const inside = (options.align ?? 'outside') === 'inside';
         let position;
-        if (options.padding) {
-            el.style.setProperty('--axis-padding', options.padding);
-        } else {
-            el.style.removeProperty('--axis-padding');
-        }
         if (vert) {
             position = options.position ?? 'left';
             el.classList.toggle('sc-right', position === 'right');
@@ -535,7 +531,18 @@ export class Chart extends EventTarget {
             baseline.setAttribute('y1', position === 'bottom' ? bottom : top);
             baseline.setAttribute('y2', position === 'bottom' ? bottom : top);
         }
+        const inside = (options.align ?? 'outside') === 'inside';
         el.classList.toggle('sc-inside', inside);
+        if (options.padding) {
+            el.style.setProperty('--axis-padding', options.padding);
+        } else {
+            el.style.removeProperty('--axis-padding');
+        }
+        el.style.setProperty('--axis-angle', `${options.rotate}deg`);
+        el.classList.toggle('axis-rotate', !!options.rotate);
+        if (!vert) {
+            el.classList.toggle('axis-rotate-invert', options.rotate < 0);
+        }
         let ticks = options.ticks;
         const trackLength = vert ? this._plotHeight : this._plotWidth;
         if (ticks == null) {
@@ -545,9 +552,11 @@ export class Chart extends EventTarget {
         const existingTicks = el.querySelectorAll('line.sc-tick');
         const existingLabels = el.querySelectorAll('text.sc-label');
         let visualCount = 0;
-        const steps = options.showFirst ? ticks : ticks + 1;
-        const gap = trackLength / (steps - 1);
-        for (let i = options.showFirst ? 0 : 1; i < steps; i++) {
+        ticks += !options.showFirst + !!options.hideLast; // pad calcs
+        const range = ticks > 1 ? ticks - 1 : 1;
+        for (let i = options.showFirst ? 0 : 1; i < (options.hideLast ? ticks - 1 : ticks); i++) {
+            const percent = i / range;
+            if (isNaN(percent )) debugger;
             let x1, x2, y1, y2;
             if (vert) {
                 x1 = position === 'right' ? right : left;
@@ -556,9 +565,9 @@ export class Chart extends EventTarget {
                 } else {
                     x2 = x1 - tickLen * (position === 'right' ? -1 : 1);
                 }
-                y1 = y2 = bottom - i * gap;
+                y1 = y2 = bottom - trackLength * percent;
             } else {
-                x1 = x2 = left + i * gap;
+                x1 = x2 = left + trackLength * percent;
                 y1 = position === 'bottom' ? bottom : top;
                 if ((inside && position === 'bottom') || (!inside && position !== 'bottom')) {
                     y2 = y1 - tickLen;
@@ -580,7 +589,6 @@ export class Chart extends EventTarget {
                 label = createSVG({name: 'text', class: 'sc-label'});
                 el.append(label);
             }
-            const percent = i / (steps - 1);
             label.setAttribute('x', x1);
             label.setAttribute('y', y1);
             label.style.setProperty('--x', `${x1}px`);
@@ -1606,7 +1614,13 @@ export class Chart extends EventTarget {
             this._yMax,
             this._plotWidth,
             this._plotHeight,
-            this._zoomState.rev
+            this._zoomState.rev,
+            this.xAxis.rotate,
+            this.yAxis.rotate,
+            this.xAxis.showFirst,
+            this.yAxis.showFirst,
+            this.xAxis.hideLast,
+            this.yAxis.hideLast,
         ].join('-');
         if (this._lastAxisSig !== axisSig) {
             this._lastAxisSig = axisSig;
