@@ -755,7 +755,6 @@ export class Chart extends EventTarget {
         const range = ticks > 1 ? ticks - 1 : 1;
         for (let i = options.showFirst ? 0 : 1; i &lt; (options.hideLast ? ticks - 1 : ticks); i++) {
             const percent = i / range;
-            if (isNaN(percent )) debugger;
             let x1, x2, y1, y2;
             if (vert) {
                 x1 = position === 'right' ? right : left;
@@ -793,11 +792,11 @@ export class Chart extends EventTarget {
             label.style.setProperty('--x', `${x1}px`);
             label.style.setProperty('--y', `${y1}px`);
             label.setAttribute('data-percent', percent);
-            label.textContent = this.onAxisLabel({
+            label.replaceChildren(this.onAxisLabel({
                 orientation,
                 percent,
                 format: options.format,
-            });
+            }));
             visualCount++;
         }
         for (let i = visualCount; i &lt; existingTicks.length; i++) {
