@@ -69,7 +69,7 @@
         }
 
         &.sc-y-axis {
-            --start-end-y-offset: 0.9cap;
+            --start-end-y-offset: 0.4lh;
 
             .sc-label {
                 dominant-baseline: middle;
@@ -85,21 +85,27 @@
                 }
             }
 
-            &.sc-right.sc-inside .sc-label,
-            &:not(.sc-right):not(.sc-inside) .sc-label {
-                translate: calc(-1 * var(--axis-padding)) var(--int-y-offset);
-                text-anchor: end;
+            &.sc-right.sc-inside,
+            &:not(.sc-right):not(.sc-inside) {
+                .sc-label {
+                    translate: calc(-1 * var(--axis-padding)) var(--int-y-offset);
+                    text-anchor: end;
+                }
             }
-            &:not(.sc-right).sc-inside .sc-label,
-            &.sc-right:not(.sc-inside) .sc-label {
-                translate: var(--axis-padding) var(--int-y-offset);
+            &.sc-right:not(.sc-inside),
+            &:not(.sc-right).sc-inside {
+                .sc-label {
+                    translate: var(--axis-padding) var(--int-y-offset);
+                }
             }
         }
 
         &.sc-x-axis {
+
             &:not(.axis-rotate) {
+                --line-height-correction: 0.28lh;
+
                 .sc-label {
-                    --line-height-correction: 0.28lh;
                     dominant-baseline: text-before-edge;
                     text-anchor: middle;
 
@@ -113,8 +119,8 @@
                     }
                 }
 
-                &:not(.sc-top):not(.sc-inside),
-                &.sc-top.sc-inside {
+                &.sc-top.sc-inside,
+                &:not(.sc-top):not(.sc-inside) {
                     .sc-label {
                         translate: var(--x-offset, 0) calc(var(--axis-padding) - var(--line-height-correction));
                     }
@@ -122,16 +128,58 @@
                 &.sc-top:not(.sc-inside),
                 &:not(.sc-top).sc-inside {
                     .sc-label {
-                        translate: var(--x-offset, 0) calc(-1 * var(--axis-padding) + var(--line-height-correction));
+                        translate: var(--x-offset, 0) calc(-1 * (var(--axis-padding) - var(--line-height-correction)));
                         dominant-baseline: text-after-edge;
                     }
                 }
             }
             &.axis-rotate {
+                --angle-pad-correction: calc(-1 * sin(abs(var(--axis-angle))) * 0.30em);
+
+                .sc-label {
+                    dominant-baseline: middle;
+
+                    &[data-percent="0"] {
+                        --x-offset: calc(0.6ic * sin(abs(var(--axis-angle))));
+                    }
+                    &[data-percent="1"] {
+                        --x-offset: calc(-0.6ic * sin(abs(var(--axis-angle))));
+                    }
+                }
+
+                &.sc-top:not(.sc-inside),
+                &:not(.sc-top).sc-inside {
+                    .sc-label {
+                        --line-height-correction: 0.15lh;
+                        translate: var(--x-offset, 0) calc(-1 * (var(--axis-padding) +
+                                                                 var(--angle-pad-correction) +
+                                                                 var(--line-height-correction)));
+                    }
+                }
+                &.sc-top.sc-inside,
+                &:not(.sc-top):not(.sc-inside) {
+                    .sc-label {
+                        --line-height-correction: 0.3lh;
+                        translate: var(--x-offset, 0) calc(var(--axis-padding) +
+                                                           var(--angle-pad-correction) +
+                                                           var(--line-height-correction));
+                    }
+                }
+
                 &:not(.axis-rotate-invert) {
                     &.sc-top:not(.sc-inside),
                     &:not(.sc-top).sc-inside {
-                        text-anchor: end;
+                        .sc-label {
+                            text-anchor: end;
+                        }
+                    }
+                }
+                &.axis-rotate-invert {
+                    &.sc-top.sc-inside,
+                    &:not(.sc-top):not(.sc-inside) {
+                        .sc-label {
+                            text-anchor: end;
+                        }
                     }
                 }
             }
