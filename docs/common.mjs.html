@@ -250,7 +250,7 @@ import * as colorMod from './color.mjs';
  * @property {boolean} [hideLast] - Hide the last (visual-high) label of the axis
  * @property {number} [tickLength=5] - Size of the tick marks
  * @property {function} [format] - Custom callback function for label values
- * @property {string} [padding] - Custom axis label padding
+ * @property {number|string} [padding] - Custom axis label padding.  CSS units permitted
  * @property {number} [rotate] - Degrees of rotation.  Negative values on an xAxis will invert the alignment.
  */
 
@@ -732,12 +732,17 @@ export class Chart extends EventTarget {
         }
         const inside = (options.align ?? 'outside') === 'inside';
         el.classList.toggle('sc-inside', inside);
-        if (options.padding) {
-            el.style.setProperty('--axis-padding', options.padding);
+        if (options.padding != null) {
+            el.style.setProperty('--axis-padding', typeof options.padding === 'number' ?
+                `${options.padding}px` : options.padding);
         } else {
             el.style.removeProperty('--axis-padding');
         }
-        el.style.setProperty('--axis-angle', `${options.rotate}deg`);
+        if (options.rotate != null) {
+            el.style.setProperty('--axis-angle', `${options.rotate}deg`);
+        } else {
+            el.style.removeProperty('--axis-angle');
+        }
         el.classList.toggle('axis-rotate', !!options.rotate);
         if (!vert) {
             el.classList.toggle('axis-rotate-invert', options.rotate &lt; 0);
